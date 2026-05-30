@@ -29,6 +29,9 @@ export interface Profile {
   anon_token: string
   created_at: string
   updated_at: string
+  counselor_schedule?: any
+  counselor_certificate?: string | null
+  is_counselor_setup_completed?: boolean
 }
 
 export interface ThreadCategory {

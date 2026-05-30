@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import toast from 'react-hot-toast'
 import type { Profile } from '@/types/database'
 
-type Tab = 'users' | 'konselor-pending' | 'reports' | 'identity'
+type Tab = 'users' | 'konselor-pending' | 'reports' | 'identity' | 'content'
 
 export default function AdminPage() {
   const [tab, setTab] = useState<Tab>('users')
@@ -56,9 +56,10 @@ export default function AdminPage() {
     }
   }
 
-  const TABS: { id: Tab; label: string; icon: string }[] = [
+  const TABS: { id: Tab | 'content'; label: string; icon: string }[] = [
     { id: 'users',            label: 'Semua Pengguna', icon: '👤' },
     { id: 'konselor-pending', label: 'Tambah Konselor', icon: '💬' },
+    { id: 'content',          label: 'Moderasi Konten', icon: '🛡️' },
     { id: 'reports',          label: 'Laporan Konten',  icon: '🚩' },
     { id: 'identity',         label: 'Buka Identitas (Darurat)', icon: '🔓' },
   ]
@@ -175,6 +176,11 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* ── CONTENT MODERATION TAB ── */}
+      {tab === 'content' && (
+        <ContentModeration />
+      )}
+
       {/* ── REPORTS TAB ── */}
       {tab === 'reports' && (
         <div className="card">
@@ -267,12 +273,13 @@ function IdentityRevealForm() {
       .single()
     if (!data) { toast.error('Kode anonim tidak ditemukan.'); return }
     // Log the reveal (audit trail)
-    await supabase.from('identity_reveal_log').insert({
+    const revealedUser = data as any
+    await (supabase.from('identity_reveal_log') as any).insert({
       requested_by: (await supabase.auth.getUser()).data.user!.id,
-      revealed_user_id: data.id,
+      revealed_user_id: revealedUser.id,
       reason,
     })
-    setResult(`${data.full_name} · Angkatan ${data.angkatan ?? '—'} · ${data.jurusan ?? '—'}`)
+    setResult(`${revealedUser.full_name} · Angkatan ${revealedUser.angkatan ?? '—'} · ${revealedUser.jurusan ?? '—'}`)
     toast.success('Identitas berhasil dibuka. Tindakan ini telah dicatat.')
   }
 
@@ -295,3 +302,69 @@ function IdentityRevealForm() {
     </form>
   )
 }
+
+function ContentModeration() {
+  const [content, setContent] = useState<any>({ threads: [], comments: [], prayers: [] })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchContent()
+  }, [])
+
+  async function fetchContent() {
+    setLoading(true)
+    const { getAdminContent } = await import('./actions')
+    const res = await getAdminContent()
+    if (!res.error) setContent(res)
+    setLoading(false)
+  }
+
+  async function handleDelete(type: 'thread' | 'comment' | 'prayer', id: string) {
+    if (!confirm('Hapus konten ini secara permanen?')) return
+    const { deleteContent } = await import('./actions')
+    const res = await deleteContent(type, id)
+    if (res.error) {
+      toast.error(res.error)
+    } else {
+      toast.success('Konten berhasil dihapus')
+      fetchContent()
+    }
+  }
+
+  if (loading) return <div className="card-body text-center text-sm text-[var(--text-muted)]">Memuat data konten...</div>
+
+  return (
+    <div className="space-y-6">
+      <div className="card">
+        <div className="card-header"><span className="card-title">Moderasi Forum (Threads)</span></div>
+        <div className="card-body">
+          {content.threads?.map((t: any) => (
+            <div key={t.id} className="py-3 border-b border-[var(--cream)] flex justify-between items-start">
+              <div>
+                <strong className="text-sm block">{t.title}</strong>
+                <span className="text-xs text-[var(--text-muted)]">Oleh: {t.author?.full_name}</span>
+              </div>
+              <button onClick={() => handleDelete('thread', t.id)} className="btn-icon text-red-500 text-xs px-2 border border-red-200 rounded">Hapus</button>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="card">
+        <div className="card-header"><span className="card-title">Moderasi Komentar</span></div>
+        <div className="card-body">
+          {content.comments?.map((c: any) => (
+            <div key={c.id} className="py-3 border-b border-[var(--cream)] flex justify-between items-start">
+              <div>
+                <p className="text-sm line-clamp-2">{c.content}</p>
+                <span className="text-xs text-[var(--text-muted)]">Oleh: {c.author?.full_name}</span>
+              </div>
+              <button onClick={() => handleDelete('comment', c.id)} className="btn-icon text-red-500 text-xs px-2 border border-red-200 rounded">Hapus</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+

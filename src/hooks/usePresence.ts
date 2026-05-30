@@ -12,8 +12,7 @@ export function usePresence(userId: string) {
     if (!userId) return
 
     // Mark user as online in DB
-    supabase
-      .from('profiles')
+    (supabase.from('profiles') as any)
       .update({ is_online: true, last_seen: new Date().toISOString() })
       .eq('id', userId)
 
@@ -40,8 +39,7 @@ export function usePresence(userId: string) {
 
     // Mark offline on unmount / tab close
     const markOffline = () => {
-      supabase
-        .from('profiles')
+      (supabase.from('profiles') as any)
         .update({ is_online: false, last_seen: new Date().toISOString() })
         .eq('id', userId)
       channel.untrack()
@@ -50,7 +48,7 @@ export function usePresence(userId: string) {
     window.addEventListener('beforeunload', markOffline)
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) markOffline()
-      else supabase.from('profiles').update({ is_online: true }).eq('id', userId)
+      else (supabase.from('profiles') as any).update({ is_online: true }).eq('id', userId)
     })
 
     return () => {

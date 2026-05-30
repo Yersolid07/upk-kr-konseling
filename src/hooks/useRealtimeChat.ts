@@ -29,8 +29,7 @@ export function useRealtimeChat({ sessionId, currentUserId }: UseRealtimeChatOpt
     if (!error && data) {
       setMessages(data as Message[])
       // Mark messages as read
-      await supabase
-        .from('messages')
+      await (supabase.from('messages') as any)
         .update({ is_read: true })
         .eq('session_id', sessionId)
         .neq('sender_id', currentUserId)
@@ -64,14 +63,14 @@ export function useRealtimeChat({ sessionId, currentUserId }: UseRealtimeChatOpt
           if (data) {
             setMessages(prev => {
               // Prevent duplicates
-              if (prev.find(m => m.id === data.id)) return prev
-              return [...prev, data as Message]
+              const incoming = data as any
+              if (prev.find(m => m.id === incoming.id)) return prev
+              return [...prev, incoming as Message]
             })
 
             // Auto-mark as read if from other party
             if (payload.new.sender_id !== currentUserId) {
-              await supabase
-                .from('messages')
+              await (supabase.from('messages') as any)
                 .update({ is_read: true })
                 .eq('id', payload.new.id)
             }
@@ -89,7 +88,7 @@ export function useRealtimeChat({ sessionId, currentUserId }: UseRealtimeChatOpt
     if (!content.trim()) return
     setSending(true)
 
-    const { error } = await supabase.from('messages').insert({
+    const { error } = await (supabase.from('messages') as any).insert({
       session_id: sessionId,
       sender_id: currentUserId,
       content: content.trim(),

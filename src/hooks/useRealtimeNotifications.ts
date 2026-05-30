@@ -20,8 +20,8 @@ export function useRealtimeNotifications(userId: string) {
       .limit(30)
 
     if (data) {
-      setNotifications(data)
-      setUnreadCount(data.filter(n => !n.is_read).length)
+      setNotifications(data as any)
+      setUnreadCount((data as any[]).filter(n => !n.is_read).length)
     }
   }, [userId])
 
@@ -55,8 +55,7 @@ export function useRealtimeNotifications(userId: string) {
   }, [userId, fetchNotifications])
 
   const markAllRead = useCallback(async () => {
-    await supabase
-      .from('notifications')
+    await (supabase.from('notifications') as any)
       .update({ is_read: true })
       .eq('user_id', userId)
       .eq('is_read', false)
@@ -65,8 +64,7 @@ export function useRealtimeNotifications(userId: string) {
   }, [userId])
 
   const markRead = useCallback(async (id: string) => {
-    await supabase
-      .from('notifications')
+    await (supabase.from('notifications') as any)
       .update({ is_read: true })
       .eq('id', id)
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))

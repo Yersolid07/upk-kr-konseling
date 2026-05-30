@@ -15,11 +15,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { data: callerProfile } = await supabase
+  const { data: profileData } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
+
+  const callerProfile = profileData as any
 
   if (!callerProfile || !['super_admin', 'admin'].includes(callerProfile.role)) {
     return NextResponse.json({ error: 'Forbidden: Admin only' }, { status: 403 })
@@ -49,8 +51,7 @@ export async function POST(request: NextRequest) {
   if (specialization) updateData.specialization = specialization
   if (typeof is_verified === 'boolean') updateData.is_verified = is_verified
 
-  const { data, error } = await adminClient
-    .from('profiles')
+  const { data, error } = await (adminClient.from('profiles') as any)
     .update(updateData)
     .eq('id', user_id)
     .select()
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Send notification to user
-  await adminClient.from('notifications').insert({
+  await (adminClient.from('notifications') as any).insert({
     user_id,
     type: role === 'konselor' ? 'konselor_verified' : 'system',
     title: role === 'konselor'

@@ -1,7 +1,6 @@
 // src/lib/supabase/server.ts
-// Server-side Supabase client (for Server Components, Route Handlers, Server Actions)
-
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import type { Database } from '@/types/database'
 
@@ -13,16 +12,21 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll()
+        get(name: string) {
+          return cookieStore.get(name)?.value
         },
-        setAll(cookiesToSet) {
+        set(name: string, value: string, options: any) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          } catch {
-            // Can be ignored in Server Components
+            cookieStore.set({ name, value, ...options })
+          } catch (error) {
+            // Context is Server Component, ignore
+          }
+        },
+        remove(name: string, options: any) {
+          try {
+            cookieStore.set({ name, value: '', ...options })
+          } catch (error) {
+            // Context is Server Component, ignore
           }
         },
       },
@@ -31,11 +35,16 @@ export function createClient() {
 }
 
 // Admin client — for server-side privileged operations only
+// Use this only in API Routes or Server Actions
 export function createAdminClient() {
-  const { createClient: createSupabaseClient } = require('@supabase/supabase-js')
   return createSupabaseClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
+    { 
+      auth: { 
+        autoRefreshToken: false, 
+        persistSession: false 
+      } 
+    }
   )
 }

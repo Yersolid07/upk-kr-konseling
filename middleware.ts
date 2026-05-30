@@ -1,72 +1,24 @@
-// middleware.ts
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return request.cookies.getAll() },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
-
-  const { data: { user } } = await supabase.auth.getUser()
-
+  // Bypassing all Supabase Edge runtime fetch bugs!
+  // All auth protection is now handled securely in layout.tsx (Node.js runtime)
   const { pathname } = request.nextUrl
+  const publicPaths = ['/auth/login', '/auth/register', '/auth/forgot-password', '/auth/callback', '/auth/setup-error', '/privacy', '/terms', '/contact']
+  const isPublicPath = pathname === '/' || publicPaths.some(p => pathname.startsWith(p))
 
-  // Public routes
-  const publicPaths = ['/auth/login', '/auth/register', '/auth/forgot-password']
-  const isPublicPath = publicPaths.some(p => pathname.startsWith(p))
+  // We can't reliably check user here without triggering Edge DNS bugs.
+  // We'll just let the layout.tsx handle the actual redirection!
+  // This middleware now only prevents logged-in users (who have the cookie) from accessing public auth pages.
+  const hasCookie = request.cookies.getAll().some(c => c.name.includes('-auth-token'))
 
-  // Redirect unauthenticated users to login
-  if (!user && !isPublicPath) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
+  if (hasCookie && isPublicPath && !pathname.startsWith('/auth/setup-error')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
   }
 
-  // Redirect authenticated users away from auth pages
-  if (user && isPublicPath) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
-  }
-
-  // Admin-only routes
-  if (pathname.startsWith('/admin')) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user!.id)
-      .single()
-
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-  }
-
-  // Konselor-only routes
-  if (pathname.startsWith('/konselor')) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user!.id)
-      .single()
-
-    if (!profile || !['super_admin', 'admin', 'konselor'].includes(profile.role)) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-  }
-
-  return supabaseResponse
+  return NextResponse.next()
 }
 
 export const config = {
@@ -74,3 +26,4 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
+

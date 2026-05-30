@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Insert notifications for all konselor/admin
-  const notifications = targets.map(t => ({
+  const notifications = (targets as any[]).map(t => ({
     user_id: t.id,
     type: 'sos_alert' as const,
     title: '🆘 Permintaan Bantuan Darurat',
@@ -36,11 +36,11 @@ export async function POST(request: NextRequest) {
     meta: { requester_id: user.id, is_sos: true },
   }))
 
-  await adminClient.from('notifications').insert(notifications)
+  await (adminClient.from('notifications') as any).insert(notifications)
 
   // Create an urgent pending session
-  const { data: session } = await adminClient
-    .from('chat_sessions')
+  const { data: session } = await (adminClient
+    .from('chat_sessions') as any)
     .insert({
       member_id: user.id,
       konselor_id: null,
@@ -51,8 +51,15 @@ export async function POST(request: NextRequest) {
     .select()
     .single()
 
-  // TODO: Send WhatsApp via Fonnte if configured
-  // await sendWhatsApp(process.env.NEXT_PUBLIC_SOS_WA_NUMBER, `[SOS UPK-Kr] ${message}`)
+  // Send WhatsApp via Fonnte to configured counselor numbers
+  const sosNumber = process.env.NEXT_PUBLIC_SOS_WA_NUMBER
+  if (sosNumber) {
+    const { sendWhatsApp } = await import('@/lib/fonnte')
+    await sendWhatsApp(
+      sosNumber, 
+      `[SOS UPK-Kr] 🆘 Bantuan Darurat!\n\nNama: ${(user.user_metadata as any)?.full_name || 'Seorang Anggota'}\nPesan: "${message}"\n\nRespon segera di: ${process.env.NEXT_PUBLIC_APP_URL}/konselor`
+    )
+  }
 
   return NextResponse.json({ success: true, session_id: session?.id })
 }

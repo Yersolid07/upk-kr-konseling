@@ -68,7 +68,9 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
           onMarkRead={markRead}
         />
         <div className="view-container">
-          {children}
+          <div className="max-w-7xl mx-auto px-4 md:px-8">
+            {children}
+          </div>
         </div>
       </main>
 

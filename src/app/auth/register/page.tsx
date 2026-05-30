@@ -5,7 +5,9 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { register } from '../actions'
 
-const ANGKATAN_OPTIONS = Array.from({ length: 15 }, (_, i) => String(2010 + i))
+const ANGKATAN_OPTIONS = Array.from({ length: 2026 - 1970 + 1 }, (_, i) => String(1970 + i)).reverse()
+
+import { User, Mail, Calendar, BookOpen, Lock, Eye, EyeOff, CheckCircle, Shield, ArrowRight } from 'lucide-react'
 
 export default function RegisterPage() {
   const [error, setError] = useState('')
@@ -45,101 +47,123 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="auth-card">
-        <div className="success-screen">
-          <div className="success-icon">🙏</div>
-          <h2>Akun Berhasil Dibuat!</h2>
-          <p>{success}</p>
-          <Link href="/auth/login" className="btn-primary" style={{ display: 'block', textAlign: 'center', marginTop: 16 }}>
-            Masuk Sekarang
-          </Link>
+      <div className="auth-card backdrop-blur-xl bg-white/90 border border-white/20 text-center py-10 space-y-6">
+        <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-4xl animate-pulse">
+          <CheckCircle size={48} />
         </div>
+        <div className="space-y-2">
+          <h2 className="font-[var(--font-playfair)] text-3xl font-black text-[var(--brown-dark)]">Berhasil!</h2>
+          <p className="text-sm text-[var(--text-muted)] max-w-xs mx-auto leading-relaxed">{success}</p>
+        </div>
+        <Link href="/auth/login" className="btn-primary inline-flex items-center gap-2 group">
+          Masuk Sekarang <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+        </Link>
       </div>
     )
   }
 
   return (
-    <div className="auth-card">
-      {/* Logo */}
-      <div className="auth-logo">
-        <div className="auth-logo-icon">✝</div>
-        <div>
-          <h1 className="auth-title">UPK-Kr. Konseling</h1>
-          <span className="auth-subtitle">FT. UNSRAT Alumni</span>
+    <div className="auth-card backdrop-blur-xl bg-white/90 border border-white/20">
+      {/* Header */}
+      <div className="flex flex-col items-center mb-8">
+        <div className="w-14 h-14 bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl mb-4">
+          ✝
         </div>
+        <h1 className="font-[var(--font-playfair)] text-2xl font-black text-[var(--brown-dark)]">Bergabunglah</h1>
+        <p className="text-[10px] text-[var(--text-muted)] font-black uppercase tracking-[0.2em] mt-1">Membangun Komunitas Iman</p>
       </div>
 
       {/* Tabs */}
-      <div className="auth-tabs">
-        <Link href="/auth/login" className="auth-tab">Masuk</Link>
-        <div className="auth-tab active">Daftar</div>
+      <div className="auth-tabs p-1 bg-[var(--cream)] rounded-2xl mb-8">
+        <Link href="/auth/login" className="auth-tab hover:text-[var(--brown)] transition-colors">Masuk</Link>
+        <div className="auth-tab active shadow-sm">Daftar</div>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="form-group">
-          <label className="form-label">Nama Lengkap</label>
+          <label className="form-label flex items-center gap-2">
+            <User size={12} className="text-[var(--terra)]" /> Nama Lengkap
+          </label>
           <input
             name="full_name"
             type="text"
             className="form-input"
-            placeholder="Nama sesuai KTM / ijazah"
+            placeholder="Sesuai KTM / Ijazah"
             required
           />
         </div>
 
         <div className="form-group">
-          <label className="form-label">Email</label>
+          <label className="form-label flex items-center gap-2">
+            <Mail size={12} className="text-[var(--terra)]" /> Email Address
+          </label>
           <input
             name="email"
             type="email"
             className="form-input"
-            placeholder="email@example.com"
+            placeholder="nama@email.com"
             required
           />
         </div>
 
         <div className="form-row">
           <div className="form-group">
-            <label className="form-label">Angkatan</label>
-            <select name="angkatan" className="form-input">
-              <option value="">Pilih angkatan</option>
+            <label className="form-label flex items-center gap-2">
+              <Calendar size={12} className="text-[var(--terra)]" /> Angkatan
+            </label>
+            <select name="angkatan" className="form-input" required>
+              <option value="">Pilih</option>
               {ANGKATAN_OPTIONS.map(y => (
                 <option key={y} value={y}>{y}</option>
               ))}
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label">Jurusan</label>
-            <select name="jurusan" className="form-input">
-              <option value="">Pilih jurusan</option>
-              <option value="Teknik Informatika">Teknik Informatika</option>
-              <option value="Teknik Sipil">Teknik Sipil</option>
-              <option value="Teknik Elektro">Teknik Elektro</option>
-              <option value="Teknik Mesin">Teknik Mesin</option>
-              <option value="Teknik Kimia">Teknik Kimia</option>
-              <option value="Lainnya">Lainnya</option>
+            <label className="form-label flex items-center gap-2">
+              <BookOpen size={12} className="text-[var(--terra)]" /> Jurusan
+            </label>
+            <select name="jurusan" className="form-input" required>
+              <option value="">Pilih</option>
+              <option value="Teknik Informatika">Informatika</option>
+              <option value="Teknik Sipil">Sipil</option>
+              <option value="Teknik Mesin">Mesin</option>
+              <option value="Teknik Elektro">Elektro</option>
+              <option value="Teknik Lingkungan">Lingkungan</option>
+              <option value="Perencanaan Wilayah dan Kota">PWK</option>
+              <option value="Teknik Industri">Industri</option>
+              <option value="Teknik Pertambangan">Pertambangan</option>
+              <option value="Teknik Kimia">Kimia</option>
+              <option value="Arsitektur">Arsitektur</option>
             </select>
           </div>
         </div>
 
         <div className="form-group">
-          <label className="form-label">Password</label>
+          <label className="form-label flex items-center gap-2">
+            <Lock size={12} className="text-[var(--terra)]" /> Buat Password
+          </label>
           <div className="input-with-toggle">
             <input
               name="password"
               type={showPassword ? 'text' : 'password'}
-              className="form-input"
+              className="form-input pr-12"
               placeholder="Min. 8 karakter"
               required
             />
-            <button type="button" onClick={() => setShowPassword(!showPassword)}>
-              {showPassword ? '🙈' : '👁️'}
+            <button 
+              type="button" 
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--brown)]"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
         </div>
 
         <div className="form-group">
-          <label className="form-label">Konfirmasi Password</label>
+          <label className="form-label flex items-center gap-2">
+            <Shield size={12} className="text-[var(--terra)]" /> Konfirmasi Password
+          </label>
           <input
             name="confirm_password"
             type={showPassword ? 'text' : 'password'}
@@ -149,31 +173,36 @@ export default function RegisterPage() {
           />
         </div>
 
-        {/* NOTE: Role adalah member secara default. Tidak ada pilihan konselor di sini.
-            Konselor hanya bisa diassign oleh Admin/Super Admin. */}
-        <div className="role-info-banner">
-          <span>👤</span>
-          <span>Akun akan didaftarkan sebagai <strong>Anggota</strong>. Ingin menjadi konselor? Hubungi admin UPK-Kr.</span>
+        <div className="p-3 bg-[var(--terra)]/5 rounded-xl border border-[var(--terra)]/10 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-lg bg-[var(--terra)]/10 flex items-center justify-center text-[var(--terra)] shrink-0">
+             <User size={16} />
+          </div>
+          <p className="text-[10px] text-[var(--brown)] leading-tight pt-1">
+            Akun akan didaftarkan sebagai <strong>Anggota</strong>. Untuk menjadi konselor, hubungi admin UPK-Kr.
+          </p>
         </div>
 
-        <div className="form-group">
-          <label className="form-checkbox">
-            <input name="agree_tos" type="checkbox" required />
-            <span>Saya menyetujui <a href="/tos" target="_blank">Syarat & Ketentuan</a> dan <a href="/privacy" target="_blank">Kebijakan Privasi</a></span>
+        <div className="form-group pt-2">
+          <label className="form-checkbox items-center">
+            <input name="agree_tos" type="checkbox" required className="w-4 h-4" />
+            <span className="text-[11px]">Saya menyetujui <a href="/tos" className="font-bold underline">Syarat & Ketentuan</a></span>
           </label>
         </div>
 
-        {error && <div className="error-banner">{error}</div>}
+        {error && <div className="error-banner animate-shake text-xs py-2">{error}</div>}
 
-        <button type="submit" className="btn-primary" disabled={loading}>
-          {loading ? 'Membuat akun...' : 'Buat Akun'}
+        <button type="submit" className="btn-primary h-14 group" disabled={loading}>
+          <span className="flex items-center justify-center gap-2">
+            {loading ? 'Memproses...' : 'Daftar Sekarang'}
+            {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
+          </span>
         </button>
       </form>
 
-      <blockquote className="auth-verse">
-        "Karena Aku ini mengetahui rancangan-rancangan apa yang ada pada-Ku mengenai kamu..."
-        <cite>— Yeremia 29:11</cite>
-      </blockquote>
+      <div className="mt-8 text-center text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest italic">
+        "TUHAN akan menjaga keluar masukmu..."
+        <cite className="block mt-1 not-italic opacity-60">— Mazmur 121:8</cite>
+      </div>
     </div>
   )
 }

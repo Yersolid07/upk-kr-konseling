@@ -6,36 +6,55 @@ import { usePathname } from 'next/navigation'
 import { useAppStore } from '@/store/useAppStore'
 import { logout } from '@/app/auth/actions'
 import type { Profile } from '@/types/database'
+import { cn } from '@/lib/utils'
+import { 
+  Home, 
+  MessageCircle, 
+  Heart, 
+  Calendar, 
+  BookOpen,
+  PlusCircle,
+  Users as UsersIcon,
+  LayoutDashboard,
+  Settings,
+  LogOut,
+  Languages,
+  ChevronRight,
+  Phone,
+  X
+} from 'lucide-react'
+import { HandsPraying } from '@/components/icons/HandsPraying'
 
 interface NavItem {
   href: string
   label: string
   labelEn: string
-  icon: string
+  icon: React.ReactNode
   badge?: number
   roles?: string[]
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/dashboard',  icon: '🏠', label: 'Beranda',          labelEn: 'Home' },
-  { href: '/forum',      icon: '💬', label: 'Forum Diskusi',     labelEn: 'Forum' },
-  { href: '/chat',       icon: '💌', label: 'Konseling 1-on-1',  labelEn: '1-on-1 Chat' },
-  { href: '/booking',    icon: '📅', label: 'Booking Sesi',      labelEn: 'Book Session' },
+  { href: '/dashboard',  icon: <Home size={18} />, label: 'Beranda',          labelEn: 'Home' },
+  { href: '/forum',      icon: <MessageCircle size={18} />, label: 'Forum Diskusi',     labelEn: 'Forum' },
+  { href: '/chat',       icon: <Heart size={18} />, label: 'Konseling 1-on-1',  labelEn: '1-on-1 Chat' },
+  { href: '/booking',    icon: <Calendar size={18} />, label: 'Booking Sesi',      labelEn: 'Book Session' },
 ]
 
 const SPIRITUAL_ITEMS: NavItem[] = [
-  { href: '/prayer',    icon: '🙏', label: 'Prayer Wall',         labelEn: 'Prayer Wall' },
-  { href: '/renungan',  icon: '📖', label: 'Renungan & Artikel',  labelEn: 'Devotions' },
-  { href: '/resource',  icon: '❤️', label: 'Resource Kesehatan', labelEn: 'Mental Health' },
+  { href: '/prayer',    icon: <HandsPraying size={18} />, label: 'Prayer Wall',         labelEn: 'Prayer Wall' },
+  { href: '/renungan',  icon: <BookOpen size={18} />, label: 'Renungan & Artikel',  labelEn: 'Devotions' },
+  { href: '/resource',  icon: <PlusCircle size={18} />, label: 'Resource Kesehatan', labelEn: 'Mental Health' },
+  { href: '/hotline',   icon: <Phone size={18} />, label: 'Hotline Darurat',     labelEn: 'Emergency Hotline' },
 ]
 
 const GROUP_ITEMS: NavItem[] = [
-  { href: '/cellgroup', icon: '👥', label: 'Cell Group Saya',     labelEn: 'My Cell Group' },
+  { href: '/cellgroup', icon: <UsersIcon size={18} />, label: 'Cell Group Saya',     labelEn: 'My Cell Group' },
 ]
 
 const STAFF_ITEMS: NavItem[] = [
-  { href: '/konselor',  icon: '📊', label: 'Dashboard Konselor', labelEn: 'Counselor Hub', roles: ['konselor','admin','super_admin'] },
-  { href: '/admin',     icon: '⚙️', label: 'Panel Admin',         labelEn: 'Admin Panel',   roles: ['admin','super_admin'] },
+  { href: '/konselor',  icon: <LayoutDashboard size={18} />, label: 'Dashboard Konselor', labelEn: 'Counselor Hub', roles: ['konselor','admin','super_admin'] },
+  { href: '/admin',     icon: <Settings size={18} />, label: 'Panel Admin',         labelEn: 'Admin Panel',   roles: ['admin','super_admin'] },
 ]
 
 interface SidebarProps {
@@ -56,99 +75,83 @@ export function Sidebar({ profile, unreadMessages = 0 }: SidebarProps) {
 
   return (
     <>
-      <nav className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+      <nav className={cn(
+        "sidebar bg-gradient-to-b from-[#2D1B10] to-[var(--brown-dark)] shadow-2xl lg:shadow-none",
+        sidebarOpen && "open"
+      )}>
         {/* Brand */}
-        <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 38, height: 38,
-              background: 'linear-gradient(135deg, var(--terra), var(--gold))',
-              borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 18, flexShrink: 0
-            }}>✝</div>
+        <div className="px-6 py-8 border-b border-white/5 relative">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-[var(--terra)] to-[var(--gold)] rounded-xl flex items-center justify-center text-white shadow-lg shadow-[var(--terra)]/20 font-bold text-lg">
+              ✝
+            </div>
             <div>
-              <div style={{ fontFamily: 'var(--font-playfair)', fontSize: 13, fontWeight: 700, color: 'var(--white)', lineHeight: 1.3 }}>
+              <div className="font-[var(--font-playfair)] text-sm font-bold text-white leading-tight">
                 UPK-Kr. Konseling
               </div>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3px' }}>
+              <div className="text-[10px] text-white/40 uppercase tracking-widest font-semibold">
                 FT. UNSRAT Alumni
               </div>
             </div>
           </div>
+          
+          <button 
+            className="absolute top-1/2 -translate-y-1/2 right-4 p-2 text-white/40 hover:text-white lg:hidden"
+            onClick={() => useAppStore.getState().setSidebarOpen(false)}
+          >
+            <X size={20} />
+          </button>
         </div>
 
-        {/* User Info */}
-        <div style={{
-          margin: '12px 12px 4px',
-          padding: '14px',
-          background: 'rgba(255,255,255,0.06)',
-          borderRadius: 12,
-          display: 'flex', alignItems: 'center', gap: 10
-        }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-            background: 'linear-gradient(135deg, var(--sage), var(--sage-light))',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 13, fontWeight: 700, color: 'var(--white)'
-          }}>
-            {profile.full_name.slice(0,2).toUpperCase()}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--white)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {profile.full_name}
+        {/* User Info Card */}
+        <div className="mx-4 my-6 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/[0.08] transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--sage)] to-[var(--sage-light)] flex items-center justify-center text-white text-xs font-bold ring-2 ring-white/10 shadow-inner">
+              {profile.full_name.slice(0,2).toUpperCase()}
             </div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>
-              {profile.role === 'member' ? 'Anggota' :
-               profile.role === 'konselor' ? 'Konselor' :
-               profile.role === 'admin' ? 'Admin' :
-               profile.role === 'super_admin' ? 'Super Admin' : 'Moderator'}
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-bold text-white truncate leading-tight">
+                {profile.full_name}
+              </div>
+              <div className="text-[10px] text-white/40 font-medium capitalize mt-0.5">
+                {profile.role.replace('_', ' ')}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: '8px 12px', overflowY: 'auto' }}>
+        {/* Navigation Sections */}
+        <div className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar">
           <NavSection label={t('Utama', 'Main')} items={NAV_ITEMS} pathname={pathname} lang={lang} unreadMessages={unreadMessages} />
           <NavSection label={t('Rohani', 'Spiritual')} items={SPIRITUAL_ITEMS} pathname={pathname} lang={lang} />
           <NavSection label={t('Komunitas', 'Community')} items={GROUP_ITEMS} pathname={pathname} lang={lang} />
           {visibleStaff.length > 0 && (
             <NavSection label={t('Kelola', 'Manage')} items={visibleStaff} pathname={pathname} lang={lang} />
           )}
-        </nav>
+        </div>
 
-        {/* Bottom */}
-        <div style={{ padding: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          {/* Language toggle */}
-          <div style={{
-            display: 'flex', background: 'rgba(255,255,255,0.06)',
-            borderRadius: 8, padding: '3px', marginBottom: 8
-          }}>
+        {/* Bottom Actions */}
+        <div className="p-4 border-t border-white/5 space-y-3">
+          <div className="flex p-1 bg-black/20 rounded-xl">
             {(['id', 'en'] as const).map((l) => (
-              <button key={l} onClick={() => setLang(l)} style={{
-                flex: 1, padding: '6px', border: 'none',
-                borderRadius: 6, fontFamily: 'var(--font-sans)',
-                fontSize: 11, fontWeight: 600,
-                background: lang === l ? 'rgba(255,255,255,0.12)' : 'transparent',
-                color: lang === l ? 'var(--white)' : 'rgba(255,255,255,0.4)',
-                cursor: 'pointer', letterSpacing: '0.5px',
-                transition: 'all 0.2s'
-              }}>
-                {l === 'id' ? '🇮🇩 ID' : '🇺🇸 EN'}
+              <button 
+                key={l} 
+                onClick={() => setLang(l)} 
+                className={cn(
+                  "flex-1 py-2 text-[10px] font-bold rounded-lg transition-all flex items-center justify-center gap-1.5",
+                  lang === l ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:text-white/60"
+                )}
+              >
+                <Languages size={12} />
+                {l === 'id' ? 'ID' : 'EN'}
               </button>
             ))}
           </div>
-          {/* Logout */}
+
           <form action={logout}>
-            <button type="submit" style={{
-              width: '100%', display: 'flex', alignItems: 'center', gap: 8,
-              padding: '9px 12px', border: 'none', background: 'transparent',
-              color: 'rgba(255,255,255,0.35)', fontSize: 13, borderRadius: 8,
-              cursor: 'pointer', fontFamily: 'var(--font-sans)', transition: 'all 0.2s'
-            }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#ff9090')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
-            >
-              <span>↩</span> {t('Keluar', 'Sign Out')}
+            <button type="submit" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white/40 hover:text-red-400 hover:bg-red-500/5 transition-all text-sm font-medium group text-left border-none bg-transparent cursor-pointer font-[var(--font-sans)]">
+              <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
+              <span>{t('Keluar', 'Sign Out')}</span>
             </button>
           </form>
         </div>
@@ -161,40 +164,47 @@ function NavSection({ label, items, pathname, lang, unreadMessages = 0 }: {
   label: string, items: NavItem[], pathname: string, lang: string, unreadMessages?: number
 }) {
   return (
-    <div style={{ marginBottom: 4 }}>
-      <div style={{
-        fontSize: 9, fontWeight: 600, textTransform: 'uppercase',
-        letterSpacing: '1px', color: 'rgba(255,255,255,0.25)',
-        padding: '12px 8px 4px'
-      }}>{label}</div>
-      {items.map(item => {
-        const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-        const badge = item.href === '/chat' ? unreadMessages : item.badge
-        return (
-          <Link key={item.href} href={item.href} style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
-            transition: 'all 0.2s', marginBottom: 2, textDecoration: 'none',
-            color: isActive ? 'var(--terra-light)' : 'rgba(255,255,255,0.55)',
-            fontWeight: isActive ? 500 : 400, fontSize: 14,
-            background: isActive ? 'linear-gradient(135deg, rgba(196,137,90,0.25), rgba(196,137,90,0.12))' : 'transparent',
-            position: 'relative',
-          }}>
-            {isActive && <div style={{
-              position: 'absolute', left: 0, top: 6, bottom: 6,
-              width: 3, background: 'var(--terra-light)', borderRadius: '0 2px 2px 0'
-            }} />}
-            <span style={{ fontSize: 16, width: 20, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
-            <span>{lang === 'en' ? item.labelEn : item.label}</span>
-            {badge && badge > 0 ? (
-              <span style={{
-                marginLeft: 'auto', background: 'var(--terra)', color: 'var(--white)',
-                fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10, minWidth: 18, textAlign: 'center'
-              }}>{badge}</span>
-            ) : null}
-          </Link>
-        )
-      })}
+    <div className="mb-6 last:mb-2">
+      <div className="px-4 mb-2">
+        <span className="text-[9px] font-bold text-white/20 uppercase tracking-[0.2em]">{label}</span>
+      </div>
+      <div className="space-y-0.5">
+        {items.map(item => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+          const badge = item.href === '/chat' ? unreadMessages : item.badge
+          return (
+            <Link key={item.href} href={item.href} className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-xl transition-all relative group",
+              isActive 
+                ? "text-[var(--terra-light)] bg-white/5 shadow-inner" 
+                : "text-white/50 hover:text-white hover:bg-white/[0.03]"
+            )}>
+              {isActive && (
+                <div className="absolute left-0 top-3 bottom-3 w-1 bg-[var(--terra)] rounded-r-full" />
+              )}
+              <div className={cn(
+                "shrink-0 transition-transform group-hover:scale-110",
+                isActive ? "text-[var(--terra)]" : "opacity-70"
+              )}>
+                {item.icon}
+              </div>
+              <span className="text-sm font-medium truncate">
+                {lang === 'en' ? item.labelEn : item.label}
+              </span>
+              {badge && badge > 0 ? (
+                <span className="ml-auto bg-[var(--terra)] text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg shadow-[var(--terra)]/20 animate-pulse">
+                  {badge}
+                </span>
+              ) : (
+                <ChevronRight size={14} className={cn(
+                  "ml-auto opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0",
+                  isActive ? "text-[var(--terra)]/50" : "text-white/20"
+                )} />
+              )}
+            </Link>
+          )
+        })}
+      </div>
     </div>
   )
 }

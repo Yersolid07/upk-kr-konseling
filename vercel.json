@@ -3,10 +3,7 @@
   "buildCommand": "next build",
   "outputDirectory": ".next",
   "installCommand": "npm install",
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@upk-supabase-url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@upk-supabase-anon-key"
-  },
+
   "headers": [
     {
       "source": "/(.*)",

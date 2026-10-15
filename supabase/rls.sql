@@ -317,7 +317,7 @@ CREATE POLICY "cell_groups_select" ON cell_groups FOR SELECT
   TO authenticated USING (TRUE);
 
 CREATE POLICY "cell_groups_insert" ON cell_groups FOR INSERT
-  TO authenticated WITH CHECK (is_admin_or_above());
+  TO authenticated WITH CHECK (is_konselor_or_above());
 
 CREATE POLICY "cell_groups_update" ON cell_groups FOR UPDATE
   TO authenticated

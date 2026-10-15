@@ -14,6 +14,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { JoinGroupButton } from './join-group-button'
 import { CreateGroupDialog } from './create-group-dialog'
+import { GroupIcon, normalizeGroupIcon } from '@/components/ui/icons'
 
 export const dynamic = 'force-dynamic'
 
@@ -60,9 +61,9 @@ export default async function CellGroupPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-12 animate-fade-in pb-20">
       <section className="text-center space-y-4">
-        <h1 className="font-[var(--font-playfair)] text-4xl md:text-6xl font-black text-[var(--brown-dark)]">Cell Group</h1>
+        <h1 className="font-[var(--font-playfair)] text-4xl md:text-6xl font-black text-[var(--brown-dark)]">KK &amp; KTB</h1>
         <p className="text-[var(--text-muted)] max-w-2xl mx-auto">
-          Temukan komunitas kecil untuk tumbuh bersama dalam iman dan persaudaraan.
+          <b>KK</b> (Kelompok Kecil) &amp; <b>KTB</b> (Kelompok Tumbuh Bersama) — komunitas kecil untuk bertumbuh dalam iman dan persaudaraan.
         </p>
         {canCreate && (
           <div className="flex justify-center pt-2">
@@ -72,26 +73,26 @@ export default async function CellGroupPage() {
       </section>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Your Cell Groups */}
+        {/* Your KK/KTB */}
         <div className="space-y-4">
-          <h3 className="text-xs font-black text-[var(--text-muted)] uppercase tracking-widest px-2">Group Saya</h3>
+          <h3 className="text-xs font-black text-[var(--text-muted)] uppercase tracking-widest px-2">KK/KTB Saya</h3>
           {myGroups.length === 0 ? (
             <div className="card-premium p-10 border-2 border-dashed border-[var(--cream-dark)] bg-white/50 flex flex-col items-center justify-center text-center space-y-6">
               <div className="w-20 h-20 bg-[var(--cream)] rounded-full flex items-center justify-center text-[var(--text-muted)]">
                 <Users size={40} />
               </div>
               <div className="space-y-2">
-                <h3 className="text-xl font-bold text-[var(--brown-dark)]">Belum Ada Group</h3>
+                <h3 className="text-xl font-bold text-[var(--brown-dark)]">Belum Ada KK/KTB</h3>
                 <p className="text-sm text-[var(--text-muted)] max-w-xs leading-relaxed">
-                  Anda belum bergabung dengan Cell Group manapun. Bergabunglah untuk mendapatkan dukungan komunitas.
+                  Anda belum bergabung dengan KK/KTB manapun. Bergabunglah untuk mendapatkan dukungan komunitas.
                 </p>
               </div>
             </div>
           ) : (
             myGroups.map(g => (
               <Link key={g.id} href={`/cellgroup/${g.id}`} className="card-premium p-6 flex items-center gap-6 hover-lift group cursor-pointer">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
-                  {g.icon || '✝️'}
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] flex items-center justify-center text-white shadow-lg shrink-0">
+                  <GroupIcon name={normalizeGroupIcon(g.icon)} className="w-7 h-7" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold text-[var(--brown-dark)] text-lg group-hover:text-[var(--terra)] transition-colors truncate">{g.name}</h4>
@@ -115,19 +116,19 @@ export default async function CellGroupPage() {
         {/* Discover Groups */}
         <div className="space-y-4">
           <h3 className="text-xs font-black text-[var(--text-muted)] uppercase tracking-widest px-2 flex items-center gap-2">
-            <Sparkles size={12} /> Group Populer
+            <Sparkles size={12} /> KK/KTB Tersedia
           </h3>
           {otherGroups.length === 0 ? (
             <div className="card-premium p-10 text-center text-sm text-[var(--text-muted)] italic">
               {groups.length === 0
-                ? 'Belum ada Cell Group aktif saat ini.'
-                : 'Anda sudah bergabung dengan semua Cell Group yang tersedia.'}
+                ? 'Belum ada KK/KTB aktif saat ini.'
+                : 'Anda sudah bergabung dengan semua KK/KTB yang tersedia.'}
             </div>
           ) : (
             otherGroups.map(g => (
               <div key={g.id} className="card-premium p-6 flex items-center gap-6 hover-lift">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--sage)] to-[var(--brown)] flex items-center justify-center text-white text-2xl shadow-lg shrink-0">
-                  {g.icon || '✝️'}
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--sage)] to-[var(--brown)] flex items-center justify-center text-white shadow-lg shrink-0">
+                  <GroupIcon name={normalizeGroupIcon(g.icon)} className="w-7 h-7" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold text-[var(--brown-dark)] text-lg truncate">{g.name}</h4>
@@ -155,7 +156,7 @@ export default async function CellGroupPage() {
         <div className="space-y-2 flex-1 text-center md:text-left">
           <h3 className="font-bold text-[var(--brown-dark)] text-2xl">Keanggotaan Terverifikasi</h3>
           <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-            Setiap Cell Group dipimpin oleh kakak pembina yang telah terverifikasi dan dibimbing langsung oleh alumni senior UPK-Kr.
+            Setiap KK/KTB dipimpin oleh kakak pembina yang telah terverifikasi dan dibimbing langsung oleh alumni senior UPK-Kr.
           </p>
         </div>
         <Link href="/contact" className="text-sm font-black text-[var(--sage)] uppercase tracking-widest hover:underline flex items-center gap-2">

@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
+import { BottomNav } from './BottomNav'
 import { SOSModal } from '@/components/ui/SOSModal'
 import { useAppStore } from '@/store/useAppStore'
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications'
@@ -19,7 +20,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/prayer':     'Prayer Wall',
   '/renungan':   'Renungan & Artikel',
   '/resource':   'Resource Kesehatan',
-  '/cellgroup':  'Cell Group',
+  '/cellgroup':  'KK & KTB',
   '/konselor':   'Dashboard Konselor',
   '/admin':      'Panel Admin',
 }
@@ -68,12 +69,13 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
           onMarkRead={markRead}
         />
         <div className="view-container">
-          <div className="max-w-7xl mx-auto px-4 md:px-8">
+          <div className="max-w-7xl mx-auto">
             {children}
           </div>
         </div>
       </main>
 
+      <BottomNav profile={profile} />
       <SOSModal />
     </div>
   )

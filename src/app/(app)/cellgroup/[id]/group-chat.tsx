@@ -70,7 +70,7 @@ export function GroupChat({ groupId, currentUserId, initialMessages }: GroupChat
     <div className="flex flex-col h-[calc(100vh-360px)] min-h-[420px] card-premium overflow-hidden bg-white/60 backdrop-blur-xl border border-white">
       <div className="px-6 py-4 bg-white/80 border-b border-[var(--cream-dark)] flex items-center gap-3">
         <MessageCircle size={18} className="text-[var(--terra)]" />
-        <h2 className="text-sm font-black text-[var(--brown-dark)] uppercase tracking-widest">Obrolan Group</h2>
+        <h2 className="text-sm font-black text-[var(--brown-dark)] uppercase tracking-widest">Obrolan KK/KTB</h2>
         <span className="ml-auto text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Realtime</span>
       </div>
 
@@ -78,7 +78,7 @@ export function GroupChat({ groupId, currentUserId, initialMessages }: GroupChat
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center gap-3 text-[var(--text-muted)]">
             <Users size={40} className="opacity-40" />
-            <p className="text-sm">Belum ada pesan. Mulai percakapan dengan menyapa anggota group.</p>
+            <p className="text-sm">Belum ada pesan. Mulai percakapan dengan menyapa anggota KK/KTB.</p>
           </div>
         ) : (
           messages.map((msg) => {

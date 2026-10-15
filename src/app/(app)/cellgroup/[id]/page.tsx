@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Users, ShieldCheck } from 'lucide-react'
+import { GroupIcon, normalizeGroupIcon } from '@/components/ui/icons'
 import { GroupChat } from './group-chat'
 import { LeaveGroupButton } from './leave-group-button'
 
@@ -48,13 +49,13 @@ export default async function CellGroupDetailPage({ params }: { params: { id: st
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-fade-in pb-10">
       <Link href="/cellgroup" className="inline-flex items-center gap-2 text-sm font-bold text-[var(--text-muted)] hover:text-[var(--terra)] transition-colors group">
-        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Semua Cell Group
+        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Semua KK/KTB
       </Link>
 
       {/* Header */}
       <div className="card-premium p-8 flex flex-col sm:flex-row items-center gap-6">
-        <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] flex items-center justify-center text-white text-3xl shadow-xl shrink-0">
-          {group.icon || '✝️'}
+        <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] flex items-center justify-center text-white shadow-xl shrink-0">
+          <GroupIcon name={normalizeGroupIcon(group.icon)} className="w-9 h-9" />
         </div>
         <div className="flex-1 text-center sm:text-left">
           <h1 className="font-[var(--font-playfair)] text-3xl font-black text-[var(--brown-dark)]">{group.name}</h1>

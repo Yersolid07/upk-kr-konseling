@@ -24,6 +24,7 @@ import {
   X
 } from 'lucide-react'
 import { HandsPraying } from '@/components/icons/HandsPraying'
+import { Logo } from '@/components/brand/Logo'
 
 interface NavItem {
   href: string
@@ -49,7 +50,7 @@ const SPIRITUAL_ITEMS: NavItem[] = [
 ]
 
 const GROUP_ITEMS: NavItem[] = [
-  { href: '/cellgroup', icon: <UsersIcon size={18} />, label: 'Cell Group Saya',     labelEn: 'My Cell Group' },
+  { href: '/cellgroup', icon: <UsersIcon size={18} />, label: 'KK & KTB',     labelEn: 'Small Groups' },
 ]
 
 const STAFF_ITEMS: NavItem[] = [
@@ -80,16 +81,14 @@ export function Sidebar({ profile, unreadMessages = 0 }: SidebarProps) {
         sidebarOpen && "open"
       )}>
         {/* Brand */}
-        <div className="px-6 py-8 border-b border-white/5 relative">
+        <div className="px-6 py-7 border-b border-white/5 relative">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[var(--terra)] to-[var(--gold)] rounded-xl flex items-center justify-center text-white shadow-lg shadow-[var(--terra)]/20 font-bold text-lg">
-              ✝
-            </div>
+            <Logo tile size={42} />
             <div>
-              <div className="font-[var(--font-playfair)] text-sm font-bold text-white leading-tight">
+              <div className="font-[var(--font-playfair)] text-[15px] font-bold text-white leading-tight">
                 UPK-Kr. Konseling
               </div>
-              <div className="text-[10px] text-white/40 uppercase tracking-widest font-semibold">
+              <div className="text-[10px] text-white/40 uppercase tracking-[0.16em] font-semibold">
                 FT. UNSRAT Alumni
               </div>
             </div>

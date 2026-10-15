@@ -5,9 +5,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, X, Check } from 'lucide-react'
 import { createCellGroup } from './actions'
+import { GROUP_ICON_KEYS, GroupIcon, type GroupIconKey } from '@/components/ui/icons'
 import toast from 'react-hot-toast'
-
-const ICON_OPTIONS = ['✝️', '🕊️', '📖', '🌿', '🔥', '💡', '🤝', '⭐']
 
 export function CreateGroupDialog() {
   const router = useRouter()
@@ -15,7 +14,7 @@ export function CreateGroupDialog() {
   const [pending, setPending] = useState(false)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [icon, setIcon] = useState('✝️')
+  const [icon, setIcon] = useState<GroupIconKey>('church')
 
   async function handleSubmit(formData: FormData) {
     setPending(true)
@@ -34,14 +33,14 @@ export function CreateGroupDialog() {
         onClick={() => setOpen(true)}
         className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--brown-dark)] text-white text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:bg-[var(--brown)] transition-all active:scale-95 shadow-lg shadow-[var(--brown-dark)]/20"
       >
-        <Plus size={18} /> Buat Cell Group
+        <Plus size={18} /> Buat KK/KTB
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-[var(--font-playfair)] text-2xl font-black text-[var(--brown-dark)]">Buat Cell Group Baru</h2>
+              <h2 className="font-[var(--font-playfair)] text-2xl font-black text-[var(--brown-dark)]">Buat KK/KTB Baru</h2>
               <button onClick={() => setOpen(false)} className="p-2 text-[var(--text-muted)] hover:bg-[var(--cream)] rounded-xl transition-colors">
                 <X size={20} />
               </button>
@@ -51,23 +50,24 @@ export function CreateGroupDialog() {
               <div className="space-y-3">
                 <label className="text-xs font-black uppercase tracking-widest text-[var(--brown-dark)]">Ikon</label>
                 <div className="flex flex-wrap gap-2">
-                  {ICON_OPTIONS.map(opt => (
+                  {GROUP_ICON_KEYS.map(opt => (
                     <button
                       key={opt}
                       type="button"
                       onClick={() => setIcon(opt)}
-                      className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl border-2 transition-all ${
-                        icon === opt ? 'border-[var(--terra)] bg-[var(--terra)]/10 scale-110' : 'border-[var(--cream-dark)] hover:border-[var(--terra)]/40'
+                      aria-label={opt}
+                      className={`w-11 h-11 rounded-xl flex items-center justify-center border-2 transition-all ${
+                        icon === opt ? 'border-[var(--terra)] bg-[var(--terra)]/10 text-[var(--terra)] scale-110' : 'border-[var(--cream-dark)] text-[var(--text-muted)] hover:border-[var(--terra)]/40'
                       }`}
                     >
-                      {opt}
+                      <GroupIcon name={opt} className="w-5 h-5" />
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-[var(--brown-dark)]">Nama Group</label>
+                <label className="text-xs font-black uppercase tracking-widest text-[var(--brown-dark)]">Nama KK/KTB</label>
                 <input
                   name="name"
                   value={name}

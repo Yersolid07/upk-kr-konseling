@@ -3,7 +3,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { UserPlus } from 'lucide-react'
+import { UserPlus, Check } from 'lucide-react'
 import { joinCellGroup } from './actions'
 import toast from 'react-hot-toast'
 
@@ -27,8 +27,8 @@ export function JoinGroupButton({ groupId }: { groupId: string }) {
 
   if (done) {
     return (
-      <span className="px-5 py-2 rounded-xl bg-green-100 text-green-700 text-xs font-black uppercase tracking-widest">
-        ✓ Bergabung
+      <span className="px-5 py-2 rounded-xl bg-green-100 text-green-700 text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
+        <Check size={14} /> Bergabung
       </span>
     )
   }

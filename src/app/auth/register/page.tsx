@@ -7,6 +7,7 @@ import { register } from '../actions'
 
 const ANGKATAN_OPTIONS = Array.from({ length: 2026 - 1970 + 1 }, (_, i) => String(1970 + i)).reverse()
 
+import { LogoMark } from '@/components/brand/Logo'
 import { User, Mail, Calendar, BookOpen, Lock, Eye, EyeOff, CheckCircle, Shield, ArrowRight } from 'lucide-react'
 
 export default function RegisterPage() {
@@ -66,8 +67,8 @@ export default function RegisterPage() {
     <div className="auth-card backdrop-blur-xl bg-white/90 border border-white/20">
       {/* Header */}
       <div className="flex flex-col items-center mb-8">
-        <div className="w-14 h-14 bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] rounded-2xl flex items-center justify-center text-white text-2xl shadow-xl mb-4">
-          ✝
+        <div className="w-14 h-14 bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] rounded-2xl flex items-center justify-center text-white shadow-xl mb-4">
+          <LogoMark size={26} />
         </div>
         <h1 className="font-[var(--font-playfair)] text-2xl font-black text-[var(--brown-dark)]">Bergabunglah</h1>
         <p className="text-[10px] text-[var(--text-muted)] font-black uppercase tracking-[0.2em] mt-1">Membangun Komunitas Iman</p>

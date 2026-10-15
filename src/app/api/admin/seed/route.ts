@@ -13,11 +13,11 @@ export async function GET() {
     
     if (!categories || categories.length === 0) {
       const { error: catError } = await (adminClient.from('thread_categories') as any).insert([
-        { name: 'Kesaksian', slug: 'kesaksian', icon: '🙏', color: '#C4895A', sort_order: 1 },
-        { name: 'Pertanyaan Iman', slug: 'iman', icon: '📖', color: '#6B8C72', sort_order: 2 },
-        { name: 'Kesehatan Mental', slug: 'mental', icon: '🧠', color: '#8A6090', sort_order: 3 },
-        { name: 'Hubungan', slug: 'hubungan', icon: '❤️', color: '#7C5C3E', sort_order: 4 },
-        { name: 'Akademik', slug: 'akademik', icon: '🎓', color: '#C9993A', sort_order: 5 }
+        { name: 'Kesaksian', slug: 'kesaksian', icon: 'heart', color: '#C4895A', sort_order: 1 },
+        { name: 'Pertanyaan Iman', slug: 'iman', icon: 'book', color: '#6B8C72', sort_order: 2 },
+        { name: 'Kesehatan Mental', slug: 'mental', icon: 'brain', color: '#8A6090', sort_order: 3 },
+        { name: 'Hubungan', slug: 'hubungan', icon: 'heart', color: '#7C5C3E', sort_order: 4 },
+        { name: 'Akademik', slug: 'akademik', icon: 'graduation', color: '#C9993A', sort_order: 5 }
       ])
       if (catError) throw catError
     }

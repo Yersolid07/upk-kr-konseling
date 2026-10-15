@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     user_id,
     type: role === 'konselor' ? 'konselor_verified' : 'system',
     title: role === 'konselor'
-      ? '🎉 Kamu telah diverifikasi sebagai Konselor!'
+      ? 'Selamat! Kamu telah diverifikasi sebagai Konselor!'
       : `Role kamu telah diperbarui menjadi ${role}`,
     body: role === 'konselor'
       ? 'Selamat! Kamu sekarang bisa menerima sesi konseling dari anggota.'

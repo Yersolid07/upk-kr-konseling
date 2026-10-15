@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { forgotPassword } from '../actions'
+import { LogoMark } from '@/components/brand/Logo'
 import { Mail, ArrowLeft, CheckCircle, Shield } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
@@ -43,8 +44,8 @@ export default function ForgotPasswordPage() {
   return (
     <div className="auth-card backdrop-blur-xl bg-white/90 border border-white/20">
       <div className="flex flex-col items-center mb-10">
-        <div className="w-16 h-16 bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] rounded-2xl flex items-center justify-center text-white text-3xl shadow-xl mb-4">
-          🔐
+        <div className="w-16 h-16 bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] rounded-2xl flex items-center justify-center text-white shadow-xl mb-4">
+          <LogoMark size={32} />
         </div>
         <h1 className="font-[var(--font-playfair)] text-2xl font-black text-[var(--brown-dark)]">Lupa Kata Sandi</h1>
         <p className="text-xs text-[var(--text-muted)] font-bold uppercase tracking-widest mt-1">Reset via Email</p>

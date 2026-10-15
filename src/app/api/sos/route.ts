@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
   const notifications = (targets as any[]).map(t => ({
     user_id: t.id,
     type: 'sos_alert' as const,
-    title: '🆘 Permintaan Bantuan Darurat',
+    title: 'Permintaan Bantuan Darurat',
     body: `Seorang anggota membutuhkan bantuan segera: "${message}"`,
     link: '/konselor',
     meta: { requester_id: user.id, is_sos: true },
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       const { sendWhatsApp } = await import('@/lib/fonnte')
       await sendWhatsApp(
         sosNumber,
-        `[SOS UPK-Kr] 🆘 Bantuan Darurat!\n\nNama: ${(user.user_metadata as any)?.full_name || 'Seorang Anggota'}\nPesan: "${message}"\n\nRespon segera di: ${process.env.NEXT_PUBLIC_APP_URL}/konselor`
+        `[SOS UPK-Kr] Bantuan Darurat!\n\nNama: ${(user.user_metadata as any)?.full_name || 'Seorang Anggota'}\nPesan: "${message}"\n\nRespon segera di: ${process.env.NEXT_PUBLIC_APP_URL}/konselor`
       )
     } catch (err) {
       console.error('SOS WhatsApp send failed:', err)

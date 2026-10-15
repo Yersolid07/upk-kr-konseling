@@ -49,9 +49,9 @@ export default async function NotificationPage() {
           <form action={markAllRead}>
             <button 
               type="submit"
-              className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest hover:text-[var(--terra)] transition-colors cursor-pointer"
+              className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest hover:text-[var(--terra)] transition-colors cursor-pointer flex items-center gap-1.5"
             >
-              ✓ Tandai Semua Dibaca
+              <CheckCircle2 size={13} /> Tandai Semua Dibaca
             </button>
           </form>
         )}

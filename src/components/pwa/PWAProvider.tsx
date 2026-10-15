@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import { Download, X } from 'lucide-react'
+import { LogoMark } from '@/components/brand/Logo'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -82,7 +83,7 @@ export function PWAProvider() {
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] max-w-md animate-fade-up">
       <div className="bg-[var(--brown-dark)] text-white rounded-2xl shadow-2xl p-4 flex items-center gap-4">
         <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[var(--terra)] to-[var(--gold)] flex items-center justify-center text-lg shrink-0">
-          ✝
+          <LogoMark size={22} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold leading-tight">Pasang aplikasi UPK-Kr</p>

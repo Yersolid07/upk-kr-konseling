@@ -11,7 +11,8 @@ import {
   Flag,
   ChevronRight,
   TrendingUp,
-  Heart
+  Heart,
+  Lock
 } from 'lucide-react'
 import { cn, getRelativeTime } from '@/lib/utils'
 
@@ -109,7 +110,7 @@ export default async function ThreadDetailPage({ params }: { params: { id: strin
                       "w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg",
                       threadData.is_anonymous ? "bg-slate-400" : "bg-gradient-to-br from-[var(--terra)] to-[var(--brown)]"
                     )}>
-                      {threadData.is_anonymous ? "🔒" : (threadData.author as any)?.full_name?.charAt(0)}
+                      {threadData.is_anonymous ? <Lock size={22} /> : (threadData.author as any)?.full_name?.charAt(0)}
                     </div>
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">

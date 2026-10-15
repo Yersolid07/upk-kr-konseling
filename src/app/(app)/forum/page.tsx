@@ -9,7 +9,9 @@ import {
   Users, 
   Clock, 
   TrendingUp,
-  ArrowRight
+  ArrowRight,
+  Globe,
+  Lock
 } from 'lucide-react'
 import { cn, getRelativeTime } from '@/lib/utils'
 
@@ -97,7 +99,7 @@ export default async function ForumPage({
                   !category ? "bg-[var(--terra)]/10 text-[var(--terra)] font-bold shadow-sm" : "text-[var(--text-muted)]"
                 )}
               >
-                <span>🌐</span> Semua Kategori
+                <span><Globe size={15} /></span> Semua Kategori
               </Link>
               {(categories as any[])?.map((cat: any) => (
                 <Link 
@@ -150,7 +152,7 @@ export default async function ForumPage({
                     "w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg shrink-0 transition-transform group-hover:rotate-3",
                     thread.is_anonymous ? "bg-slate-400" : "bg-gradient-to-br from-[var(--terra)] to-[var(--brown)]"
                   )}>
-                    {thread.is_anonymous ? "🔒" : (thread.author as any)?.full_name?.charAt(0)}
+                    {thread.is_anonymous ? <Lock size={24} /> : (thread.author as any)?.full_name?.charAt(0)}
                   </div>
 
                   <div className="flex-1 min-w-0">

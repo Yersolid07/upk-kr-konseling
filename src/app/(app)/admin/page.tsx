@@ -3,6 +3,10 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import {
+  Users, MessageCircle, ShieldCheck, Flag, Unlock, Info, AlertTriangle,
+  Check, ChevronDown, type LucideIcon,
+} from 'lucide-react'
 import toast from 'react-hot-toast'
 import type { Profile } from '@/types/database'
 
@@ -56,28 +60,31 @@ export default function AdminPage() {
     }
   }
 
-  const TABS: { id: Tab | 'content'; label: string; icon: string }[] = [
-    { id: 'users',            label: 'Semua Pengguna', icon: '👤' },
-    { id: 'konselor-pending', label: 'Tambah Konselor', icon: '💬' },
-    { id: 'content',          label: 'Moderasi Konten', icon: '🛡️' },
-    { id: 'reports',          label: 'Laporan Konten',  icon: '🚩' },
-    { id: 'identity',         label: 'Buka Identitas (Darurat)', icon: '🔓' },
+  const TABS: { id: Tab | 'content'; label: string; icon: LucideIcon }[] = [
+    { id: 'users',            label: 'Semua Pengguna', icon: Users },
+    { id: 'konselor-pending', label: 'Tambah Konselor', icon: MessageCircle },
+    { id: 'content',          label: 'Moderasi Konten', icon: ShieldCheck },
+    { id: 'reports',          label: 'Laporan Konten',  icon: Flag },
+    { id: 'identity',         label: 'Buka Identitas (Darurat)', icon: Unlock },
   ]
 
   return (
     <div>
       {/* Tab buttons */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-        {TABS.map(t => (
+        {TABS.map(t => {
+          const Icon = t.icon
+          return (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={tab === t.id ? 'btn-primary' : 'btn-secondary'}
-            style={{ width: 'auto', padding: '9px 16px', fontSize: 13 }}
+            style={{ width: 'auto', padding: '9px 16px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 7 }}
           >
-            {t.icon} {t.label}
+            <Icon size={15} /> {t.label}
           </button>
-        ))}
+          )
+        })}
       </div>
 
       {/* ── USERS TAB ── */}
@@ -138,7 +145,7 @@ export default function AdminPage() {
       {tab === 'konselor-pending' && (
         <div>
           <div className="role-info-banner" style={{ marginBottom: 20 }}>
-            <span>ℹ️</span>
+            <Info size={16} />
             <span>
               Untuk menjadikan seseorang konselor, cari nama mereka di tab <strong>Semua Pengguna</strong> dan ubah role-nya ke <strong>Konselor</strong>.
               Atau, jika mereka sudah mengajukan permohonan, tampil di sini.
@@ -167,7 +174,7 @@ export default function AdminPage() {
                     style={{ width: 'auto', padding: '8px 16px', fontSize: 13 }}
                     onClick={() => assignRole(u.id, 'konselor')}
                   >
-                    ✓ Jadikan Konselor
+                    <Check size={14} /> Jadikan Konselor
                   </button>
                 </div>
               ))}
@@ -195,10 +202,10 @@ export default function AdminPage() {
       {tab === 'identity' && (
         <div>
           <div className="error-banner" style={{ marginBottom: 20 }}>
-            ⚠️ <strong>Peringatan:</strong> Fitur ini hanya untuk keadaan darurat (ancaman bahaya nyata). Setiap pembukaan identitas dicatat dalam audit log dan tidak dapat dihapus.
+            <AlertTriangle size={16} /> <strong>Peringatan:</strong> Fitur ini hanya untuk keadaan darurat (ancaman bahaya nyata). Setiap pembukaan identitas dicatat dalam audit log dan tidak dapat dihapus.
           </div>
           <div className="card">
-            <div className="card-header"><span className="card-title">🔓 Buka Identitas Darurat</span></div>
+            <div className="card-header"><span className="card-title" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><Unlock size={16} /> Buka Identitas Darurat</span></div>
             <div className="card-body">
               <IdentityRevealForm />
             </div>
@@ -219,7 +226,9 @@ function RoleDropdown({ user, onAssign }: { user: Profile; onAssign: (id: string
         style={{ fontSize: 12, padding: '5px 12px' }}
         onClick={() => setOpen(!open)}
       >
-        Ubah Role ▾
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          Ubah Role <ChevronDown size={13} />
+        </span>
       </button>
       {open && (
         <>
@@ -234,7 +243,7 @@ function RoleDropdown({ user, onAssign }: { user: Profile; onAssign: (id: string
                 key={r}
                 onClick={() => { onAssign(user.id, r); setOpen(false) }}
                 style={{
-                  display: 'block', width: '100%', textAlign: 'left',
+                  display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left',
                   padding: '9px 14px', border: 'none', background: user.role === r ? 'var(--cream-dark)' : 'transparent',
                   fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-sans)',
                   color: r === 'konselor' ? 'var(--gold)' : r === 'admin' ? 'var(--terra)' : 'var(--text)',
@@ -244,9 +253,9 @@ function RoleDropdown({ user, onAssign }: { user: Profile; onAssign: (id: string
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--cream)')}
                 onMouseLeave={e => (e.currentTarget.style.background = user.role === r ? 'var(--cream-dark)' : 'transparent')}
               >
-                {r === 'konselor' ? '💬 ' : r === 'admin' ? '⚙️ ' : ''}
+                {r === 'konselor' ? <MessageCircle size={14} /> : r === 'admin' ? <ShieldCheck size={14} /> : <span style={{ width: 14 }} />}
                 {r.charAt(0).toUpperCase() + r.slice(1)}
-                {user.role === r ? ' ✓' : ''}
+                {user.role === r ? <Check size={14} style={{ marginLeft: 'auto' }} /> : null}
               </button>
             ))}
           </div>
@@ -294,10 +303,12 @@ function IdentityRevealForm() {
         <textarea className="form-input" placeholder="Contoh: Pengguna mengindikasikan ancaman bahaya diri pada thread #..." value={reason} onChange={e => setReason(e.target.value)} rows={3} required style={{ resize: 'vertical' }} />
       </div>
       {result && (
-        <div className="success-banner">✅ Identitas: <strong>{result}</strong></div>
+        <div className="success-banner" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Check size={15} /> Identitas: <strong>{result}</strong>
+        </div>
       )}
-      <button type="submit" className="btn-primary" style={{ background: 'linear-gradient(135deg, var(--danger), #a93226)' }}>
-        🔓 Buka Identitas
+      <button type="submit" className="btn-primary" style={{ background: 'linear-gradient(135deg, var(--danger), #a93226)', display: 'inline-flex', alignItems: 'center', gap: 7, width: 'auto' }}>
+        <Unlock size={15} /> Buka Identitas
       </button>
     </form>
   )

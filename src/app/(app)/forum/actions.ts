@@ -76,7 +76,7 @@ export async function toggleLike(threadId: string) {
       content_type: 'thread',
       content_id: threadId,
       user_id: user.id,
-      reaction: '🙏'
+      reaction: 'pray'
     })
   }
 

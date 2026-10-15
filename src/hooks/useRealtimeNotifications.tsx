@@ -1,10 +1,31 @@
 // src/hooks/useRealtimeNotifications.ts
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, type ReactElement } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Notification } from '@/types/database'
 import toast from 'react-hot-toast'
+import {
+  MessageCircle, MessagesSquare, HeartHandshake, Calendar, XCircle,
+  LifeBuoy, CheckCircle2, Info, Bell,
+} from 'lucide-react'
+
+/** Notification type -> real icon (rendered inside toasts/lists). */
+export function getNotifIcon(type: string) {
+  const size = 16
+  const map: Record<string, ReactElement> = {
+    new_message: <MessageCircle size={size} />,
+    new_comment: <MessagesSquare size={size} />,
+    new_reaction: <HeartHandshake size={size} />,
+    booking_confirmed: <Calendar size={size} />,
+    booking_cancelled: <XCircle size={size} />,
+    prayer_support: <HeartHandshake size={size} />,
+    sos_alert: <LifeBuoy size={size} />,
+    konselor_verified: <CheckCircle2 size={size} />,
+    system: <Info size={size} />,
+  }
+  return map[type] ?? <Bell size={size} />
+}
 
 export function useRealtimeNotifications(userId: string) {
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -72,19 +93,4 @@ export function useRealtimeNotifications(userId: string) {
   }, [])
 
   return { notifications, unreadCount, markAllRead, markRead, refetch: fetchNotifications }
-}
-
-function getNotifIcon(type: string): string {
-  const icons: Record<string, string> = {
-    new_message: '💬',
-    new_comment: '🗨️',
-    new_reaction: '🙏',
-    booking_confirmed: '📅',
-    booking_cancelled: '❌',
-    prayer_support: '🙏',
-    sos_alert: '🆘',
-    konselor_verified: '✅',
-    system: 'ℹ️',
-  }
-  return icons[type] ?? '🔔'
 }

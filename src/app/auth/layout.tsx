@@ -1,5 +1,4 @@
-// src/app/auth/layout.tsx
-import React from 'react'
+import { Logo } from '@/components/brand/Logo'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -15,9 +14,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] " />
         
         <div className="relative z-10 text-center space-y-8 animate-fade-in">
-          <div className="w-24 h-24 bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] rounded-[2rem] flex items-center justify-center text-white text-5xl shadow-2xl shadow-black/40 mx-auto">
-            ✝
-          </div>
+          <Logo tile size={96} className="mx-auto" />
           <div className="space-y-4">
             <h1 className="font-[var(--font-playfair)] text-5xl font-bold text-white leading-tight">
               Melangkah Maju <br /> 

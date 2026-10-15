@@ -16,6 +16,7 @@ import {
   ChevronRight
 } from 'lucide-react'
 import { HandsPraying } from '@/components/icons/HandsPraying'
+import { CategoryIcon } from '@/components/ui/icons'
 import { cn, getRelativeTime } from '@/lib/utils'
 
 import { getDailyVerse } from '@/lib/bible'
@@ -157,8 +158,8 @@ export default async function DashboardPage() {
                   className="card-premium p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover-lift group"
                 >
                   <div className="flex items-center gap-5 flex-1 min-w-0">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-lg shrink-0" style={{ backgroundColor: (thread.category as any)?.color || 'var(--terra)' }}>
-                      {(thread.category as any)?.icon || '✝'}
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0" style={{ backgroundColor: (thread.category as any)?.color || 'var(--terra)' }}>
+                      <CategoryIcon slug={(thread.category as any)?.slug} className="w-5 h-5" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1">

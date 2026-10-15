@@ -12,18 +12,21 @@ import {
   Flame,
   MessageCircle,
   BookOpen,
+  Brain,
   Church,
+  Users,
   type LucideIcon,
 } from 'lucide-react'
 
 /** Forum / article category slug -> icon */
 export const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  iman: HeartHandshake,
-  kecemasan: Waves,
-  keluarga: Home,
+  kesaksian: Heart,
+  iman: BookOpen,
+  mental: Brain,
+  hubungan: HeartHandshake,
   akademik: GraduationCap,
+  keluarga: Home,
   karir: Briefcase,
-  hubungan: Heart,
   motivasi: Flame,
   umum: MessageCircle,
 }

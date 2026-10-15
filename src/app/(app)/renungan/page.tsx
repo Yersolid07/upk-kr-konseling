@@ -34,28 +34,36 @@ export default async function RenunganPage() {
     .order('created_at', { ascending: false })
     .limit(10)
 
+  const list = (articles ?? []) as any[]
+  const featured = list[0]
+
   return (
     <div className="space-y-12 animate-fade-in pb-20">
       {/* Featured Header */}
       <section className="relative h-[400px] rounded-[3rem] overflow-hidden flex items-end p-10 md:p-16">
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--brown-dark)] via-[var(--brown-dark)]/40 to-transparent z-10" />
-        <img 
-          src="https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&q=80&w=2000" 
+        <img
+          src={featured?.cover_url || "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&q=80&w=2000"}
           className="absolute inset-0 w-full h-full object-cover"
-          alt="Featured Renungan"
+          alt={featured?.title || "Featured Renungan"}
         />
-        
+
         <div className="relative z-20 space-y-4 max-w-2xl">
            <div className="inline-block px-3 py-1 rounded-full bg-[var(--gold)] text-[var(--brown-dark)] text-[10px] font-black uppercase tracking-widest">
-             Renungan Utama
+             {featured ? 'Renungan Utama' : 'Selamat Datang'}
            </div>
            <h1 className="font-[var(--font-playfair)] text-4xl md:text-5xl font-black text-white leading-tight">
-             Menemukan Kedamaian di Tengah Badai Akademik
+             {featured?.title || 'Bagikan Renungan Pertama Anda'}
            </h1>
            <div className="flex items-center gap-4 text-white/70 text-sm font-medium">
-              <span className="flex items-center gap-1.5"><User size={14} /> Pdt. Dr. John Doe</span>
-              <span className="flex items-center gap-1.5"><Clock size={14} /> 5 Menit Baca</span>
+              <span className="flex items-center gap-1.5"><User size={14} /> {featured?.author?.full_name || 'Tim UPK-Kr'}</span>
+              {featured && <span className="flex items-center gap-1.5"><Clock size={14} /> {Math.max(1, Math.ceil((featured.content?.length || 0) / 1000))} Menit Baca</span>}
            </div>
+           {featured && (
+             <Link href={`/renungan/${featured.id}`} className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[var(--brown-dark)] text-xs font-black uppercase tracking-widest rounded-xl hover:bg-[var(--cream)] transition-all">
+               Baca Selengkapnya <ChevronRight size={16} />
+             </Link>
+           )}
         </div>
       </section>
 

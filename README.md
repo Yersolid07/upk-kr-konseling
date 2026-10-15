@@ -75,11 +75,24 @@ upk-konseling/
 ### 1.2 Jalankan SQL Schema
 Di Supabase → **SQL Editor**, jalankan file-file berikut **secara berurutan**:
 
+**Database baru:**
 ```
-1. supabase/schema.sql   ← Tabel, trigger, fungsi
-2. supabase/rls.sql      ← Row Level Security
-3. supabase/realtime.sql ← Enable realtime
+1. supabase/schema.sql                 ← Tabel, trigger, fungsi
+2. supabase/rls.sql                    ← Row Level Security
+3. supabase/realtime.sql               ← Enable realtime
+4. supabase/seed-master.sql            ← Kategori forum
 ```
+
+**Database yang sudah ada (migrasi update):**
+```
+1. supabase/rls.sql                    ← RLS diperketat (jalankan ulang)
+2. supabase/seed-master.sql            ← Fix RLS kategori
+3. supabase/fix-booking-integrity.sql  ← Anti double-booking + notif booking
+4. supabase/fix-chat-last-message.sql  ← Kolom last_message + notif pesan
+```
+
+> 📘 Panduan deploy lengkap ada di **[DEPLOY.md](./DEPLOY.md)**.
+> 🔐 Kunci pernah bocor ke repo publik — ikuti **[SECURITY-ROTATE-KEYS.md](./SECURITY-ROTATE-KEYS.md)** segera.
 
 ### 1.3 Ambil API Keys
 Supabase → **Project Settings** → **API**:
@@ -275,14 +288,39 @@ Setup ini dirancang untuk **< 1.000 pengguna** dengan:
 ## 🛡️ Checklist Keamanan
 
 - [x] RLS aktif di semua tabel
+- [x] `thread_categories` RLS diaktifkan kembali (tidak lagi `DISABLE`)
+- [x] `notif_insert` dibatasi `user_id = auth.uid()` (anti spam notifikasi)
 - [x] Konselor hanya bisa diassign admin (tidak bisa self-register)
 - [x] Service role key tidak pernah dikirim ke client
+- [x] `.env.local` tidak lagi ter-track; `.env.example` hanya placeholder
 - [x] Identity reveal hanya super_admin + audit log
-- [x] SOS alert broadcast ke semua konselor
+- [x] SOS alert broadcast ke semua konselor (prioritas konselor online)
+- [x] Anti double-booking (unique index slot aktif + RPC slot terisi)
 - [x] Password minimum 8 karakter (enforced di Supabase)
 - [x] HTTP security headers di vercel.json
+- [ ] Rotasi kunci Supabase yang bocor → **[SECURITY-ROTATE-KEYS.md](./SECURITY-ROTATE-KEYS.md)**
 - [ ] Rate limiting pada API routes (tambahkan dengan `upstash/ratelimit`)
 - [ ] Email verification (aktifkan di Supabase Auth settings)
+
+---
+
+## ✅ Status Fitur
+
+| Fitur | Status |
+|---|---|
+| Auth (login, register, forgot/reset password) | ✅ |
+| Dashboard + ayat harian + statistik | ✅ |
+| Forum anonim (thread, komentar, like) | ✅ |
+| Chat konseling 1-on-1 realtime + `last_message` | ✅ |
+| Booking + ketersediaan + anti double-booking | ✅ |
+| Prayer wall + dukungan doa | ✅ |
+| Renungan & artikel (DB-backed, termasuk featured) | ✅ |
+| Cell Group (buat/gabung/keluar + chat realtime) | ✅ |
+| Dashboard konselor + onboarding jadwal | ✅ |
+| Panel admin (user, role, moderasi) | ✅ |
+| SOS → notifikasi konselor + sesi chat + WA | ✅ |
+| Notifikasi realtime (Topbar + halaman) | ✅ |
+| PWA (service worker, offline, install prompt) | ✅ |
 
 ---
 

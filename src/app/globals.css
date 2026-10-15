@@ -397,7 +397,7 @@ select.form-input { cursor: pointer; }
 
 /* ─── SOS FAB ─── */
 .sos-fab {
-  position: fixed; bottom: 96px; right: 24px;
+  position: fixed; bottom: 28px; right: 24px;
   width: 52px; height: 52px; border-radius: 50%;
   background: var(--danger); color: var(--white);
   border: none; cursor: pointer;

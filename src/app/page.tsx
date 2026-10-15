@@ -2,7 +2,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Heart, MessageCircle, Shield, Users, ArrowRight } from 'lucide-react'
+import { MessageCircle, Shield, Users, ArrowRight } from 'lucide-react'
+import { Logo } from '@/components/brand/Logo'
 
 export default async function LandingPage() {
   const supabase = createClient()
@@ -18,9 +19,7 @@ export default async function LandingPage() {
       <nav className="fixed top-0 w-full z-50 glass border-b border-[var(--cream-dark)] px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] rounded-xl flex items-center justify-center text-white shadow-lg shadow-[var(--terra)]/20">
-              <Heart size={22} fill="currentColor" />
-            </div>
+            <Logo tile size={40} />
             <div>
               <h1 className="font-[var(--font-playfair)] text-xl font-bold text-[var(--brown-dark)] leading-none">UPK-Kr Konseling</h1>
               <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-semibold">FT UNSRAT Platform</span>
@@ -101,7 +100,7 @@ export default async function LandingPage() {
       {/* Footer */}
       <footer className="py-12 border-t border-[var(--cream-dark)] px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-[var(--text-muted)] text-sm">
-          <div>© 2024 UPK-Kr FT UNSRAT. Dibuat dengan kasih untuk komunitas.</div>
+          <div>© 2025 UPK-Kr FT UNSRAT. Dibuat dengan kasih untuk komunitas.</div>
           <div className="flex gap-8">
             <Link href="/privacy" className="hover:text-[var(--terra)] transition-colors">Kebijakan Privasi</Link>
             <Link href="/terms" className="hover:text-[var(--terra)] transition-colors">Syarat & Ketentuan</Link>

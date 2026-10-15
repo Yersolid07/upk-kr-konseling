@@ -35,7 +35,7 @@ export default async function PrayerWallPage() {
   return (
     <div className="space-y-10 animate-fade-in max-w-6xl mx-auto pb-20">
       {/* Hero Section */}
-      <section className="relative rounded-[3rem] overflow-hidden bg-[var(--brown-dark)] p-10 md:p-16 text-center space-y-6">
+      <section className="relative rounded-[1.5rem] overflow-hidden bg-[var(--brown-dark)] p-10 md:p-16 text-center space-y-6">
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]" />
         <div className="absolute top-0 left-0 w-64 h-64 bg-[var(--gold)]/20 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2" />
         

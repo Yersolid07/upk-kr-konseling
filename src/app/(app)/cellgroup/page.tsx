@@ -149,7 +149,7 @@ export default async function CellGroupPage() {
       </div>
 
       {/* Info section */}
-      <div className="bg-[var(--sage)]/10 rounded-[3rem] p-10 flex flex-col md:flex-row items-center gap-10 border border-[var(--sage)]/20">
+      <div className="bg-[var(--sage)]/10 rounded-[1.5rem] p-10 flex flex-col md:flex-row items-center gap-10 border border-[var(--sage)]/20">
         <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center text-[var(--sage)] shadow-xl shadow-[var(--sage)]/10 shrink-0">
           <ShieldCheck size={40} />
         </div>

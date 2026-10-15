@@ -40,7 +40,7 @@ export default async function RenunganPage() {
   return (
     <div className="space-y-12 animate-fade-in pb-20">
       {/* Featured Header */}
-      <section className="relative h-[400px] rounded-[3rem] overflow-hidden flex items-end p-10 md:p-16">
+      <section className="relative h-[400px] rounded-[1.5rem] overflow-hidden flex items-end p-10 md:p-16">
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--brown-dark)] via-[var(--brown-dark)]/40 to-transparent z-10" />
         <img
           src={featured?.cover_url || "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&q=80&w=2000"}

@@ -89,7 +89,7 @@ export default async function ArticleDetailPage({ params }: { params: { id: stri
 
          {/* Cover Image */}
          {articleData.cover_url && (
-            <div className="aspect-[21/9] rounded-[3rem] overflow-hidden shadow-2xl">
+            <div className="aspect-[21/9] rounded-[1.5rem] overflow-hidden shadow-2xl">
                <img 
                  src={articleData.cover_url} 
                  className="w-full h-full object-cover"

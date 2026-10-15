@@ -3,6 +3,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Tame "AI-tell" extremes for a calmer, editorial feel ───
+   The original UI leaned on 900-weight + 0.1em tracking everywhere, which
+   reads as a generic template. Softening these globally (without touching
+   40+ files) gives a calmer, more crafted look. ─── */
+@layer utilities {
+  .font-black { font-weight: 700; }
+  .tracking-widest { letter-spacing: 0.07em; }
+  .tracking-wider { letter-spacing: 0.045em; }
+}
+
 /* ─── Design Tokens ─── */
 :root {
   /* Earthy brand palette (calm, warm, trustworthy) */

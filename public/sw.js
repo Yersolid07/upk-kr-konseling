@@ -5,7 +5,7 @@
 //   - Static assets (_next/static, icons, images): stale-while-revalidate.
 //   - Never cache Supabase/API/auth traffic.
 
-const CACHE_VERSION = 'upk-kr-v1'
+const CACHE_VERSION = 'upk-kr-v2'
 const PRECACHE = `${CACHE_VERSION}-precache`
 const RUNTIME = `${CACHE_VERSION}-runtime`
 

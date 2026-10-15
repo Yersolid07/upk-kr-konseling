@@ -25,13 +25,28 @@ export function PWAProvider() {
 
     const register = () => {
       navigator.serviceWorker
-        .register('/sw.js')
+        .register('/sw.js', { updateViaCache: 'none' })
+        .then((reg) => reg.update().catch(() => {}))
         .catch((err) => console.warn('SW registration failed:', err))
     }
 
     if (document.readyState === 'complete') register()
     else window.addEventListener('load', register)
     return () => window.removeEventListener('load', register)
+  }, [])
+
+  // --- Auto-refresh once when a new service worker takes control ---
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
+    let done = false
+    const onControllerChange = () => {
+      if (done) return
+      done = true
+      window.location.reload()
+    }
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
+    return () =>
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
   }, [])
 
   // --- Install prompt ---

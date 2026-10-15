@@ -1,23 +1,21 @@
-// src/app/dashboard/page.tsx
+// src/app/(app)/dashboard/page.tsx
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { StatCard } from '@/components/dashboard/stat-card'
 import { VerseBanner } from '@/components/dashboard/verse-banner'
-import { 
-  MessageSquare, 
-  UserCheck, 
-  Users, 
-  ArrowRight,
-  PlusCircle,
+import {
+  MessageSquare,
+  UserCheck,
+  Users,
+  ChevronRight,
   Calendar,
   Heart,
-  Flame,
-  Bookmark,
-  ChevronRight
+  BookOpen,
+  PlusCircle,
 } from 'lucide-react'
 import { HandsPraying } from '@/components/icons/HandsPraying'
 import { CategoryIcon } from '@/components/ui/icons'
-import { cn, getRelativeTime } from '@/lib/utils'
+import { getRelativeTime } from '@/lib/utils'
 
 import { getDailyVerse } from '@/lib/bible'
 import { SOSButton } from './sos-button'
@@ -27,7 +25,7 @@ export const dynamic = 'force-dynamic'
 export default async function DashboardPage() {
   const supabase = createClient()
 
-  // Fetch today's verse from DB
+  // Ayat hari ini (dari DB; fallback ke daftar lokal)
   const todayDate = new Date().toISOString().split('T')[0]
   const { data: verse } = await supabase
     .from('daily_verses')
@@ -36,231 +34,327 @@ export default async function DashboardPage() {
     .maybeSingle()
 
   const verseData = verse as any
-  const v = verseData 
-    ? { text: verseData.verse_text, ref: verseData.verse_ref } 
+  const v = verseData
+    ? { text: verseData.verse_text, ref: verseData.verse_ref }
     : getDailyVerse()
 
-  // Parallel data fetching for stats
-  const [threadsRes, prayersRes, konselorRes, membersRes] = await Promise.all([
-    supabase.from('threads').select('id', { count: 'exact', head: true }),
-    supabase.from('prayer_requests').select('id', { count: 'exact', head: true }),
-    supabase.from('profiles').select('id', { count: 'exact', head: true })
-      .eq('role', 'konselor').eq('is_online', true),
-    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('is_active', true),
-  ])
+  // Data paralel
+  const [threadsRes, prayersRes, konselorRes, membersRes, prayerList, articlesRes] =
+    await Promise.all([
+      supabase.from('threads').select('id', { count: 'exact', head: true }),
+      supabase.from('prayer_requests').select('id', { count: 'exact', head: true }),
+      supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('role', 'konselor')
+        .eq('is_online', true),
+      supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_active', true),
+      supabase
+        .from('prayer_requests')
+        .select('id, content, is_anonymous, created_at, support_count, author:profiles(full_name, anon_token)')
+        .order('created_at', { ascending: false })
+        .limit(3),
+      supabase
+        .from('articles')
+        .select('id, title, excerpt, cover_url, slug, reading_time, created_at')
+        .eq('is_published', true)
+        .order('created_at', { ascending: false })
+        .limit(2),
+    ])
 
-  // Recent threads with author details
+  // Diskusi terbaru
   const { data: recentThreads } = await supabase
     .from('threads')
-    .select(`
-      id, title, is_anonymous, created_at, comment_count, view_count,
-      author:profiles(id, full_name, anon_token),
-      category:thread_categories(name, slug, icon, color)
-    `)
+    .select(
+      `id, title, is_anonymous, created_at, comment_count, view_count,
+       author:profiles(id, full_name, anon_token),
+       category:thread_categories(name, slug, icon, color)`
+    )
     .order('created_at', { ascending: false })
     .limit(4)
 
-  // Fetch user profile to get role and name
-  const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user?.id).single()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user?.id)
+    .single()
   const profileData = profile as any
 
-  const firstName = profileData?.full_name ? profileData.full_name.split(' ')[0] : 'Sahabat Terkasih'
+  const firstName = profileData?.full_name
+    ? profileData.full_name.split(' ')[0]
+    : 'Sahabat'
   const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin'
 
+  const prayers = (prayerList as unknown as any[]) ?? []
+  const articles = (articlesRes.data as any[]) ?? []
+
   return (
-    <div className="space-y-12 animate-fade-in max-w-7xl mx-auto">
-      {/* Welcome Section */}
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-4 border-b border-[var(--cream-dark)]">
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-             <div className="px-4 py-1.5 rounded-full bg-[var(--terra)]/10 text-[var(--terra)] text-[11px] font-black uppercase tracking-[0.2em] shadow-sm">
-                Komunitas Aktif
-             </div>
-             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 text-green-600 text-[10px] font-bold border border-green-100">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                Live
-             </div>
-          </div>
-          <h1 className="font-[var(--font-playfair)] text-5xl md:text-6xl font-black text-[var(--brown-dark)] leading-[1.1] tracking-tight">
-            Selamat Datang, <br />
-            <span className="text-gradient">{firstName}</span>
+    <div className="space-y-10 animate-fade-in pb-24 lg:pb-0">
+      {/* ── Sambutan ─────────────────────────────────────── */}
+      <section className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[var(--line)]">
+        <div>
+          <p className="eyebrow mb-3">Ruang pribadi Anda</p>
+          <h1 className="display text-4xl md:text-5xl">
+            Selamat datang, <span className="text-[var(--terra)]">{firstName}</span>
           </h1>
+          <p className="text-[var(--ink-soft)] mt-3 max-w-xl leading-relaxed">
+            Tidak ada yang harus Anda hadapi sendiri. Mulai dari mana pun yang
+            terasa paling ringan hari ini.
+          </p>
         </div>
-        
-        <div className="flex flex-wrap items-center gap-4">
-           <Link href="/chat" className="px-8 py-4 bg-[var(--brown-dark)] text-white text-sm font-black uppercase tracking-widest rounded-2xl hover:bg-[var(--brown)] transition-all shadow-2xl shadow-[var(--brown-dark)]/20 active:scale-95 flex items-center gap-2">
-             <MessageSquare size={18} /> Chat Konselor
-           </Link>
-           <Link href="/booking" className="px-8 py-4 bg-white text-[var(--brown-dark)] text-sm font-black uppercase tracking-widest rounded-2xl border border-[var(--brown)]/10 hover:border-[var(--brown)]/30 hover:shadow-lg transition-all active:scale-95 flex items-center gap-2">
-             <Calendar size={18} /> Buat Pertemuan
-           </Link>
+
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/chat"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-[var(--brown-dark)] text-white text-sm font-semibold rounded-xl hover:bg-[var(--brown)] transition-colors"
+          >
+            <MessageSquare size={17} /> Mulai konseling
+          </Link>
+          <Link
+            href="/booking"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-white text-[var(--brown-dark)] text-sm font-semibold rounded-xl border border-[var(--line-strong)] hover:bg-[var(--surface-3)] transition-colors"
+          >
+            <Calendar size={17} /> Buat jadwal
+          </Link>
         </div>
       </section>
 
-      {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        
-        {/* Left Content Area (8 cols) */}
-        <div className="lg:col-span-8 space-y-12">
-          
-          {/* Verse Banner */}
+        {/* ── Kolom utama ────────────────────────────────── */}
+        <div className="lg:col-span-8 space-y-10">
           <VerseBanner text={v.text} reference={v.ref} />
 
-          {/* Stat Cards Grid (Admin Only) */}
+          {/* Statistik (admin) */}
           {isAdmin && (
-            <section className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <StatCard 
-                label="Diskusi" 
-                value={threadsRes.count ?? 0} 
-                icon={<MessageSquare className="text-[var(--terra)]" />} 
+            <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard
+                label="Diskusi"
+                value={threadsRes.count ?? 0}
+                icon={<MessageSquare className="text-[var(--terra)]" />}
                 color="rgba(var(--terra-rgb), 0.1)"
               />
-              <StatCard 
-                label="Didoakan" 
-                value={prayersRes.count ?? 0} 
-                icon={<HandsPraying className="text-[var(--gold)]" />} 
+              <StatCard
+                label="Didoakan"
+                value={prayersRes.count ?? 0}
+                icon={<HandsPraying className="text-[var(--gold)]" />}
                 color="rgba(var(--gold-rgb), 0.1)"
               />
-              <StatCard 
-                label="Konselor" 
-                value={konselorRes.count ?? 0} 
-                icon={<UserCheck className="text-[var(--sage)]" />} 
+              <StatCard
+                label="Konselor online"
+                value={konselorRes.count ?? 0}
+                icon={<UserCheck className="text-[var(--sage)]" />}
                 color="rgba(var(--sage-rgb), 0.1)"
               />
-              <StatCard 
-                label="Anggota" 
-                value={membersRes.count ?? 0} 
-                icon={<Users className="text-[var(--brown)]" />} 
+              <StatCard
+                label="Anggota aktif"
+                value={membersRes.count ?? 0}
+                icon={<Users className="text-[var(--brown)]" />}
                 color="rgba(var(--brown-rgb), 0.1)"
               />
             </section>
           )}
 
-          {/* Recent Activity */}
-          <section className="space-y-6">
-            <div className="flex items-center justify-between px-2">
-              <h2 className="font-[var(--font-playfair)] text-3xl font-bold text-[var(--brown-dark)]">Diskusi Terbaru</h2>
-              <Link href="/forum" className="text-sm font-black text-[var(--terra)] uppercase tracking-widest hover:underline flex items-center gap-1 group">
-                Lihat Semua <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          {/* Diskusi terbaru */}
+          <section>
+            <div className="flex items-baseline justify-between mb-5">
+              <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-[var(--brown-dark)]">
+                Diskusi terbaru
+              </h2>
+              <Link
+                href="/forum"
+                className="text-sm font-semibold text-[var(--terra)] hover:underline inline-flex items-center gap-1 group"
+              >
+                Lihat semua
+                <ChevronRight
+                  size={15}
+                  className="group-hover:translate-x-0.5 transition-transform"
+                />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              {!recentThreads || recentThreads.length === 0 ? (
-                <div className="card-premium p-12 text-center text-[var(--text-muted)] italic">
-                  Belum ada diskusi terbaru.
-                </div>
-              ) : (recentThreads as any[]).map((thread: any) => (
-                <Link 
-                  key={thread.id} 
-                  href={`/forum/${thread.id}`}
-                  className="card-premium p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover-lift group"
+            {!recentThreads || recentThreads.length === 0 ? (
+              <div className="card-premium p-10 text-center">
+                <p className="text-[var(--text-muted)] mb-4">
+                  Belum ada diskusi. Jadilah yang pertama membuka percakapan.
+                </p>
+                <Link
+                  href="/forum/new"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--terra)] hover:underline"
                 >
-                  <div className="flex items-center gap-5 flex-1 min-w-0">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0" style={{ backgroundColor: (thread.category as any)?.color || 'var(--terra)' }}>
-                      <CategoryIcon slug={(thread.category as any)?.slug} className="w-5 h-5" />
+                  <PlusCircle size={16} /> Mulai diskusi
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {(recentThreads as any[]).map((thread: any) => (
+                  <Link
+                    key={thread.id}
+                    href={`/forum/${thread.id}`}
+                    className="card-premium p-5 flex items-center gap-4 hover-lift group"
+                  >
+                    <div
+                      className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0"
+                      style={{
+                        backgroundColor: (thread.category as any)?.color || 'var(--terra)',
+                      }}
+                    >
+                      <CategoryIcon
+                        slug={(thread.category as any)?.slug}
+                        className="w-5 h-5"
+                      />
                     </div>
+
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">
+                      <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-1">
+                        <span className="font-medium">
                           {(thread.category as any)?.name || 'Umum'}
                         </span>
-                        <span className="text-[10px] text-[var(--text-muted)] opacity-50">•</span>
-                        <span className="text-[10px] text-[var(--text-muted)] font-medium">
-                          {getRelativeTime(thread.created_at)}
-                        </span>
+                        <span className="opacity-40">·</span>
+                        <span>{getRelativeTime(thread.created_at)}</span>
                       </div>
-                      <h3 className="font-bold text-[var(--brown-dark)] text-lg truncate group-hover:text-[var(--terra)] transition-colors">
+                      <h3 className="font-semibold text-[var(--brown-dark)] truncate group-hover:text-[var(--terra)] transition-colors">
                         {thread.title}
                       </h3>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-6 text-[var(--text-muted)] shrink-0 px-2">
-                     <div className="flex flex-col items-center">
-                        <span className="text-lg font-bold text-[var(--brown-dark)]">{thread.comment_count}</span>
-                        <span className="text-[9px] font-black uppercase tracking-widest opacity-60">Komentar</span>
-                     </div>
-                     <div className="w-px h-8 bg-[var(--cream-dark)]" />
-                     <div className="flex flex-col items-center">
-                        <span className="text-lg font-bold text-[var(--brown-dark)]">{thread.view_count}</span>
-                        <span className="text-[9px] font-black uppercase tracking-widest opacity-60">Dilihat</span>
-                     </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+
+                    <div className="hidden sm:flex items-center gap-5 text-[var(--text-muted)] shrink-0 pr-1">
+                      <div className="text-center">
+                        <div className="text-sm font-semibold text-[var(--brown-dark)]">
+                          {thread.comment_count}
+                        </div>
+                        <div className="text-[10px]">komentar</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-sm font-semibold text-[var(--brown-dark)]">
+                          {thread.view_count}
+                        </div>
+                        <div className="text-[10px]">dilihat</div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </section>
         </div>
 
-        {/* Right Sidebar (4 cols) */}
-        <aside className="lg:col-span-4 space-y-10">
-          
-          {/* SOS Action Card */}
+        {/* ── Sidebar ────────────────────────────────────── */}
+        <aside className="lg:col-span-4 space-y-8">
           <SOSButton />
 
-          {/* Prayer Wall Preview */}
-          <section className="space-y-6">
-            <div className="flex items-center justify-between px-2">
-              <h3 className="font-bold text-[var(--brown-dark)] text-sm uppercase tracking-widest flex items-center gap-2">
-                <Heart size={16} className="text-[var(--terra)]" /> Prayer Wall
+          {/* Prayer Wall */}
+          <section>
+            <div className="flex items-baseline justify-between mb-4">
+              <h3 className="font-semibold text-[var(--brown-dark)] text-sm inline-flex items-center gap-2">
+                <Heart size={15} className="text-[var(--terra)]" /> Dinding Doa
               </h3>
-              <Link href="/prayer" className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest hover:text-[var(--terra)]">
-                Lihat Semua
+              <Link
+                href="/prayer"
+                className="text-xs font-medium text-[var(--text-muted)] hover:text-[var(--terra)]"
+              >
+                Lihat semua
               </Link>
             </div>
+
             <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="card-premium p-5 space-y-3 bg-gradient-to-br from-white to-[var(--cream)]">
-                   <p className="text-sm italic text-[var(--text)] leading-relaxed line-clamp-3">
-                     "Mohon dukungan doa untuk perkuliahan semester ini agar diberikan hikmat dan kesabaran..."
-                   </p>
-                   <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Anonim#A3F{i}</span>
-                      <div className="flex items-center gap-1.5 text-[var(--gold)]">
-                         <HandsPraying size={14} />
-                         <span className="text-[10px] font-black uppercase tracking-widest">Amin</span>
-                      </div>
-                   </div>
+              {prayers.length === 0 ? (
+                <div className="card-premium p-6 text-center">
+                  <p className="text-sm text-[var(--text-muted)] mb-3">
+                    Belum ada permintaan doa.
+                  </p>
+                  <Link
+                    href="/prayer/new"
+                    className="text-xs font-semibold text-[var(--terra)] hover:underline"
+                  >
+                    Tulis permintaan doa
+                  </Link>
                 </div>
-              ))}
+              ) : (
+                prayers.map((p) => {
+                  const author = p.is_anonymous
+                    ? `Anonim#${(p.author as any)?.anon_token?.slice(0, 4).toUpperCase() ?? '????'}`
+                    : (p.author as any)?.full_name ?? 'Anggota'
+                  return (
+                    <Link
+                      key={p.id}
+                      href="/prayer"
+                      className="card-premium p-5 block hover-lift"
+                    >
+                      <p className="text-sm text-[var(--text)] leading-relaxed line-clamp-3 mb-3">
+                        {p.content}
+                      </p>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-[var(--text-muted)]">{author}</span>
+                        <span className="inline-flex items-center gap-1.5 text-[var(--gold)] font-medium">
+                          <HandsPraying size={13} /> {p.support_count ?? 0}
+                        </span>
+                      </div>
+                    </Link>
+                  )
+                })
+              )}
             </div>
           </section>
 
-          {/* Articles Preview */}
-          <section className="space-y-6">
-            <h3 className="font-bold text-[var(--brown-dark)] text-sm uppercase tracking-widest flex items-center gap-2 px-2">
-              <Bookmark size={16} className="text-[var(--sage)]" /> Artikel Pilihan
+          {/* Renungan */}
+          <section>
+            <h3 className="font-semibold text-[var(--brown-dark)] text-sm inline-flex items-center gap-2 mb-4">
+              <BookOpen size={15} className="text-[var(--sage)]" /> Renungan
             </h3>
-            <div className="space-y-4">
-               {[1, 2].map((i) => (
-                  <div key={i} className="group cursor-pointer">
-                    <div className="aspect-[16/9] rounded-2xl overflow-hidden mb-3 shadow-md">
-                       <img 
-                         src={`https://picsum.photos/seed/${i+100}/800/450`} 
-                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                         alt="Article"
-                       />
-                    </div>
-                    <h4 className="font-bold text-[var(--brown-dark)] text-sm leading-tight group-hover:text-[var(--terra)] transition-colors">
-                      Cara Menjaga Kesehatan Mental di Tengah Tekanan Tugas Akhir
+
+            {articles.length === 0 ? (
+              <div className="card-premium p-6 text-center">
+                <p className="text-sm text-[var(--text-muted)] mb-3">
+                  Belum ada renungan yang diterbitkan.
+                </p>
+                <Link
+                  href="/renungan"
+                  className="text-xs font-semibold text-[var(--terra)] hover:underline"
+                >
+                  Buka halaman renungan
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {articles.map((a) => (
+                  <Link key={a.id} href={`/renungan/${a.id}`} className="group block">
+                    {a.cover_url && (
+                      <div className="aspect-[16/9] rounded-xl overflow-hidden mb-3 border border-[var(--line)]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={a.cover_url}
+                          alt=""
+                          className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                        />
+                      </div>
+                    )}
+                    <h4 className="font-semibold text-[var(--brown-dark)] text-sm leading-snug group-hover:text-[var(--terra)] transition-colors mb-1">
+                      {a.title}
                     </h4>
-                    <span className="text-[10px] text-[var(--text-muted)] font-medium mt-1 block">5 Menit Baca</span>
-                  </div>
-               ))}
-            </div>
+                    <span className="text-xs text-[var(--text-muted)]">
+                      {a.reading_time ? `${a.reading_time} menit baca` : 'Baca selengkapnya'}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </section>
-
         </aside>
-
       </div>
-      
-      {/* Quick Action FAB for Mobile */}
-      <Link 
-        href="/forum/new" 
-        className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] text-white rounded-full shadow-2xl flex items-center justify-center lg:hidden z-40 active:scale-90 transition-transform"
+
+      {/* FAB (mobile) */}
+      <Link
+        href="/forum/new"
+        aria-label="Mulai diskusi baru"
+        className="fixed bottom-24 right-5 w-13 h-13 p-3.5 bg-[var(--brown-dark)] text-white rounded-full shadow-[var(--shadow-lg)] flex items-center justify-center lg:hidden z-40 active:scale-95 transition-transform"
       >
-        <PlusCircle size={28} />
+        <PlusCircle size={24} />
       </Link>
     </div>
   )

@@ -17,8 +17,18 @@ VALUES
 ON CONFLICT (slug) DO UPDATE 
 SET name = EXCLUDED.name, icon = EXCLUDED.icon, color = EXCLUDED.color;
 
--- 2. Memastikan tidak ada RLS yang menghalangi pembacaan kategori publik
-ALTER TABLE public.thread_categories DISABLE ROW LEVEL SECURITY;
+-- 2. RLS untuk kategori: aktifkan kembali + izinkan baca publik (authenticated),
+--    tetapi hanya admin ke atas yang boleh mengubah data kategori.
+--    (Sebelumnya: DISABLE ROW LEVEL SECURITY — celah keamanan.)
+ALTER TABLE public.thread_categories ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "categories_select" ON public.thread_categories;
+CREATE POLICY "categories_select" ON public.thread_categories FOR SELECT
+  TO authenticated USING (TRUE);
+
+DROP POLICY IF EXISTS "categories_write" ON public.thread_categories;
+CREATE POLICY "categories_write" ON public.thread_categories FOR ALL
+  TO authenticated USING (is_admin_or_above()) WITH CHECK (is_admin_or_above());
 
 -- 3. (Opsional) Menambahkan kategori artikel jika diperlukan nanti
 -- Jika tabel article_categories ada, bisa ditambahkan di sini.

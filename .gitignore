@@ -17,11 +17,19 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# env files
-.env*.local
+# env files — NEVER commit real secrets.
+# Allow only the placeholder template (.env.example) to be tracked.
+.env
+.env.*
+!.env.example
 
 # vercel
 .vercel
+
+# testing / coverage
+/coverage
+/playwright-report
+/test-results
 
 # typescript
 *.tsbuildinfo

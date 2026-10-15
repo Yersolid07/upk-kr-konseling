@@ -364,8 +364,14 @@ CREATE POLICY "notif_select" ON notifications FOR SELECT
 CREATE POLICY "notif_update" ON notifications FOR UPDATE
   TO authenticated USING (user_id = auth.uid());
 
+-- Notifications: users may only create notifications addressed to themselves
+-- (e.g. self-reminders). System/automated notifications are inserted by the
+-- service-role client, which bypasses RLS entirely.
+-- Previously this was WITH CHECK (TRUE) — any authenticated user could inject
+-- notifications into another user's inbox (spam/phishing).
+DROP POLICY IF EXISTS "notif_insert" ON notifications;
 CREATE POLICY "notif_insert" ON notifications FOR INSERT
-  TO authenticated WITH CHECK (TRUE); -- service role inserts
+  TO authenticated WITH CHECK (user_id = auth.uid());
 
 -- =====================================================
 -- CONTENT REPORTS

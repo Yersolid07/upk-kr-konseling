@@ -11,8 +11,122 @@ export type NotificationType =
   | 'prayer_support' | 'sos_alert' | 'system'
   | 'konselor_verified' | 'new_thread' | 'session_request'
 export type ContentType = 'thread' | 'comment' | 'message' | 'prayer'
+export type PublicationStatus = 'draft' | 'pending_review' | 'published' | 'rejected' | 'archived'
+export type ApplicationStatus = 'pending' | 'under_review' | 'approved' | 'rejected' | 'withdrawn'
+export type AttachmentKind = 'image' | 'video' | 'audio' | 'document' | 'link' | 'embed'
+export type ContentKind =
+  | 'thread' | 'comment' | 'article' | 'prayer_request'
+  | 'cell_group_message' | 'chat_message' | 'profile'
 
-export interface Profile {
+// ─────────────────────────────────────────────────────────────
+// CATATAN: tipe domain di bawah memakai `type`, BUKAN `interface`.
+// Alasannya konkret: @supabase/postgrest-js mewajibkan setiap Row/Insert/Update
+// memenuhi `Record<string, unknown>`. Interface di TypeScript tidak punya
+// implicit index signature sehingga TIDAK assignable ke Record<string, unknown>
+// — akibatnya .insert()/.update()/.rpc() semuanya jatuh ke tipe `never`.
+// Jangan ubah kembali ke `interface`.
+// ─────────────────────────────────────────────────────────────
+export type Attachment = {
+  id: string
+  owner_id: string
+  content_type: ContentKind
+  content_id: string | null
+  kind: AttachmentKind
+  url: string
+  title: string | null
+  mime_type: string | null
+  size_bytes: number | null
+  sort_order: number
+  created_at: string
+}
+
+export type HotlineContact = {
+  id: string
+  name: string
+  description: string | null
+  number: string
+  display: string | null
+  type: 'phone' | 'whatsapp' | 'url'
+  note: string | null
+  sort_order: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type LegalDocument = {
+  slug: string
+  title: string
+  summary: string | null
+  content: string
+  version: number
+  effective_date: string | null
+  is_published: boolean
+  updated_by: string | null
+  updated_at: string
+}
+
+export type SiteSetting = {
+  key: string
+  value: Record<string, unknown>
+  description: string | null
+  updated_by: string | null
+  updated_at: string
+}
+
+export type KonselorApplication = {
+  id: string
+  user_id: string
+  motivation: string
+  experience: string | null
+  credential_url: string | null
+  specialization: string[] | null
+  availability_note: string | null
+  status: ApplicationStatus
+  reviewed_by: string | null
+  reviewed_at: string | null
+  review_notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type KonselorProfile = {
+  user_id: string
+  specialization: string[] | null
+  bio: string | null
+  approach: string | null
+  languages: string[] | null
+  session_length: number
+  is_accepting: boolean
+  verified_at: string | null
+  verified_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type AuditLogEntry = {
+  id: string
+  actor_id: string | null
+  actor_role: UserRole | null
+  action: 'create' | 'update' | 'delete' | 'publish' | 'unpublish'
+    | 'approve' | 'reject' | 'role_change' | 'settings_change' | 'login' | 'export'
+  entity: string
+  entity_id: string | null
+  detail: Record<string, unknown>
+  created_at: string
+}
+
+export type IdentityRevealLog = {
+  id: string
+  requested_by: string
+  target_content_type: ContentType | null
+  target_content_id: string | null
+  revealed_user_id: string | null
+  reason: string
+  created_at: string
+}
+
+export type Profile = {
   id: string
   full_name: string
   display_name: string | null
@@ -34,7 +148,7 @@ export interface Profile {
   is_counselor_setup_completed?: boolean
 }
 
-export interface ThreadCategory {
+export type ThreadCategory = {
   id: string
   name: string
   name_en: string | null
@@ -44,7 +158,7 @@ export interface ThreadCategory {
   sort_order: number
 }
 
-export interface Thread {
+export type Thread = {
   id: string
   author_id: string
   category_id: string | null
@@ -65,7 +179,7 @@ export interface Thread {
   user_reaction?: Reaction | null
 }
 
-export interface Comment {
+export type Comment = {
   id: string
   thread_id: string
   author_id: string
@@ -80,7 +194,7 @@ export interface Comment {
   replies?: Comment[]
 }
 
-export interface Reaction {
+export type Reaction = {
   id: string
   user_id: string
   content_type: ContentType
@@ -89,7 +203,7 @@ export interface Reaction {
   created_at: string
 }
 
-export interface ChatSession {
+export type ChatSession = {
   id: string
   member_id: string
   konselor_id: string | null
@@ -110,7 +224,7 @@ export interface ChatSession {
   unread_count?: number
 }
 
-export interface Message {
+export type Message = {
   id: string
   session_id: string
   sender_id: string
@@ -122,7 +236,7 @@ export interface Message {
   sender?: Profile
 }
 
-export interface KonselorAvailability {
+export type KonselorAvailability = {
   id: string
   konselor_id: string
   date: string
@@ -134,7 +248,7 @@ export interface KonselorAvailability {
   konselor?: Profile
 }
 
-export interface Booking {
+export type Booking = {
   id: string
   member_id: string
   konselor_id: string
@@ -156,7 +270,7 @@ export interface Booking {
   konselor?: Profile
 }
 
-export interface PrayerRequest {
+export type PrayerRequest = {
   id: string
   author_id: string
   content: string
@@ -170,9 +284,10 @@ export interface PrayerRequest {
   author?: Profile
   category?: ThreadCategory
   has_supported?: boolean   // current user has prayed
+  attachments?: Attachment[]
 }
 
-export interface Article {
+export type Article = {
   id: string
   author_id: string
   category_id: string | null
@@ -186,12 +301,18 @@ export interface Article {
   tags: string[] | null
   published_at: string | null
   created_at: string
+  // Alur persetujuan (lihat supabase/cms-rbac.sql)
+  status: PublicationStatus
+  reviewed_by: string | null
+  reviewed_at: string | null
+  review_notes: string | null
   // Joins
   author?: Profile
   category?: ThreadCategory
+  attachments?: Attachment[]
 }
 
-export interface CellGroup {
+export type CellGroup = {
   id: string
   name: string
   description: string | null
@@ -206,7 +327,7 @@ export interface CellGroup {
   unread_count?: number
 }
 
-export interface CellGroupMessage {
+export type CellGroupMessage = {
   id: string
   group_id: string
   sender_id: string
@@ -217,7 +338,7 @@ export interface CellGroupMessage {
   sender?: Profile
 }
 
-export interface Notification {
+export type Notification = {
   id: string
   user_id: string
   type: NotificationType
@@ -229,7 +350,7 @@ export interface Notification {
   created_at: string
 }
 
-export interface ContentReport {
+export type ContentReport = {
   id: string
   reporter_id: string
   content_type: ContentType
@@ -243,7 +364,7 @@ export interface ContentReport {
   created_at: string
 }
 
-export interface DailyVerse {
+export type DailyVerse = {
   id: string
   verse_text: string
   verse_ref: string
@@ -253,37 +374,10 @@ export interface DailyVerse {
   created_at: string
 }
 
-// Supabase Database type (for createClient generic)
-export interface Database {
-  public: {
-    Tables: {
-      profiles: { Row: Profile; Insert: Partial<Profile>; Update: Partial<Profile> }
-      threads: { Row: Thread; Insert: Omit<Thread, 'id' | 'created_at' | 'updated_at' | 'view_count' | 'comment_count'>; Update: Partial<Thread> }
-      comments: { Row: Comment; Insert: Omit<Comment, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Comment> }
-      reactions: { Row: Reaction; Insert: Omit<Reaction, 'id' | 'created_at'>; Update: Partial<Reaction> }
-      chat_sessions: { Row: ChatSession; Insert: Omit<ChatSession, 'id' | 'created_at' | 'updated_at'>; Update: Partial<ChatSession> }
-      messages: { Row: Message; Insert: Omit<Message, 'id' | 'created_at'>; Update: Partial<Message> }
-      bookings: { Row: Booking; Insert: Omit<Booking, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Booking> }
-      konselor_availability: { Row: KonselorAvailability; Insert: Omit<KonselorAvailability, 'id' | 'created_at'>; Update: Partial<KonselorAvailability> }
-      prayer_requests: { Row: PrayerRequest; Insert: Omit<PrayerRequest, 'id' | 'created_at' | 'updated_at' | 'pray_count'>; Update: Partial<PrayerRequest> }
-      prayer_supports: { Row: { id: string; request_id: string; user_id: string; created_at: string }; Insert: { request_id: string; user_id: string }; Update: never }
-      articles: { Row: Article; Insert: Omit<Article, 'id' | 'created_at' | 'read_count'>; Update: Partial<Article> }
-      cell_groups: { Row: CellGroup; Insert: Omit<CellGroup, 'id' | 'created_at'>; Update: Partial<CellGroup> }
-      cell_group_members: { Row: { id: string; group_id: string; user_id: string; is_leader: boolean; joined_at: string }; Insert: { group_id: string; user_id: string; is_leader?: boolean }; Update: never }
-      cell_group_messages: { Row: CellGroupMessage; Insert: Omit<CellGroupMessage, 'id' | 'created_at'>; Update: never }
-      notifications: { Row: Notification; Insert: Omit<Notification, 'id' | 'created_at'>; Update: Partial<Notification> }
-      content_reports: { Row: ContentReport; Insert: Omit<ContentReport, 'id' | 'created_at' | 'reviewed_by' | 'reviewed_at' | 'resolution'>; Update: Partial<ContentReport> }
-      daily_verses: { Row: DailyVerse; Insert: Omit<DailyVerse, 'id' | 'created_at'>; Update: Partial<DailyVerse> }
-      thread_categories: { Row: ThreadCategory; Insert: Omit<ThreadCategory, 'id'>; Update: Partial<ThreadCategory> }
-    }
-    Functions: {
-      get_display_name: {
-        Args: { p_user_id: string; p_is_anonymous: boolean }
-        Returns: string
-      }
-      current_user_role: { Args: Record<never, never>; Returns: UserRole }
-      is_admin_or_above: { Args: Record<never, never>; Returns: boolean }
-      is_konselor_or_above: { Args: Record<never, never>; Returns: boolean }
-    }
-  }
-}
+// ─────────────────────────────────────────────────────────────
+// Tipe schema Supabase (Tables/Views/Functions/Enums).
+// Definisi lengkapnya di ./supabase-database.ts — dipisah karena file ini
+// fokus pada tipe domain. Di-export ulang di sini supaya impor lama
+// (`import type { Database } from '@/types/database'`) tetap jalan.
+// ─────────────────────────────────────────────────────────────
+export type { Database } from './supabase-database'

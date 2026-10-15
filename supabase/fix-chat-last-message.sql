@@ -67,7 +67,7 @@ BEGIN
     VALUES (
       v_recipient,
       'new_message',
-      '💬 Pesan Baru',
+      'Pesan Baru',
       LEFT(NEW.content, 80),
       '/chat/' || NEW.session_id
     );

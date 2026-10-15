@@ -10,9 +10,11 @@ import {
   CheckCircle2,
   AlertCircle,
   ChevronRight,
-  ShieldAlert
+  ShieldAlert,
+  UserPlus
 } from 'lucide-react'
 import { cn, getRelativeTime } from '@/lib/utils'
+import { hasMinRole } from '@/lib/rbac'
 
 import { CounselorOnboarding } from '@/components/konselor/counselor-onboarding'
 
@@ -27,8 +29,10 @@ export default async function KonselorDashboardPage() {
   // Verify role and setup status using select('*') to avoid crashing if SQL not run yet
   const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
   const profile = profileData as any
-  if (!profile || (profile.role !== 'konselor' && profile.role !== 'admin' && profile.role !== 'super_admin')) {
-    redirect('/dashboard')
+  if (!profile || !hasMinRole(profile.role, 'konselor')) {
+    // Anggota biasa diarahkan ke halaman pengajuan, bukan ditendang ke dashboard
+    // tanpa penjelasan.
+    redirect('/konselor/daftar')
   }
 
   const needsSetup = profile.role === 'konselor' && profile.is_counselor_setup_completed !== true
@@ -113,7 +117,7 @@ export default async function KonselorDashboardPage() {
             <section className="space-y-6">
                <div className="flex items-center justify-between px-2">
                   <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-[var(--brown-dark)]">Jadwal Janji Temu</h2>
-                  <Link href="#" className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest hover:text-[var(--terra)]">Lihat Kalender</Link>
+                  <Link href="/booking" className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest hover:text-[var(--terra)]">Kelola Jadwal</Link>
                </div>
                <div className="grid grid-cols-1 gap-4">
                   {(!bookings || bookings.length === 0) ? (

@@ -67,7 +67,7 @@ export function GroupChat({ groupId, currentUserId, initialMessages }: GroupChat
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-360px)] min-h-[420px] card-premium overflow-hidden bg-white/60 backdrop-blur-xl border border-white">
+    <div className="chat-shell card-premium overflow-hidden bg-white/60 backdrop-blur-xl border border-white">
       <div className="px-6 py-4 bg-white/80 border-b border-[var(--cream-dark)] flex items-center gap-3">
         <MessageCircle size={18} className="text-[var(--terra)]" />
         <h2 className="text-sm font-black text-[var(--brown-dark)] uppercase tracking-widest">Obrolan KK/KTB</h2>

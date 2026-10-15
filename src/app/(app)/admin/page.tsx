@@ -281,9 +281,10 @@ function IdentityRevealForm() {
       .eq('anon_token', anonCode.toLowerCase())
       .single()
     if (!data) { toast.error('Kode anonim tidak ditemukan.'); return }
-    // Log the reveal (audit trail)
-    const revealedUser = data as any
-    await (supabase.from('identity_reveal_log') as any).insert({
+    // Log the reveal (audit trail) — sekarang bertipe karena tabel
+    // identity_reveal_log terdaftar di schema Database.
+    const revealedUser = data as { id: string; full_name: string; angkatan: string | null; jurusan: string | null }
+    await supabase.from('identity_reveal_log').insert({
       requested_by: (await supabase.auth.getUser()).data.user!.id,
       revealed_user_id: revealedUser.id,
       reason,

@@ -39,7 +39,7 @@ export default async function ChatDetailPage({ params }: { params: { id: string 
     .order('created_at', { ascending: true })
 
   return (
-    <div className="h-[calc(100vh-140px)] animate-fade-in">
+    <div className="chat-shell animate-fade-in">
       <ChatInterface 
         session={session} 
         initialMessages={messages ?? []} 

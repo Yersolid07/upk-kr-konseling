@@ -41,7 +41,7 @@ export function Topbar({ title, notifications, unreadCount, onMarkAllRead, onMar
 
   return (
     <>
-      <header className="h-16 bg-white/80 backdrop-blur-md border-b border-[var(--cream-dark)] sticky top-0 z-40 px-6 flex items-center justify-between gap-4">
+      <header className="topbar topbar-safe bg-white/80 backdrop-blur-md border-b border-[var(--cream-dark)] sticky top-0 z-40 px-4 sm:px-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-4 flex-1">
           {/* Hamburger (mobile) */}
           <button

@@ -43,7 +43,7 @@ BEGIN
   VALUES (
     NEW.konselor_id,
     'booking_confirmed',
-    '📅 Permintaan Sesi Baru',
+    'Permintaan Sesi Baru',
     'Seorang anggota mengajukan jadwal konseling. Silakan konfirmasi.',
     '/konselor'
   );
@@ -69,11 +69,11 @@ DECLARE
 BEGIN
   IF NEW.status IS DISTINCT FROM OLD.status THEN
     IF NEW.status = 'confirmed' THEN
-      v_title := '✅ Jadwal Konseling Dikonfirmasi'; v_type := 'booking_confirmed';
+      v_title := 'Jadwal Konseling Dikonfirmasi'; v_type := 'booking_confirmed';
     ELSIF NEW.status = 'cancelled' THEN
-      v_title := '❌ Jadwal Konseling Dibatalkan'; v_type := 'booking_cancelled';
+      v_title := 'Jadwal Konseling Dibatalkan'; v_type := 'booking_cancelled';
     ELSIF NEW.status = 'completed' THEN
-      v_title := '🎉 Sesi Konseling Selesai'; v_type := 'booking_confirmed';
+      v_title := 'Sesi Konseling Selesai'; v_type := 'booking_confirmed';
     ELSE
       RETURN NEW;
     END IF;

@@ -40,21 +40,25 @@ export default async function RenunganPage() {
   return (
     <div className="space-y-12 animate-fade-in pb-20">
       {/* Featured Header */}
-      <section className="relative h-[400px] rounded-[1.5rem] overflow-hidden flex items-end p-10 md:p-16">
+      <section className="relative min-h-[320px] sm:h-[400px] rounded-[1.5rem] overflow-hidden flex items-end p-6 sm:p-10 md:p-16 bg-[var(--brown-dark)]">
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--brown-dark)] via-[var(--brown-dark)]/40 to-transparent z-10" />
-        <img
-          src={featured?.cover_url || "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&q=80&w=2000"}
-          className="absolute inset-0 w-full h-full object-cover"
-          alt={featured?.title || "Featured Renungan"}
-        />
+        {featured?.cover_url ? (
+          <img
+            src={featured.cover_url}
+            className="absolute inset-0 w-full h-full object-cover"
+            alt={featured.title}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--brown-dark)] via-[var(--brown)] to-[var(--terra)]/60" />
+        )}
 
         <div className="relative z-20 space-y-4 max-w-2xl">
            <div className="inline-block px-3 py-1 rounded-full bg-[var(--gold)] text-[var(--brown-dark)] text-[10px] font-black uppercase tracking-widest">
              {featured ? 'Renungan Utama' : 'Selamat Datang'}
            </div>
-           <h1 className="font-[var(--font-playfair)] text-4xl md:text-5xl font-black text-white leading-tight">
-             {featured?.title || 'Bagikan Renungan Pertama Anda'}
-           </h1>
+              <h1 className="font-[var(--font-playfair)] text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">
+                {featured?.title || 'Bagikan Renungan Pertama Anda'}
+              </h1>
            <div className="flex items-center gap-4 text-white/70 text-sm font-medium">
               <span className="flex items-center gap-1.5"><User size={14} /> {featured?.author?.full_name || 'Tim UPK-Kr'}</span>
               {featured && <span className="flex items-center gap-1.5"><Clock size={14} /> {Math.max(1, Math.ceil((featured.content?.length || 0) / 1000))} Menit Baca</span>}
@@ -87,12 +91,18 @@ export default async function RenunganPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {(articles as any[]).map((article) => (
                 <Link key={article.id} href={`/renungan/${article.id}`} className="group space-y-4">
-                  <div className="aspect-[16/10] rounded-3xl overflow-hidden relative shadow-lg">
-                    <img 
-                      src={article.cover_url || 'https://images.unsplash.com/photo-1519337265831-281ec6cc8514?auto=format&fit=crop&q=80&w=800'} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      alt={article.title}
-                    />
+                  <div className="aspect-[16/10] rounded-2xl overflow-hidden relative shadow-lg bg-[var(--cream-dark)]">
+                    {article.cover_url ? (
+                      <img 
+                        src={article.cover_url} 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        alt={article.title}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[var(--cream)] to-[var(--cream-dark)] text-[var(--text-muted)]">
+                        <BookOpen size={32} />
+                      </div>
+                    )}
                     <div className="absolute top-4 left-4">
                       <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-[10px] font-black text-[var(--brown-dark)] uppercase tracking-wider shadow-sm">
                         {(article.category as any)?.name || 'Umum'}
@@ -120,49 +130,56 @@ export default async function RenunganPage() {
 
         {/* Sidebar */}
         <aside className="space-y-10">
-           {/* Popular Content */}
-           <section className="card-premium p-6 space-y-6">
-              <h3 className="font-bold text-[var(--brown-dark)] text-sm flex items-center gap-2 uppercase tracking-[0.2em]">
-                <TrendingUp size={16} className="text-[var(--gold)]" /> Terpopuler
-              </h3>
-              <div className="space-y-6">
-                 {[1, 2, 3].map((i) => (
-                   <div key={i} className="flex gap-4 group cursor-pointer">
-                      <div className="w-16 h-16 rounded-2xl bg-[var(--cream)] overflow-hidden shrink-0">
-                         <img src={`https://picsum.photos/seed/${i+10}/200`} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="space-y-1">
-                         <h4 className="text-xs font-bold text-[var(--brown-dark)] group-hover:text-[var(--terra)] transition-colors line-clamp-2">
-                            Pentingnya Menjaga Kesehatan Mental bagi Mahasiswa Teknik
-                         </h4>
-                         <span className="text-[10px] text-[var(--text-muted)] font-medium">1.2k Views</span>
-                      </div>
-                   </div>
-                 ))}
-              </div>
-           </section>
+           {/* Artikel lain dari feed yang sama — dulu daftar ini hardcoded */}
+           {list.length > 1 && (
+             <section className="card-premium p-6 space-y-6">
+                <h3 className="font-bold text-[var(--brown-dark)] text-sm flex items-center gap-2 uppercase tracking-[0.2em]">
+                  <TrendingUp size={16} className="text-[var(--gold)]" /> Artikel Lainnya
+                </h3>
+                <div className="space-y-5">
+                   {list.slice(1, 5).map((article) => (
+                     <Link key={article.id} href={`/renungan/${article.id}`} className="flex gap-4 group">
+                        <div className="w-16 h-16 rounded-2xl bg-[var(--cream)] overflow-hidden shrink-0">
+                           {article.cover_url ? (
+                             <img src={article.cover_url} alt="" className="w-full h-full object-cover" />
+                           ) : (
+                             <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)]">
+                               <BookOpen size={20} />
+                             </div>
+                           )}
+                        </div>
+                        <div className="space-y-1 min-w-0">
+                           <h4 className="text-xs font-bold text-[var(--brown-dark)] group-hover:text-[var(--terra)] transition-colors line-clamp-2">
+                              {article.title}
+                           </h4>
+                           <span className="text-[10px] text-[var(--text-muted)] font-medium">
+                              {getRelativeTime(article.created_at)}
+                           </span>
+                        </div>
+                     </Link>
+                   ))}
+                </div>
+             </section>
+           )}
 
-           {/* Newsletter / Subscription */}
-           <section className="bg-[var(--terra)] rounded-[2.5rem] p-8 text-white space-y-6 shadow-2xl shadow-[var(--terra)]/20">
+           {/* Ajakan menulis — menggantikan form newsletter yang tidak tersambung */}
+           <section className="bg-[var(--terra)] rounded-[1.5rem] p-6 sm:p-8 text-white space-y-5 shadow-xl shadow-[var(--terra)]/20">
               <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
                  <Bookmark size={24} />
               </div>
               <div className="space-y-2">
-                 <h3 className="font-[var(--font-playfair)] text-2xl font-bold">Dapatkan Renungan Harian</h3>
+                 <h3 className="font-[var(--font-playfair)] text-2xl font-bold">Punya Renungan?</h3>
                  <p className="text-white/80 text-sm leading-relaxed">
-                    Berlangganan untuk menerima kata-kata penguatan langsung di email Anda setiap pagi.
+                    Bagikan apa yang Tuhan ajarkan kepadamu. Tulisanmu bisa menjadi kekuatan
+                    bagi mahasiswa lain yang sedang berjuang.
                  </p>
               </div>
-              <div className="space-y-3">
-                 <input 
-                   type="email" 
-                   placeholder="Email Anda" 
-                   className="w-full px-5 py-3 rounded-xl bg-white/10 border border-white/20 text-sm text-white placeholder:text-white/40 focus:outline-none focus:bg-white/20"
-                 />
-                 <button className="w-full py-3 bg-white text-[var(--terra)] font-black text-xs rounded-xl uppercase tracking-widest hover:bg-[var(--cream)] transition-all">
-                    Berlangganan
-                 </button>
-              </div>
+              <Link
+                href="/renungan/new"
+                className="w-full py-3 bg-white text-[var(--terra)] font-bold text-xs rounded-xl uppercase tracking-widest hover:bg-[var(--cream)] transition-all flex items-center justify-center gap-2"
+              >
+                 <Plus size={14} /> Tulis Sekarang
+              </Link>
            </section>
         </aside>
       </div>

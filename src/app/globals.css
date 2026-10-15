@@ -88,6 +88,7 @@ body {
   background: var(--cream);
   color: var(--text);
   min-height: 100vh;
+  min-height: 100dvh;
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -364,7 +365,7 @@ select.form-input { cursor: pointer; }
 .status-active   { background: rgba(62,125,79,0.12); color: #2C6238; }
 
 /* ─── App Shell ─── */
-.app-shell { display: flex; min-height: 100vh; width: 100%; overflow-x: hidden; position: relative; z-index: 1; }
+.app-shell { display: flex; min-height: 100vh; min-height: 100dvh; width: 100%; overflow-x: hidden; position: relative; z-index: 1; }
 
 .sidebar {
   width: 264px; min-height: 100vh;
@@ -403,6 +404,27 @@ select.form-input { cursor: pointer; }
   flex: 1;
   padding: 36px 32px 96px;
   width: 100%;
+}
+
+/* ─── Full-height panes (chat 1-on-1, obrolan KK/KTB) ───
+   Mobile browsers report 100vh as the *largest* viewport (address bar
+   hidden), so a 100vh-tall pane pushes its composer below the fold and the
+   user never sees the input. 100dvh tracks the real visible area.
+   Offset = topbar (64px + notch inset) + .view-container vertical padding,
+   re-tuned per breakpoint at the bottom of this file. */
+.chat-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: calc(100vh - 200px);                      /* fallback: no dvh */
+  height: calc(100dvh - 200px - env(safe-area-inset-top, 0px));
+}
+.chat-shell > * { min-height: 0; }
+
+/* Topbar that respects the iOS notch / status bar without squashing content. */
+.topbar-safe {
+  height: calc(64px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 /* ─── SOS FAB ─── */
@@ -572,6 +594,11 @@ select.form-input { cursor: pointer; }
   .view-container { padding: 24px 20px 120px; overflow-x: hidden; max-width: 100%; }
   .verse-banner { padding: 24px; }
   .verse-text { font-size: 16px; }
+  /* topbar 64 + pad 24 + pad-bottom 120 */
+  .chat-shell {
+    height: calc(100vh - 212px);
+    height: calc(100dvh - 212px - env(safe-area-inset-top, 0px));
+  }
 }
 @media (max-width: 640px) {
   body { font-size: 14.5px; }
@@ -579,6 +606,15 @@ select.form-input { cursor: pointer; }
   .sos-fab { bottom: 88px; right: 16px; }
   .new-post-fab { bottom: 88px; right: 16px; }
   .view-container { padding: 20px 16px 128px; }
+  /* topbar 64 + pad 20 + pad-bottom 128 */
+  .chat-shell {
+    height: calc(100vh - 216px);
+    height: calc(100dvh - 216px - env(safe-area-inset-top, 0px));
+  }
+}
+/* Short landscape phones: never let the chat pane collapse to nothing. */
+@media (max-height: 520px) {
+  .chat-shell { height: calc(100dvh - 190px - env(safe-area-inset-top, 0px)); min-height: 300px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }

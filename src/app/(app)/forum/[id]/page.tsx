@@ -64,6 +64,20 @@ export default async function ThreadDetailPage({ params }: { params: { id: strin
     .eq('content_type', 'thread')
     .eq('content_id', params.id)
 
+  // Related threads — same category, excluding this one. Falls back to the
+  // newest threads when the category has nothing else, so the sidebar is never
+  // filled with invented titles.
+  const relatedQuery = supabase
+    .from('threads')
+    .select('id, title, comment_count, created_at')
+    .neq('id', params.id)
+    .order('created_at', { ascending: false })
+    .limit(3)
+  const { data: relatedData } = threadData.category_id
+    ? await relatedQuery.eq('category_id', threadData.category_id)
+    : await relatedQuery
+  const related = (relatedData ?? []) as any[]
+
   const { data: { user } } = await supabase.auth.getUser()
   
   let hasLiked = false
@@ -186,20 +200,26 @@ export default async function ThreadDetailPage({ params }: { params: { id: strin
               <h3 className="font-bold text-[var(--brown-dark)] text-sm uppercase tracking-widest flex items-center gap-2">
                 <TrendingUp size={16} /> Topik Serupa
               </h3>
-              <div className="space-y-4">
-                 {[1, 2, 3].map((i) => (
-                    <Link key={i} href="#" className="block group">
-                       <h4 className="text-sm font-bold text-[var(--text)] group-hover:text-[var(--terra)] transition-colors line-clamp-2">
-                          Bagaimana cara tetap fokus berdoa di tengah tugas kuliah?
-                       </h4>
-                       <div className="flex items-center gap-2 mt-1 text-[10px] text-[var(--text-muted)] font-medium">
-                          <span>34 Komentar</span>
-                          <span>•</span>
-                          <span>2 Jam yang lalu</span>
-                       </div>
-                    </Link>
-                 ))}
-              </div>
+              {related.length === 0 ? (
+                <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+                  Belum ada diskusi lain di kategori ini. Jadilah yang pertama memulai.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                   {related.map((item) => (
+                      <Link key={item.id} href={`/forum/${item.id}`} className="block group">
+                         <h4 className="text-sm font-bold text-[var(--text)] group-hover:text-[var(--terra)] transition-colors line-clamp-2">
+                            {item.title}
+                         </h4>
+                         <div className="flex items-center gap-2 mt-1 text-[10px] text-[var(--text-muted)] font-medium">
+                            <span>{item.comment_count ?? 0} Komentar</span>
+                            <span>•</span>
+                            <span>{getRelativeTime(item.created_at)}</span>
+                         </div>
+                      </Link>
+                   ))}
+                </div>
+              )}
            </section>
         </aside>
       </div>

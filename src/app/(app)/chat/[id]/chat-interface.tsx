@@ -77,13 +77,12 @@ export function ChatInterface({ session, initialMessages, currentUserId }: ChatI
     if (error) {
       console.error('Error sending message:', error)
       setNewMessage(content) // Restore message if failed
+      setIsSending(false)
+      return
     }
-    
-    // Update last_message in session
-    await (supabase.from('chat_sessions') as any).update({ 
-      last_message: content,
-      updated_at: new Date().toISOString()
-    }).eq('id', session.id)
+
+    // last_message + updated_at on the session are maintained by a DB trigger
+    // (see supabase/fix-chat-last-message.sql) — no client write needed.
 
     setIsSending(false)
   }

@@ -36,7 +36,7 @@ export function SOSModal() {
         setSosOpen(false)
         window.location.href = `/chat/${data.session_id}`
       }
-    } catch {
+    } catch (err) {
       toast.error('Gagal menghubungi konselor. Coba hotline langsung.')
     }
     setLoading(false)

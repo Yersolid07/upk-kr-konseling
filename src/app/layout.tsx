@@ -2,6 +2,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Playfair_Display, DM_Sans } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
+import { PWAProvider } from '@/components/pwa/PWAProvider'
 import './globals.css'
 
 const playfair = Playfair_Display({
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="id" className={`${playfair.variable} ${dmSans.variable}`}>
       <body>
         {children}
+        <PWAProvider />
         <Toaster
           position="bottom-center"
           toastOptions={{

@@ -1,5 +1,6 @@
 // src/app/api/sos/route.ts
-// Handles SOS alerts — notifies all online konselor + admin
+// Handles SOS alerts — notifies all online konselor + admin, and routes the
+// member to an available (online) counselor when possible.
 
 import { createAdminClient } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
@@ -12,13 +13,13 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json()
+  const body = await request.json().catch(() => ({}))
   const { message = 'Butuh bantuan segera' } = body
 
-  // Get all konselor + admin to notify
+  // All active konselor + admin (to notify)
   const { data: targets } = await adminClient
     .from('profiles')
-    .select('id, full_name, is_online')
+    .select('id, full_name, is_online, role')
     .in('role', ['konselor', 'admin', 'super_admin'])
     .eq('is_active', true)
 
@@ -26,7 +27,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Tidak ada konselor online' }, { status: 404 })
   }
 
-  // Insert notifications for all konselor/admin
+  // Prefer routing to a counselor who is currently online.
+  const onlineKonselor = (targets as any[]).find(
+    t => t.role === 'konselor' && t.is_online === true
+  )
+  const assignedKonselorId = onlineKonselor?.id ?? null
+
+  // Insert notifications for all konselor/admin.
   const notifications = (targets as any[]).map(t => ({
     user_id: t.id,
     type: 'sos_alert' as const,
@@ -38,28 +45,36 @@ export async function POST(request: NextRequest) {
 
   await (adminClient.from('notifications') as any).insert(notifications)
 
-  // Create an urgent pending session
+  // Create an urgent session, assigned to an online counselor when available.
   const { data: session } = await (adminClient
     .from('chat_sessions') as any)
     .insert({
       member_id: user.id,
-      konselor_id: null,
-      status: 'pending',
+      konselor_id: assignedKonselorId,
+      status: assignedKonselorId ? 'active' : 'pending',
       topic: `[SOS] ${message}`,
       is_anonymous: true,
     })
     .select()
     .single()
 
-  // Send WhatsApp via Fonnte to configured counselor numbers
+  // WhatsApp alert to the on-duty counselor number, if configured.
   const sosNumber = process.env.NEXT_PUBLIC_SOS_WA_NUMBER
   if (sosNumber) {
-    const { sendWhatsApp } = await import('@/lib/fonnte')
-    await sendWhatsApp(
-      sosNumber, 
-      `[SOS UPK-Kr] 🆘 Bantuan Darurat!\n\nNama: ${(user.user_metadata as any)?.full_name || 'Seorang Anggota'}\nPesan: "${message}"\n\nRespon segera di: ${process.env.NEXT_PUBLIC_APP_URL}/konselor`
-    )
+    try {
+      const { sendWhatsApp } = await import('@/lib/fonnte')
+      await sendWhatsApp(
+        sosNumber,
+        `[SOS UPK-Kr] 🆘 Bantuan Darurat!\n\nNama: ${(user.user_metadata as any)?.full_name || 'Seorang Anggota'}\nPesan: "${message}"\n\nRespon segera di: ${process.env.NEXT_PUBLIC_APP_URL}/konselor`
+      )
+    } catch (err) {
+      console.error('SOS WhatsApp send failed:', err)
+    }
   }
 
-  return NextResponse.json({ success: true, session_id: session?.id })
+  return NextResponse.json({
+    success: true,
+    session_id: session?.id,
+    routed_to_online: Boolean(assignedKonselorId),
+  })
 }

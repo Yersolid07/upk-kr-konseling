@@ -54,12 +54,12 @@ export default async function DashboardPage() {
         .eq('is_active', true),
       supabase
         .from('prayer_requests')
-        .select('id, content, is_anonymous, created_at, support_count, author:profiles(full_name, anon_token)')
+        .select('id, content, is_anonymous, created_at, pray_count, author:profiles(full_name, anon_token)')
         .order('created_at', { ascending: false })
         .limit(3),
       supabase
         .from('articles')
-        .select('id, title, excerpt, cover_url, slug, reading_time, created_at')
+        .select('id, title, excerpt, cover_url, slug, read_count, created_at')
         .eq('is_published', true)
         .order('created_at', { ascending: false })
         .limit(2),
@@ -292,7 +292,7 @@ export default async function DashboardPage() {
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-[var(--text-muted)]">{author}</span>
                         <span className="inline-flex items-center gap-1.5 text-[var(--gold)] font-medium">
-                          <HandsPraying size={13} /> {p.support_count ?? 0}
+                          <HandsPraying size={13} /> {p.pray_count ?? 0}
                         </span>
                       </div>
                     </Link>
@@ -338,7 +338,7 @@ export default async function DashboardPage() {
                       {a.title}
                     </h4>
                     <span className="text-xs text-[var(--text-muted)]">
-                      {a.reading_time ? `${a.reading_time} menit baca` : 'Baca selengkapnya'}
+                      {a.read_count ? `${a.read_count} kali dibaca` : 'Baca selengkapnya'}
                     </span>
                   </Link>
                 ))}

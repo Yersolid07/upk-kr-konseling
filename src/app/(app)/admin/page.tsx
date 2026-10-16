@@ -45,18 +45,22 @@ export default function AdminPage() {
   }, [fetchUsers, fetchPendingKonselor])
 
   async function assignRole(userId: string, role: string, specialization?: string[]) {
-    const res = await fetch('/api/admin/assign-role', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, role, specialization, is_verified: role === 'konselor' }),
+    // Lewat Server Action (bukan route handler): guard, validasi zod, dan
+    // audit dijalankan di satu tempat yang sama. Route /api/admin/assign-role
+    // sudah dinonaktifkan karena tidak memeriksa peringkat peran target.
+    const { assignRole: doAssign } = await import('./actions')
+    const res = await doAssign({
+      user_id: userId,
+      role,
+      specialization,
+      is_verified: role === 'konselor',
     })
-    const data = await res.json()
-    if (data.success) {
-      toast.success(`Role berhasil diubah menjadi ${role}`)
+    if ('error' in res) {
+      toast.error(res.error)
+    } else {
+      toast.success(`Peran berhasil diubah menjadi ${role}`)
       fetchUsers()
       fetchPendingKonselor()
-    } else {
-      toast.error(data.error ?? 'Gagal mengubah role')
     }
   }
 
@@ -327,7 +331,7 @@ function ContentModeration() {
     setLoading(true)
     const { getAdminContent } = await import('./actions')
     const res = await getAdminContent()
-    if (!res.error) setContent(res)
+    if (!('error' in res)) setContent(res)
     setLoading(false)
   }
 
@@ -335,7 +339,7 @@ function ContentModeration() {
     if (!confirm('Hapus konten ini secara permanen?')) return
     const { deleteContent } = await import('./actions')
     const res = await deleteContent(type, id)
-    if (res.error) {
+    if ('error' in res) {
       toast.error(res.error)
     } else {
       toast.success('Konten berhasil dihapus')

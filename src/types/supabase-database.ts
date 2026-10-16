@@ -18,7 +18,7 @@ import type {
   Attachment, AttachmentKind, ContentKind, AuditLogEntry, IdentityRevealLog,
   HotlineContact, KonselorApplication, KonselorProfile, LegalDocument,
   SiteSetting, UserRole, SessionStatus, BookingStatus, ReportStatus,
-  PublicationStatus, ApplicationStatus, ContentType,
+  PublicationStatus, ApplicationStatus, ContentType, NotificationType,
 } from './database'
 
 type Rel = {
@@ -302,6 +302,20 @@ export interface Database {
         Returns: undefined
       }
       increment_thread_views: { Args: { thread_id: string }; Returns: undefined }
+      // Notifikasi lintas pengguna (SECURITY DEFINER, hanya admin ke atas).
+      // Diperlukan karena policy notif_insert hanya mengizinkan
+      // user_id = auth.uid() — lihat supabase/hotfix-security.sql A6.
+      notify_user: {
+        Args: {
+          p_user_id: string
+          p_type: NotificationType
+          p_title: string
+          p_body?: string | null
+          p_link?: string | null
+          p_meta?: Record<string, unknown> | null
+        }
+        Returns: string
+      }
     }
     Enums: {
       user_role: UserRole

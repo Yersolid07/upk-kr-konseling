@@ -91,8 +91,8 @@ export default async function DashboardPage() {
     : 'Sahabat'
   const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin'
 
-  const prayers = (prayerList as unknown as any[]) ?? []
-  const articles = (articlesRes.data as any[]) ?? []
+  const prayers = prayerList.data ?? []
+  const articles = articlesRes.data ?? []
 
   return (
     <div className="space-y-10 animate-fade-in pb-24 lg:pb-0">

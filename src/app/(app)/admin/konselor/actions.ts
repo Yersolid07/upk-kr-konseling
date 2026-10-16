@@ -4,6 +4,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { requireCap, guarded } from '@/lib/auth-guard'
+import type { ApplicationStatus } from '@/types/database'
 
 function str(fd: FormData, key: string): string {
   return String(fd.get(key) ?? '').trim()
@@ -31,16 +32,18 @@ export async function decideApplication(formData: FormData) {
     if (decision === 'rejected' && !notes) {
       return { error: 'Isi alasan agar pelamar tahu apa yang perlu diperbaiki.' }
     }
+    // Sempitkan ke union yang dikenal skema (bukan `string` bebas).
+    const status = decision as ApplicationStatus
 
     const supabase = createClient()
     const { error } = await supabase
       .from('konselor_applications')
       .update({
-        status: decision,
+        status,
         review_notes: notes || null,
         reviewed_by: ctx.userId,
         reviewed_at: new Date().toISOString(),
-      } as never)
+      })
       .eq('id', id)
 
     if (error) return { error: `Gagal menyimpan keputusan: ${error.message}` }

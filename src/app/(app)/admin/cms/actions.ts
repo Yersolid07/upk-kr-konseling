@@ -23,19 +23,24 @@ export async function saveSetting(formData: FormData) {
     const raw = str(formData, 'value')
     if (!key) return { error: 'Kunci pengaturan wajib diisi.' }
 
-    // Nilai disimpan sebagai JSON; kalau bukan JSON valid, simpan sebagai string.
-    let value: unknown
+    // Nilai disimpan sebagai JSONB. Kalau yang diisi bukan JSON valid, simpan
+    // sebagai objek { value: "<teks>" } — kolomnya bertipe JSONB dan nilai
+    // skalar telanjang akan ditolak.
+    let value: Record<string, unknown>
     try {
-      value = JSON.parse(raw)
+      const parsed = JSON.parse(raw)
+      value = parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? (parsed as Record<string, unknown>)
+        : { value: parsed }
     } catch {
-      value = raw
+      value = { value: raw }
     }
 
     const supabase = createClient()
     const { error } = await supabase
       .from('site_settings')
       .upsert(
-        { key, value: value as never, updated_by: ctx.userId, updated_at: new Date().toISOString() },
+        { key, value, updated_by: ctx.userId, updated_at: new Date().toISOString() },
         { onConflict: 'key' }
       )
 
@@ -45,7 +50,7 @@ export async function saveSetting(formData: FormData) {
       p_action: 'settings_change',
       p_entity: 'site_settings',
       p_entity_id: key,
-      p_detail: { value } as never,
+      p_detail: { value },
     })
 
     revalidatePath('/admin/cms')
@@ -90,7 +95,7 @@ export async function saveHotline(formData: FormData) {
       p_action: id ? 'update' : 'create',
       p_entity: 'hotline_contacts',
       p_entity_id: id || payload.number,
-      p_detail: { name: payload.name } as never,
+      p_detail: { name: payload.name },
     })
 
     revalidatePath('/admin/cms')
@@ -113,7 +118,7 @@ export async function deleteHotline(formData: FormData) {
       p_action: 'delete',
       p_entity: 'hotline_contacts',
       p_entity_id: id,
-      p_detail: {} as never,
+      p_detail: {},
     })
 
     revalidatePath('/admin/cms')
@@ -169,7 +174,7 @@ export async function saveLegalDoc(formData: FormData) {
       p_action: 'update',
       p_entity: 'legal_documents',
       p_entity_id: slug,
-      p_detail: { version } as never,
+      p_detail: { version },
     })
 
     revalidatePath('/admin/cms')

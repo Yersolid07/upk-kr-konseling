@@ -55,7 +55,13 @@ RETURNS INT LANGUAGE sql IMMUTABLE AS $$
 $$;
 
 -- Peran efektif pemanggil (NULL bila belum login / profil belum ada).
-CREATE OR REPLACE FUNCTION public.current_role()
+--
+-- CATATAN: nama fungsinya `current_user_role`, BUKAN `current_role`.
+-- `CURRENT_ROLE` adalah keyword bawaan SQL; memakainya sebagai nama fungsi
+-- mengundang masalah sintaksis dan membingungkan pembaca. Nama ini sama dengan
+-- yang sudah dipakai supabase/rls.sql, jadi keduanya menunjuk SATU fungsi yang
+-- sama (didefinisikan ulang di sini agar migrasi ini bisa dijalankan mandiri).
+CREATE OR REPLACE FUNCTION public.current_user_role()
 RETURNS user_role LANGUAGE sql SECURITY DEFINER STABLE
 SET search_path = public AS $$
   SELECT role FROM public.profiles WHERE id = auth.uid();
@@ -65,7 +71,7 @@ $$;
 CREATE OR REPLACE FUNCTION public.has_min_role(p_role user_role)
 RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE
 SET search_path = public AS $$
-  SELECT COALESCE(public.role_rank(public.current_role()) >= public.role_rank(p_role), FALSE);
+  SELECT COALESCE(public.role_rank(public.current_user_role()) >= public.role_rank(p_role), FALSE);
 $$;
 
 -- Moderation = moderator ke atas (boleh menandai/merapikan konten).
@@ -85,7 +91,7 @@ $$;
 CREATE OR REPLACE FUNCTION public.is_super_admin()
 RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE
 SET search_path = public AS $$
-  SELECT public.current_role() = 'super_admin';
+  SELECT public.current_user_role() = 'super_admin';
 $$;
 
 -- =====================================================
@@ -263,7 +269,7 @@ CREATE OR REPLACE FUNCTION public.log_audit(
 SET search_path = public AS $$
 BEGIN
   INSERT INTO public.audit_log (actor_id, actor_role, action, entity, entity_id, detail)
-  VALUES (auth.uid(), public.current_role(), p_action, p_entity, p_entity_id, p_detail);
+  VALUES (auth.uid(), public.current_user_role(), p_action, p_entity, p_entity_id, p_detail);
 END;
 $$;
 

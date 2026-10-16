@@ -58,7 +58,7 @@ export async function submitKonselorApplication(formData: FormData) {
       specialization,
       availability_note: availabilityNote || null,
       status: 'pending',
-    } as never)
+    })
 
     if (error) {
       console.error('[submitKonselorApplication]', error)
@@ -79,7 +79,7 @@ export async function submitKonselorApplication(formData: FormData) {
           title: 'Pengajuan Konselor Baru',
           body: `${ctx.profile.full_name} mengajukan diri sebagai konselor.`,
           link: '/admin/konselor',
-        })) as never
+        }))
       )
     }
 
@@ -87,7 +87,7 @@ export async function submitKonselorApplication(formData: FormData) {
       p_action: 'create',
       p_entity: 'konselor_applications',
       p_entity_id: ctx.userId,
-      p_detail: { specialization } as never,
+      p_detail: { specialization },
     })
 
     revalidatePath('/konselor/daftar')

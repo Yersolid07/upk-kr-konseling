@@ -127,8 +127,13 @@ export interface Database {
       }
       articles: {
         Row: Article
-        Insert: Omit<Article, 'id' | 'created_at' | 'read_count' | 'status' | 'reviewed_by' | 'reviewed_at' | 'review_notes'> & {
+        Insert: Omit<Article, 'id' | 'created_at' | 'read_count' | 'status' | 'reviewed_by' | 'reviewed_at' | 'review_notes' | 'tags' | 'excerpt' | 'cover_url' | 'category_id' | 'published_at'> & {
           status?: PublicationStatus
+          tags?: string[] | null
+          excerpt?: string | null
+          cover_url?: string | null
+          category_id?: string | null
+          published_at?: string | null
           reviewed_by?: string | null
           reviewed_at?: string | null
           review_notes?: string | null
@@ -280,8 +285,9 @@ export interface Database {
       current_user_role: { Args: Record<never, never>; Returns: UserRole }
       is_admin_or_above: { Args: Record<never, never>; Returns: boolean }
       is_konselor_or_above: { Args: Record<never, never>; Returns: boolean }
-      // Helper RBAC & audit dari supabase/cms-rbac.sql
-      current_role: { Args: Record<never, never>; Returns: UserRole }
+      // Helper RBAC & audit dari supabase/cms-rbac.sql.
+      // Nama fungsi peran: `current_user_role` — BUKAN `current_role`, karena
+      // CURRENT_ROLE adalah keyword bawaan SQL.
       has_min_role: { Args: { p_role: UserRole }; Returns: boolean }
       is_moderator_or_above: { Args: Record<never, never>; Returns: boolean }
       is_super_admin: { Args: Record<never, never>; Returns: boolean }

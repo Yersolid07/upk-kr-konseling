@@ -55,7 +55,7 @@ export async function approveArticle(formData: FormData) {
       p_action: 'approve',
       p_entity: 'articles',
       p_entity_id: id,
-      p_detail: {} as never,
+      p_detail: {},
     })
 
     revalidatePath('/admin/articles')
@@ -107,7 +107,7 @@ export async function rejectArticle(formData: FormData) {
       p_action: 'reject',
       p_entity: 'articles',
       p_entity_id: id,
-      p_detail: { notes } as never,
+      p_detail: { notes },
     })
 
     revalidatePath('/admin/articles')
@@ -138,7 +138,7 @@ export async function archiveArticle(formData: FormData) {
       p_action: 'unpublish',
       p_entity: 'articles',
       p_entity_id: id,
-      p_detail: {} as never,
+      p_detail: {},
     })
 
     revalidatePath('/admin/articles')

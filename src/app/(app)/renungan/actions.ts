@@ -38,7 +38,7 @@ async function persistAttachments(
       mime_type: a.mime_type ?? null,
       size_bytes: a.size_bytes ?? null,
       sort_order: i,
-    })) as never
+    }))
   )
 }
 
@@ -88,7 +88,7 @@ export async function createArticle(formData: FormData) {
         status,
         is_published: canPublishDirectly,
         published_at: canPublishDirectly ? new Date().toISOString() : null,
-      } as never)
+      })
       .select()
       .single()
 
@@ -104,7 +104,7 @@ export async function createArticle(formData: FormData) {
       p_action: 'create',
       p_entity: 'articles',
       p_entity_id: article.id,
-      p_detail: { status } as never,
+      p_detail: { status },
     })
 
     // Beri tahu admin kalau perlu ditinjau.
@@ -122,7 +122,7 @@ export async function createArticle(formData: FormData) {
             title: 'Artikel Menunggu Persetujuan',
             body: `${ctx.profile.full_name} mengirim artikel "${title}" untuk ditinjau.`,
             link: '/admin/articles',
-          })) as never
+          }))
         )
       }
     }

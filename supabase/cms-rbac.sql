@@ -159,22 +159,19 @@ SET status = CASE WHEN is_published THEN 'published'::publication_status
 WHERE status = 'draft'::publication_status
   AND is_published = TRUE;
 
--- Jaga is_published tetap sinkron dengan status lewat trigger.
-CREATE OR REPLACE FUNCTION public.sync_article_publication()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
-BEGIN
-  NEW.is_published := (NEW.status = 'published');
-  IF NEW.status = 'published' AND NEW.published_at IS NULL THEN
-    NEW.published_at := NOW();
-  END IF;
-  RETURN NEW;
-END;
-$$;
+-- PENTING soal trigger artikel:
+-- Ada DUA aturan yang harus berlaku pada setiap INSERT/UPDATE articles:
+--   (a) non-admin tidak boleh menerbitkan sendiri (dipaksa `pending_review`);
+--   (b) `is_published` dan `published_at` harus selalu sinkron dengan `status`.
+-- Keduanya digabung dalam SATU fungsi `enforce_article_publication()` di bagian
+-- bawah file ini (bagian 11). Alasannya: PostgreSQL menjalankan beberapa trigger
+-- BEFORE pada tabel yang sama menurut urutan abjad NAMA trigger, bukan urutan
+-- pembuatan. Kalau dipisah, `trg_articles_force_review` (f) berjalan lebih dulu
+-- daripada `trg_articles_sync_publication` (s), lalu trigger kedua menimpa
+-- `is_published` menjadi TRUE sehingga artikel non-admin lolos terbit.
 
 DROP TRIGGER IF EXISTS trg_articles_sync_publication ON public.articles;
-CREATE TRIGGER trg_articles_sync_publication
-  BEFORE INSERT OR UPDATE ON public.articles
-  FOR EACH ROW EXECUTE FUNCTION public.sync_article_publication();
+DROP TRIGGER IF EXISTS trg_articles_force_review ON public.articles;
 
 CREATE INDEX IF NOT EXISTS idx_articles_status ON public.articles(status);
 
@@ -383,26 +380,37 @@ CREATE POLICY "media_delete" ON storage.objects FOR DELETE
   USING (bucket_id = 'media' AND (storage.foldername(name))[1] = auth.uid()::text);
 
 -- =====================================================
--- 11. TRIGGER: artikel baru dari non-admin otomatis menunggu review
+-- 11. TRIGGER: alur publikasi artikel (aturan approval + sinkronisasi)
+--     Digabung dalam SATU fungsi. Lihat catatan di bagian 6: kalau dipisah
+--     menjadi dua trigger BEFORE, PostgreSQL menjalankannya menurut urutan
+--     abjad nama trigger sehingga aturan approval bisa tertimpa.
 -- =====================================================
-CREATE OR REPLACE FUNCTION public.force_article_review()
+CREATE OR REPLACE FUNCTION public.enforce_article_publication()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public AS $$
 BEGIN
-  -- Anggota/konselor tidak boleh menerbitkan sendiri.
-  IF NOT public.is_admin_or_above() THEN
-    IF NEW.status = 'published' THEN
-      NEW.status := 'pending_review';
-    END IF;
+  -- (a) Anggota dan konselor tidak boleh menerbitkan sendiri.
+  IF NOT public.is_admin_or_above() AND NEW.status = 'published' THEN
+    NEW.status := 'pending_review';
   END IF;
+
+  -- (b) is_published & published_at selalu mengikuti status.
+  --     Dijalankan SETELAH (a) supaya tidak bisa dipakai menembus approval.
+  NEW.is_published := (NEW.status = 'published');
+  IF NEW.status = 'published' AND NEW.published_at IS NULL THEN
+    NEW.published_at := NOW();
+  END IF;
+
   RETURN NEW;
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trg_articles_enforce_publication ON public.articles;
 DROP TRIGGER IF EXISTS trg_articles_force_review ON public.articles;
-CREATE TRIGGER trg_articles_force_review
+DROP TRIGGER IF EXISTS trg_articles_sync_publication ON public.articles;
+CREATE TRIGGER trg_articles_enforce_publication
   BEFORE INSERT OR UPDATE ON public.articles
-  FOR EACH ROW EXECUTE FUNCTION public.force_article_review();
+  FOR EACH ROW EXECUTE FUNCTION public.enforce_article_publication();
 
 -- =====================================================
 -- 12. TRIGGER: promosi role saat pengajuan konselor disetujui

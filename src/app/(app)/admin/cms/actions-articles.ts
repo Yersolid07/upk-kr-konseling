@@ -42,12 +42,12 @@ export async function approveArticle(formData: FormData) {
 
     const a = article as { author_id: string; title: string } | null
     if (a) {
-      await supabase.from('notifications').insert({
-        user_id: a.author_id,
-        type: 'system',
-        title: 'Artikel Disetujui',
-        body: `Artikel "${a.title}" sudah terbit di dinding Renungan.`,
-        link: `/renungan/${id}`,
+      await supabase.rpc('notify_user', {
+        p_user_id: a.author_id,
+        p_type: 'system',
+        p_title: 'Artikel Disetujui',
+        p_body: `Artikel "${a.title}" sudah terbit di dinding Renungan.`,
+        p_link: `/renungan/${id}`,
       })
     }
 
@@ -94,12 +94,12 @@ export async function rejectArticle(formData: FormData) {
 
     const a = article as { author_id: string; title: string } | null
     if (a) {
-      await supabase.from('notifications').insert({
-        user_id: a.author_id,
-        type: 'system',
-        title: 'Artikel Perlu Diperbaiki',
-        body: `Artikel "${a.title}" belum dapat diterbitkan. Catatan: ${notes}`,
-        link: `/renungan/${id}`,
+      await supabase.rpc('notify_user', {
+        p_user_id: a.author_id,
+        p_type: 'system',
+        p_title: 'Artikel Perlu Diperbaiki',
+        p_body: `Artikel "${a.title}" belum dapat diterbitkan. Catatan: ${notes}`,
+        p_link: `/renungan/${id}`,
       })
     }
 

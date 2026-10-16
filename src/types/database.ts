@@ -212,7 +212,6 @@ export type ChatSession = {
   is_anonymous: boolean
   member_rating: number | null
   member_review: string | null
-  konselor_notes: string | null
   started_at: string | null
   ended_at: string | null
   created_at: string

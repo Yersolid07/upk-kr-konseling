@@ -13,24 +13,19 @@ import { HandsPraying } from '@/components/icons/HandsPraying'
 import { cn, getRelativeTime } from '@/lib/utils'
 
 import { PrayerCard } from '@/components/prayer/PrayerCard'
+import { listPrayers } from '@/lib/public-content'
 
 export const dynamic = 'force-dynamic'
 
 export default async function PrayerWallPage() {
   const supabase = createClient()
 
-  const { data: prayers } = await supabase
-    .from('prayer_requests')
-    .select(`
-      id, content, is_anonymous, pray_count, created_at,
-      author:profiles(id, full_name, anon_token)
-    `)
-    .order('created_at', { ascending: false })
-    .limit(30)
+  // Lewat helper: identitas penulis doa anonim tidak ikut terkirim ke browser.
+  const prayers = await listPrayers(supabase, 30)
 
   // Real stats
   const { count: totalPrayers } = await supabase.from('prayer_requests').select('*', { count: 'exact', head: true })
-  const totalSupports = (prayers as any[])?.reduce((sum: number, p: any) => sum + (p.pray_count || 0), 0) ?? 0
+  const totalSupports = prayers.reduce((sum, p) => sum + (p.pray_count || 0), 0)
 
   return (
     <div className="space-y-10 animate-fade-in max-w-6xl mx-auto pb-20">

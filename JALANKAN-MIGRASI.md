@@ -1,40 +1,31 @@
-# Jalankan Migrasi CMS + RBAC
+# Jalankan Migrasi Database
 
-Fitur baru (panel CMS super admin, persetujuan artikel, lampiran, pendaftaran
-konselor) butuh **7 tabel baru + 4 kolom baru** di database. Selama migrasi ini
-belum dijalankan, halaman `/admin/cms`, `/admin/articles`, dan `/admin/konselor`
-akan tampil kosong (tidak error, tapi belum ada isinya).
+Perubahan keamanan dan CMS membutuhkan **3 berkas SQL** yang dijalankan secara
+berurutan di Supabase SQL Editor. Semua berkas idempotent (aman dijalankan
+berulang kali tanpa merusak data).
 
-## Langkah
+## Urutan Eksekusi (WAJIB BERURUTAN)
+
+1. **`supabase/cms-rbac.sql`** (tabel CMS, seed pengaturan, peran konselor)
+2. **`supabase/hotfix-security.sql`** (Fase 0: hotfix eskalasi peran, trigger profil aman, RPC notifikasi)
+3. **`supabase/phase1-data-security.sql`** (Fase 1: anon_token privat, view publik, privasi chat, perlindungan kolom)
+
+## Cara Menjalankan
 
 1. Buka **https://supabase.com/dashboard** → pilih project
    `aslvltjvqnpedmnarkea` (IKA UPK-Kr FT UNSRAT).
 
 2. Di menu kiri, klik **SQL Editor** → **+ New query**.
 
-3. Buka file berikut di komputer, **salin SELURUH isinya**:
+3. Buka berkas SQL yang bersangkutan di komputer:
+   - Tekan `Win + R`
+   - Tempel path lengkap (misalnya `C:\Users\jerem\upk-analysis\upk-kr-konseling\supabase\hotfix-security.sql`)
+   - Buka dengan Notepad, salin seluruh isinya (`Ctrl + A`, `Ctrl + C`)
 
-   ```
-   C:\Users\jerem\upk-analysis\upk-kr-konseling\supabase\cms-rbac.sql
-   ```
+4. Tempel ke SQL Editor Supabase, lalu klik tombol **Run** (atau `Ctrl + Enter`).
 
-   Cara cepat membukanya: tekan `Win + R`, tempel baris di atas, Enter.
-   (Atau lewat Notepad: klik kanan file → Open with → Notepad.)
-
-4. Tempel ke SQL Editor, lalu klik **Run** (atau `Ctrl + Enter`).
-
-5. Di bagian paling bawah hasil, akan muncul tabel verifikasi:
-
-   ```
-   tabel              | baris
-   -------------------+------
-   site_settings      |     6
-   hotline_contacts   |     3
-   legal_documents    |     3
-   konselor_profiles  |     0
-   ```
-
-   Angka `baris` yang bukan 0 menandakan seed berhasil.
+5. Ulangi untuk berkas berikutnya. Di bagian bawah setiap berkas ada query
+   verifikasi yang memastikan migrasi sukses terpasang.
 
 ## Aman dijalankan berulang
 

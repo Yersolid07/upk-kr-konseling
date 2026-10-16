@@ -15,6 +15,7 @@ import {
   Lock
 } from 'lucide-react'
 import { cn, getRelativeTime } from '@/lib/utils'
+import { getThread, listComments } from '@/lib/public-content'
 
 import { CommentForm } from './comment-form'
 import { LikeButton } from '@/components/forum/like-button'
@@ -25,37 +26,20 @@ export const dynamic = 'force-dynamic'
 export default async function ThreadDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
 
-  // Fetch thread with author and category
-  const { data: thread } = await supabase
-    .from('threads')
-    .select(`
-      *,
-      author:profiles(id, full_name, anon_token, avatar_url, role),
-      category:thread_categories(*)
-    `)
-    .eq('id', params.id)
-    .single()
-
+  // Thread + komentar lewat helper yang menyembunyikan identitas penulis
+  // anonim (author_id NULL, label pseudonim per-konten).
+  const thread = await getThread(supabase, params.id)
   if (!thread) notFound()
 
-  // Increment view count (simple implementation)
-  const threadData = thread as any
-  try {
-    await (supabase as any).rpc('increment_thread_views', { thread_id: params.id })
-  } catch (e) {
-    // Fallback if RPC fails
-    await (supabase.from('threads') as any).update({ view_count: (threadData.view_count ?? 0) + 1 }).eq('id', params.id)
-  }
+  // Increment view count. RPC-nya kini ada di database (phase1-data-security.sql)
+  // dan SECURITY DEFINER, jadi pengunjung yang bukan penulis pun berhasil.
+  // Tidak ada fallback update langsung — update itu dulu ditolak RLS dan
+  // berisiko menghitung ganda.
+  await supabase.rpc('increment_thread_views', { thread_id: params.id })
 
-  // Fetch comments
-  const { data: comments } = await supabase
-    .from('comments')
-    .select(`
-      *,
-      author:profiles(id, full_name, anon_token, avatar_url, role)
-    `)
-    .eq('thread_id', params.id)
-    .order('created_at', { ascending: true })
+  const comments = await listComments(supabase, params.id)
+
+  const threadData = thread
 
   // Fetch likes
   const { count: likeCount } = await supabase
@@ -76,7 +60,7 @@ export default async function ThreadDetailPage({ params }: { params: { id: strin
   const { data: relatedData } = threadData.category_id
     ? await relatedQuery.eq('category_id', threadData.category_id)
     : await relatedQuery
-  const related = (relatedData ?? []) as any[]
+  const related = (relatedData ?? []) as { id: string; title: string; comment_count: number; created_at: string }[]
 
   const { data: { user } } = await supabase.auth.getUser()
   
@@ -92,9 +76,7 @@ export default async function ThreadDetailPage({ params }: { params: { id: strin
     if (existingLike) hasLiked = true
   }
 
-  const displayName = threadData.is_anonymous
-    ? `Anonim#${(threadData.author as any)?.anon_token?.slice(0,4).toUpperCase()}`
-    : (threadData.author as any)?.full_name
+  const displayName = threadData.author.label
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in pb-20">
@@ -124,12 +106,12 @@ export default async function ThreadDetailPage({ params }: { params: { id: strin
                       "w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg",
                       threadData.is_anonymous ? "bg-slate-400" : "bg-gradient-to-br from-[var(--terra)] to-[var(--brown)]"
                     )}>
-                      {threadData.is_anonymous ? <Lock size={22} /> : (threadData.author as any)?.full_name?.charAt(0)}
+                      {threadData.is_anonymous ? <Lock size={22} /> : displayName.charAt(0)}
                     </div>
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-bold text-[var(--brown-dark)]">{displayName}</span>
-                          {(threadData.author as any)?.role === 'konselor' && (
+                          {threadData.author.role === 'konselor' && (
                              <span className="px-2 py-0.5 rounded-full bg-[var(--sage)]/10 text-[var(--sage)] text-[9px] font-black uppercase">Konselor</span>
                           )}
                        </div>

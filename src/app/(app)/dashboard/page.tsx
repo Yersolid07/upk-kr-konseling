@@ -18,6 +18,7 @@ import { CategoryIcon } from '@/components/ui/icons'
 import { getRelativeTime } from '@/lib/utils'
 
 import { getDailyVerse } from '@/lib/bible'
+import { listThreads } from '@/lib/public-content'
 import { SOSButton } from './sos-button'
 
 export const dynamic = 'force-dynamic'
@@ -53,8 +54,8 @@ export default async function DashboardPage() {
         .select('id', { count: 'exact', head: true })
         .eq('is_active', true),
       supabase
-        .from('prayer_requests')
-        .select('id, content, is_anonymous, created_at, pray_count, author:profiles(full_name, anon_token)')
+        .from('prayers_public')
+        .select('id, content, is_anonymous, created_at, pray_count, author_id, anon_label, author_name, author_avatar')
         .order('created_at', { ascending: false })
         .limit(3),
       supabase
@@ -65,16 +66,9 @@ export default async function DashboardPage() {
         .limit(2),
     ])
 
-  // Diskusi terbaru
-  const { data: recentThreads } = await supabase
-    .from('threads')
-    .select(
-      `id, title, is_anonymous, created_at, comment_count, view_count,
-       author:profiles(id, full_name, anon_token),
-       category:thread_categories(name, slug, icon, color)`
-    )
-    .order('created_at', { ascending: false })
-    .limit(4)
+  // Diskusi terbaru — lewat view publik supaya anon_token tidak terkirim
+  // ke browser (lihat src/lib/public-content.ts).
+  const recentThreads = await listThreads(supabase, { limit: 4 })
 
   const {
     data: { user },
@@ -277,9 +271,13 @@ export default async function DashboardPage() {
                 </div>
               ) : (
                 prayers.map((p) => {
-                  const author = p.is_anonymous
-                    ? `Anonim#${(p.author as any)?.anon_token?.slice(0, 4).toUpperCase() ?? '????'}`
-                    : (p.author as any)?.full_name ?? 'Anggota'
+                  // Label sudah dihitung server-side dari view prayers_public —
+                  // anon_token tidak pernah sampai ke sini.
+                  const r = p as unknown as Record<string, unknown>
+                  const isAnon = Boolean(r.is_anonymous)
+                  const author = isAnon
+                    ? `Anonim#${String(r.anon_label ?? '????')}`
+                    : String(r.author_name ?? 'Anggota')
                   return (
                     <Link
                       key={p.id}

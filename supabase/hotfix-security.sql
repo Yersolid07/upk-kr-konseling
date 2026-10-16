@@ -256,6 +256,46 @@ GRANT EXECUTE ON FUNCTION public.notify_user(UUID, public.notification_type, TEX
   TO authenticated;
 
 
+-- notify_admins — anggota biasa MEMBERI TAHU admin (bukan mengirim notifikasi
+-- ke sembarang orang). Dipakai saat anggota mengirim artikel atau mengajukan
+-- diri sebagai konselor: keduanya butuh memberitahu admin, tetapi policy
+-- notif_insert menolak insert lintas pengguna dari klien biasa sehingga
+-- pemberitahuannya selama ini gagal SENYAP.
+--
+-- Batasannya ketat: tujuan HANYA akun berperan admin/super_admin, dan judul
+-- serta isi dibatasi panjangnya supaya tidak bisa dipakai spam massal.
+CREATE OR REPLACE FUNCTION public.notify_admins(
+  p_type  public.notification_type,
+  p_title TEXT,
+  p_body  TEXT DEFAULT NULL,
+  p_link  TEXT DEFAULT NULL
+) RETURNS INT
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_count INT;
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RAISE EXCEPTION 'forbidden' USING ERRCODE = '42501';
+  END IF;
+
+  IF length(coalesce(p_title, '')) > 120 OR length(coalesce(p_body, '')) > 500 THEN
+    RAISE EXCEPTION 'Judul/isi notifikasi terlalu panjang.';
+  END IF;
+
+  INSERT INTO public.notifications (user_id, type, title, body, link, meta)
+  SELECT p.id, p_type, p_title, p_body, p_link,
+         jsonb_build_object('from_user', auth.uid())
+  FROM public.profiles p
+  WHERE p.role IN ('admin', 'super_admin') AND p.id <> auth.uid();
+
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  RETURN v_count;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.notify_admins(public.notification_type, TEXT, TEXT, TEXT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.notify_admins(public.notification_type, TEXT, TEXT, TEXT) TO authenticated;
+
+
 -- =====================================================
 -- A7. VERIFIKASI
 -- Jalankan SELECT di bawah untuk memastikan hotfix benar-benar aktif.

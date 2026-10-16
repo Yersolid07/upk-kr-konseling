@@ -4,6 +4,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireAuth, guarded } from '@/lib/auth-guard'
 import { isAdminOrAbove } from '@/lib/rbac'
+import { validateAttachment } from '@/lib/attachment-policy'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { DraftAttachment } from '@/components/ui/attachment-input'
@@ -19,7 +20,15 @@ function generateSlug(text: string) {
     .slice(0, 80)
 }
 
-/** Simpan lampiran draf ke tabel attachments (content_id diisi setelah insert). */
+/**
+ * Simpan lampiran draf ke tabel attachments (content_id diisi setelah insert).
+ *
+ * Validasi di sini adalah KONTROL KEAMANAN, bukan sekadar kerapian data:
+ * DraftAttachment datang dari FormData yang bisa ditempa klien. Tanpa
+ * pemeriksaan ini, siapa pun bisa menyisipkan `kind: 'embed'` dengan URL
+ * sembarang dan URL itu nanti dirender sebagai <iframe src> di halaman
+ * artikel — vektor phishing/XSS.
+ */
 async function persistAttachments(
   supabase: ReturnType<typeof createClient>,
   ownerId: string,
@@ -27,8 +36,23 @@ async function persistAttachments(
   items: DraftAttachment[]
 ) {
   if (!items || items.length === 0) return
+
+  const valid = items.filter((a) => {
+    const err = validateAttachment({
+      kind: a.kind,
+      url: a.url,
+      title: a.title,
+      mime_type: a.mime_type ?? null,
+      size_bytes: a.size_bytes ?? null,
+    })
+    if (err) console.warn('[attachments] ditolak:', err, a.url?.slice(0, 60))
+    return !err
+  })
+
+  if (valid.length === 0) return
+
   await supabase.from('attachments').insert(
-    items.map((a, i) => ({
+    valid.map((a, i) => ({
       owner_id: ownerId,
       content_type: 'article',
       content_id: contentId,
@@ -107,24 +131,16 @@ export async function createArticle(formData: FormData) {
       p_detail: { status },
     })
 
-    // Beri tahu admin kalau perlu ditinjau.
+    // Beri tahu admin kalau perlu ditinjau. RPC notify_admins (SECURITY
+    // DEFINER) dipakai karena policy notif_insert menolak insert lintas
+    // pengguna — kalau memakai insert biasa, pemberitahuan ini gagal senyap.
     if (!canPublishDirectly) {
-      const { data: admins } = await supabase
-        .from('profiles')
-        .select('id')
-        .in('role', ['admin', 'super_admin'])
-
-      if (admins && admins.length > 0) {
-        await supabase.from('notifications').insert(
-          (admins as { id: string }[]).map((a) => ({
-            user_id: a.id,
-            type: 'system',
-            title: 'Artikel Menunggu Persetujuan',
-            body: `${ctx.profile.full_name} mengirim artikel "${title}" untuk ditinjau.`,
-            link: '/admin/articles',
-          }))
-        )
-      }
+      await supabase.rpc('notify_admins', {
+        p_type: 'system',
+        p_title: 'Artikel Menunggu Persetujuan',
+        p_body: `${ctx.profile.full_name} mengirim artikel "${title}" untuk ditinjau.`,
+        p_link: '/admin/articles',
+      })
     }
 
     revalidatePath('/renungan')

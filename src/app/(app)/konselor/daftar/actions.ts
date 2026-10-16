@@ -65,23 +65,15 @@ export async function submitKonselorApplication(formData: FormData) {
       return { error: 'Gagal mengirim pengajuan. Silakan coba lagi.' }
     }
 
-    // Beri tahu admin.
-    const { data: admins } = await supabase
-      .from('profiles')
-      .select('id')
-      .in('role', ['admin', 'super_admin'])
-
-    if (admins && admins.length > 0) {
-      await supabase.from('notifications').insert(
-        (admins as { id: string }[]).map((a) => ({
-          user_id: a.id,
-          type: 'system',
-          title: 'Pengajuan Konselor Baru',
-          body: `${ctx.profile.full_name} mengajukan diri sebagai konselor.`,
-          link: '/admin/konselor',
-        }))
-      )
-    }
+    // Beri tahu admin. RPC notify_admins (SECURITY DEFINER) dipakai karena
+    // policy notif_insert menolak insert lintas pengguna — kalau memakai
+    // insert biasa, admin tidak akan pernah menerima pemberitahuan ini.
+    await supabase.rpc('notify_admins', {
+      p_type: 'system',
+      p_title: 'Pengajuan Konselor Baru',
+      p_body: `${ctx.profile.full_name} mengajukan diri sebagai konselor.`,
+      p_link: '/admin/konselor',
+    })
 
     await supabase.rpc('log_audit', {
       p_action: 'create',

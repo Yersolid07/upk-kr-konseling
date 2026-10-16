@@ -28,18 +28,18 @@ export async function getAdminContent() {
 
     const [threads, comments, prayers] = await Promise.all([
       supabase
-        .from('threads')
-        .select('id, title, content, created_at, author:profiles(full_name)')
+        .from('threads_public')
+        .select('id, title, content, created_at, is_anonymous, anon_label, author_name')
         .order('created_at', { ascending: false })
         .limit(20),
       supabase
-        .from('comments')
-        .select('id, content, created_at, thread_id, author:profiles(full_name)')
+        .from('comments_public')
+        .select('id, content, created_at, thread_id, is_anonymous, anon_label, author_name')
         .order('created_at', { ascending: false })
         .limit(20),
       supabase
-        .from('prayer_requests')
-        .select('id, content, created_at, author:profiles(full_name)')
+        .from('prayers_public')
+        .select('id, content, created_at, is_anonymous, anon_label, author_name')
         .order('created_at', { ascending: false })
         .limit(20),
     ])
@@ -231,5 +231,75 @@ export async function assignRole(input: {
 
     revalidatePath('/admin')
     return { success: true as const, profile: updated }
+  })
+}
+
+// ─────────────────────────────────────────────────────────────
+// Pembukaan identitas penulis anonim (T5)
+// ─────────────────────────────────────────────────────────────
+//
+// SEBELUMNYA: form di /admin memanggil `profiles.select(...).eq('anon_token', ...)`
+// LANGSUNG dari browser. Artinya (a) siapa pun yang membuka DevTools bisa
+// membaca identitas tanpa pernah tercatat, dan (b) pencarian memakai awalan
+// token 4 huruf yang bisa bentrok antar pengguna sehingga bisa membuka orang
+// yang salah. Sekarang seluruh proses berjalan di server lewat RPC
+// `reveal_identity`, yang menulis log LEBIH DULU sebelum mengembalikan data.
+
+const revealSchema = z.object({
+  // Menerima UUID konten, atau tautan forum/prayer/renungan yang memuat UUID.
+  contentRef: z.string().trim().min(1, 'Isi tautan atau ID konten.'),
+  contentType: z.enum(['thread', 'comment', 'prayer']),
+  reason: z
+    .string()
+    .trim()
+    .min(20, 'Alasan pembukaan wajib diisi minimal 20 karakter.'),
+})
+
+const UUID_RE =
+  /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
+
+export async function revealIdentity(formData: FormData) {
+  return guarded(async () => {
+    // Hanya super admin — sama seperti yang dijaga RPC di database.
+    const ctx = await requireCap('revealIdentity')
+
+    const parsed = revealSchema.safeParse({
+      contentRef: formData.get('content_ref'),
+      contentType: formData.get('content_type'),
+      reason: formData.get('reason'),
+    })
+    if (!parsed.success) {
+      return { error: parsed.error.issues[0]?.message ?? 'Data tidak valid.' }
+    }
+
+    const uuid = parsed.data.contentRef.match(UUID_RE)?.[0]
+    if (!uuid) {
+      return {
+        error:
+          'Tidak menemukan ID konten. Tempelkan tautan konten (mis. /forum/xxxxxxxx-...) atau ID-nya langsung.',
+      }
+    }
+
+    const supabase = createClient()
+    const { data, error } = await supabase.rpc('reveal_identity', {
+      p_content_type: parsed.data.contentType,
+      p_content_id: uuid,
+      p_reason: parsed.data.reason,
+    })
+
+    if (error) {
+      // Pesan dari RPC sudah spesifik (mis. "Konten tidak ditemukan.").
+      return { error: error.message }
+    }
+
+    const row = (data as { user_id: string; full_name: string; angkatan: string | null; jurusan: string | null }[] | null)?.[0]
+    if (!row) return { error: 'Konten tidak ditemukan.' }
+
+    revalidatePath('/admin')
+    return {
+      success: true as const,
+      identity: `${row.full_name} · Angkatan ${row.angkatan ?? '—'} · ${row.jurusan ?? '—'}`,
+      requestedBy: ctx.userId,
+    }
   })
 }

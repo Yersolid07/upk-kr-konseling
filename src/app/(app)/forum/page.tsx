@@ -14,6 +14,7 @@ import {
   Lock
 } from 'lucide-react'
 import { cn, getRelativeTime } from '@/lib/utils'
+import { listThreads } from '@/lib/public-content'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,31 +32,11 @@ export default async function ForumPage({
     .select('*')
     .order('sort_order', { ascending: true })
 
-  // Build Query
-  let query = supabase
-    .from('threads')
-    .select(`
-      id, title, content, is_anonymous, created_at, comment_count, view_count,
-      author:profiles(id, full_name, anon_token),
-      category:thread_categories(name, slug, icon, color)
-    `)
-    .eq('is_flagged', false)
-
-  if (category) {
-    query = query.eq('category.slug', category)
-  }
-
-  if (q) {
-    query = query.ilike('title', `%${q}%`)
-  }
-
-  if (sort === 'latest') {
-    query = query.order('created_at', { ascending: false })
-  } else if (sort === 'popular') {
-    query = query.order('view_count', { ascending: false })
-  }
-
-  const { data: threads } = await query.limit(20)
+  // Daftar thread lewat helper yang menyembunyikan identitas penulis anonim.
+  // Sebelumnya query di sini memilih `author:profiles(id, full_name, anon_token)`
+  // untuk SEMUA baris — termasuk yang anonim — sehingga anon_token ikut
+  // terkirim ke browser dan "Anonim#A3F9" bisa dipetakan ke nama asli.
+  const threads = await listThreads(supabase, { category, sort, q })
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -135,10 +116,8 @@ export default async function ForumPage({
               <p className="text-[var(--text-muted)] font-medium">Belum ada diskusi di kategori ini.</p>
               <Link href="/forum/new" className="text-[var(--terra)] text-sm font-bold mt-2 inline-block">Mulai diskusi pertama!</Link>
             </div>
-          ) : (threads as any[])?.map((thread: any) => {
-            const displayName = thread.is_anonymous
-              ? `Anonim#${(thread.author as any)?.anon_token?.slice(0,4).toUpperCase()}`
-              : (thread.author as any)?.full_name
+          ) : (threads ?? []).map((thread) => {
+            const displayName = thread.author.label
             
             return (
               <Link 

@@ -276,7 +276,88 @@ export interface Database {
         ]
       }
     }
-    Views: Record<never, never>
+    // ─── VIEW PUBLIK (supabase/phase1-data-security.sql) ───
+    //
+    // View ini menyembunyikan identitas penulis anonim: author_id NULL dan
+    // author_name/avatar NULL untuk konten anonim, digantikan `anon_label`
+    // (pseudonim per-konten). Halaman publik membaca lewat view ini supaya
+    // anon_token tidak pernah sampai ke browser.
+    Views: {
+      threads_public: {
+        Row: {
+          id: string
+          category_id: string | null
+          title: string
+          content: string
+          is_anonymous: boolean
+          is_pinned: boolean
+          is_locked: boolean
+          is_flagged: boolean
+          view_count: number
+          comment_count: number
+          created_at: string
+          updated_at: string
+          author_id: string | null
+          anon_label: string | null
+          author_name: string | null
+          author_avatar: string | null
+          author_role: UserRole | null
+        }
+        Relationships: []
+      }
+      comments_public: {
+        Row: {
+          id: string
+          thread_id: string
+          parent_id: string | null
+          content: string
+          is_anonymous: boolean
+          is_flagged: boolean
+          created_at: string
+          author_id: string | null
+          anon_label: string | null
+          author_name: string | null
+          author_avatar: string | null
+          author_role: UserRole | null
+        }
+        Relationships: []
+      }
+      prayers_public: {
+        Row: {
+          id: string
+          content: string
+          category_id: string | null
+          is_anonymous: boolean
+          is_answered: boolean
+          pray_count: number
+          created_at: string
+          updated_at: string
+          author_id: string | null
+          anon_label: string | null
+          author_name: string | null
+          author_avatar: string | null
+        }
+        Relationships: []
+      }
+      profiles_public: {
+        Row: {
+          id: string
+          full_name: string
+          display_name: string | null
+          avatar_url: string | null
+          role: UserRole
+          bio: string | null
+          angkatan: string | null
+          jurusan: string | null
+          specialization: string[] | null
+          is_verified: boolean
+          is_online: boolean
+          last_seen: string | null
+          created_at: string
+        }
+        Relationships: []
+      }
+    }
     Functions: {
       get_display_name: {
         Args: { p_user_id: string; p_is_anonymous: boolean }
@@ -302,9 +383,24 @@ export interface Database {
         Returns: undefined
       }
       increment_thread_views: { Args: { thread_id: string }; Returns: undefined }
-      // Notifikasi lintas pengguna (SECURITY DEFINER, hanya admin ke atas).
-      // Diperlukan karena policy notif_insert hanya mengizinkan
-      // user_id = auth.uid() — lihat supabase/hotfix-security.sql A6.
+      // Pembukaan identitas penulis anonim. Menulis identity_reveal_log
+      // LEBIH DULU, lalu mengembalikan identitasnya. Lihat
+      // supabase/phase1-data-security.sql seksi 7.
+      reveal_identity: {
+        Args: {
+          p_content_type: ContentType
+          p_content_id: string
+          p_reason: string
+        }
+        Returns: {
+          user_id: string
+          full_name: string
+          angkatan: string | null
+          jurusan: string | null
+        }[]
+      }
+      // Notifikasi lintas pengguna ditolak policy notif_insert (user_id =
+      // auth.uid()); dikirim lewat RPC SECURITY DEFINER.
       notify_user: {
         Args: {
           p_user_id: string
@@ -315,6 +411,17 @@ export interface Database {
           p_meta?: Record<string, unknown> | null
         }
         Returns: string
+      }
+      // Anggota biasa memberi tahu admin (artikel baru, pengajuan konselor).
+      // Tujuan terkunci ke akun admin/super_admin saja.
+      notify_admins: {
+        Args: {
+          p_type: NotificationType
+          p_title: string
+          p_body?: string | null
+          p_link?: string | null
+        }
+        Returns: number
       }
     }
     Enums: {

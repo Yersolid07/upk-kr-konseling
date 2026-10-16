@@ -1,8 +1,19 @@
 // src/components/ui/attachment-list.tsx
 // Menampilkan lampiran sebuah postingan. Server component — tidak butuh state.
+//
+// KEAMANAN: nilai `a.url` berasal dari database dan TIDAK boleh dipercaya.
+// Sebelumnya URL itu dipasang langsung ke <iframe src> dan <img src>, sehingga
+// lampiran `kind: 'embed'` dengan URL sembarang (atau `javascript:`) bisa
+// disisipkan lewat REST API — allowlist host embed hanya ada di klien.
+// Sekarang setiap URL melewati pemeriksaan di lib/attachment-policy.ts:
+//   - embed hanya untuk host yang diizinkan, kalau tidak -> dirender sebagai
+//     tautan biasa, bukan iframe
+//   - gambar/audio/video hanya dari storage sendiri
+//   - apa pun yang gagal validasi TIDAK dirender sebagai elemen aktif
 
 import { FileText, Link2, Music, Download, ExternalLink } from 'lucide-react'
 import type { Attachment } from '@/types/database'
+import { isAllowedEmbedUrl, isSafeAssetUrl } from '@/lib/attachment-policy'
 
 function hostOf(url: string): string {
   try {
@@ -12,11 +23,26 @@ function hostOf(url: string): string {
   }
 }
 
+/** Lampiran yang tidak lolos validasi dirender sebagai tautan biasa saja. */
+function safeEmbed(a: Attachment): boolean {
+  return a.kind === 'embed' && isAllowedEmbedUrl(a.url)
+}
+
+function safeAsset(a: Attachment): boolean {
+  return isSafeAssetUrl(a.url)
+}
+
 export function AttachmentList({ items, className }: { items?: Attachment[] | null; className?: string }) {
   if (!items || items.length === 0) return null
 
-  const media = items.filter((a) => a.kind === 'image' || a.kind === 'video' || a.kind === 'embed')
-  const files = items.filter((a) => a.kind !== 'image' && a.kind !== 'video' && a.kind !== 'embed')
+  // Hanya tampilkan yang URL-nya lolos validasi dasar.
+  const usable = items.filter((a) => isSafeAssetUrl(a.url))
+  if (usable.length === 0) return null
+
+  const media = usable.filter(
+    (a) => (a.kind === 'image' || a.kind === 'video' || safeEmbed(a)) && safeAsset(a)
+  )
+  const files = usable.filter((a) => !media.includes(a))
 
   return (
     <div className={className ?? 'space-y-3'}>
@@ -26,6 +52,8 @@ export function AttachmentList({ items, className }: { items?: Attachment[] | nu
             <figure key={a.id} className="rounded-2xl overflow-hidden border border-[var(--cream-dark)] bg-white">
               {a.kind === 'image' ? (
                 <img src={a.url} alt={a.title ?? ''} className="w-full h-auto object-cover" loading="lazy" />
+              ) : a.kind === 'video' ? (
+                <video src={a.url} controls preload="metadata" className="w-full h-auto" />
               ) : (
                 <div className="aspect-video">
                   <iframe
@@ -35,6 +63,9 @@ export function AttachmentList({ items, className }: { items?: Attachment[] | nu
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     loading="lazy"
+                    // Batasi apa yang bisa dilakukan iframe pihak ketiga.
+                    sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+                    referrerPolicy="strict-origin-when-cross-origin"
                   />
                 </div>
               )}
@@ -52,7 +83,7 @@ export function AttachmentList({ items, className }: { items?: Attachment[] | nu
         <ul className="space-y-2">
           {files.map((a) => (
             <li key={a.id}>
-              {a.kind === 'audio' ? (
+              {a.kind === 'audio' && safeAsset(a) ? (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-white border border-[var(--cream-dark)]">
                   <Music size={18} className="text-[var(--terra)] shrink-0" />
                   <div className="min-w-0 flex-1">

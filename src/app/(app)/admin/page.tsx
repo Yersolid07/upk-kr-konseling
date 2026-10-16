@@ -10,6 +10,10 @@ import {
 import toast from 'react-hot-toast'
 import type { Profile } from '@/types/database'
 
+function getModerationAuthor(row: { is_anonymous?: boolean; anon_label?: string | null; author_name?: string | null }) {
+  return row.is_anonymous ? `Anonim#${row.anon_label ?? '????'}` : row.author_name ?? 'Pengguna'
+}
+
 type Tab = 'users' | 'konselor-pending' | 'reports' | 'identity' | 'content'
 
 export default function AdminPage() {
@@ -270,50 +274,87 @@ function RoleDropdown({ user, onAssign }: { user: Profile; onAssign: (id: string
 }
 
 function IdentityRevealForm() {
-  const [anonCode, setAnonCode] = useState('')
+  // Menempelkan tautan atau ID konten, BUKAN awalan kode anonim. Awalan 4 huruf
+  // bisa bentrok antar pengguna, dan pencarian identitas dari browser tidak
+  // pernah tercatat. Server Action revealIdentity menulis log dulu (RPC
+  // reveal_identity) baru mengembalikan identitas.
+  const [contentRef, setContentRef] = useState('')
+  const [contentType, setContentType] = useState<'thread' | 'comment' | 'prayer'>('thread')
   const [reason, setReason] = useState('')
   const [result, setResult] = useState<string | null>(null)
-  const supabase = createClient()
+  const [busy, setBusy] = useState(false)
 
   async function handleReveal(e: React.FormEvent) {
     e.preventDefault()
-    if (!reason.trim()) { toast.error('Wajib mengisi alasan.'); return }
-    // Find profile by anon_token
-    const { data } = await supabase
-      .from('profiles')
-      .select('id, full_name, angkatan, jurusan')
-      .eq('anon_token', anonCode.toLowerCase())
-      .single()
-    if (!data) { toast.error('Kode anonim tidak ditemukan.'); return }
-    // Log the reveal (audit trail) — sekarang bertipe karena tabel
-    // identity_reveal_log terdaftar di schema Database.
-    const revealedUser = data as { id: string; full_name: string; angkatan: string | null; jurusan: string | null }
-    await supabase.from('identity_reveal_log').insert({
-      requested_by: (await supabase.auth.getUser()).data.user!.id,
-      revealed_user_id: revealedUser.id,
-      reason,
-    })
-    setResult(`${revealedUser.full_name} · Angkatan ${revealedUser.angkatan ?? '—'} · ${revealedUser.jurusan ?? '—'}`)
-    toast.success('Identitas berhasil dibuka. Tindakan ini telah dicatat.')
+    setBusy(true)
+    setResult(null)
+
+    const fd = new FormData()
+    fd.set('content_ref', contentRef)
+    fd.set('content_type', contentType)
+    fd.set('reason', reason)
+
+    const { revealIdentity } = await import('./actions')
+    const res = await revealIdentity(fd)
+    setBusy(false)
+
+    if ('error' in res) {
+      toast.error(res.error)
+      return
+    }
+    setResult(res.identity)
+    toast.success('Identitas dibuka. Tindakan ini tercatat di log audit.')
   }
 
   return (
-    <form onSubmit={handleReveal} style={{ maxWidth: 400 }}>
+    <form onSubmit={handleReveal} style={{ maxWidth: 460 }}>
       <div className="form-group">
-        <label className="form-label">Kode Anonim</label>
-        <input className="form-input" placeholder="Contoh: a3f9 (dari tampilan Anonim#A3F9)" value={anonCode} onChange={e => setAnonCode(e.target.value)} required />
+        <label className="form-label">Jenis Konten</label>
+        <select
+          className="form-input"
+          value={contentType}
+          onChange={(e) => setContentType(e.target.value as 'thread' | 'comment' | 'prayer')}
+        >
+          <option value="thread">Diskusi (thread)</option>
+          <option value="comment">Komentar</option>
+          <option value="prayer">Permohonan doa</option>
+        </select>
       </div>
       <div className="form-group">
-        <label className="form-label">Alasan Pembukaan (wajib)</label>
-        <textarea className="form-input" placeholder="Contoh: Pengguna mengindikasikan ancaman bahaya diri pada thread #..." value={reason} onChange={e => setReason(e.target.value)} rows={3} required style={{ resize: 'vertical' }} />
+        <label className="form-label">Tautan atau ID Konten</label>
+        <input
+          className="form-input"
+          placeholder="Tempelkan tautan konten, mis. /forum/3f2a… atau ID-nya"
+          value={contentRef}
+          onChange={(e) => setContentRef(e.target.value)}
+          required
+        />
+      </div>
+      <div className="form-group">
+        <label className="form-label">Alasan Pembukaan (wajib, min. 20 karakter)</label>
+        <textarea
+          className="form-input"
+          placeholder="Contoh: Pengguna mengindikasikan ancaman bahaya diri pada diskusi ini."
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          rows={3}
+          required
+          minLength={20}
+          style={{ resize: 'vertical' }}
+        />
       </div>
       {result && (
         <div className="success-banner" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Check size={15} /> Identitas: <strong>{result}</strong>
         </div>
       )}
-      <button type="submit" className="btn-primary" style={{ background: 'linear-gradient(135deg, var(--danger), #a93226)', display: 'inline-flex', alignItems: 'center', gap: 7, width: 'auto' }}>
-        <Unlock size={15} /> Buka Identitas
+      <button
+        type="submit"
+        className="btn-primary"
+        disabled={busy}
+        style={{ background: 'linear-gradient(135deg, var(--danger), #a93226)', display: 'inline-flex', alignItems: 'center', gap: 7, width: 'auto' }}
+      >
+        <Unlock size={15} /> {busy ? 'Memproses…' : 'Buka Identitas'}
       </button>
     </form>
   )
@@ -358,7 +399,7 @@ function ContentModeration() {
             <div key={t.id} className="py-3 border-b border-[var(--cream)] flex justify-between items-start">
               <div>
                 <strong className="text-sm block">{t.title}</strong>
-                <span className="text-xs text-[var(--text-muted)]">Oleh: {t.author?.full_name}</span>
+                <span className="text-xs text-[var(--text-muted)]">Oleh: {getModerationAuthor(t)}</span>
               </div>
               <button onClick={() => handleDelete('thread', t.id)} className="btn-icon text-red-500 text-xs px-2 border border-red-200 rounded">Hapus</button>
             </div>
@@ -373,7 +414,7 @@ function ContentModeration() {
             <div key={c.id} className="py-3 border-b border-[var(--cream)] flex justify-between items-start">
               <div>
                 <p className="text-sm line-clamp-2">{c.content}</p>
-                <span className="text-xs text-[var(--text-muted)]">Oleh: {c.author?.full_name}</span>
+                <span className="text-xs text-[var(--text-muted)]">Oleh: {getModerationAuthor(c)}</span>
               </div>
               <button onClick={() => handleDelete('comment', c.id)} className="btn-icon text-red-500 text-xs px-2 border border-red-200 rounded">Hapus</button>
             </div>

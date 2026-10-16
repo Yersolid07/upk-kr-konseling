@@ -6,18 +6,19 @@ import { supportPrayer } from '@/app/(app)/prayer/actions'
 import { HandsPraying } from '@/components/icons/HandsPraying'
 import { MessageCircle, Shield } from 'lucide-react'
 import { cn, getRelativeTime } from '@/lib/utils'
+import type { PublicPrayer } from '@/lib/public-content'
 
 interface PrayerCardProps {
-  prayer: any
+  // Bentuknya dari listPrayers() — author.label sudah berisi "Anonim#XXXX"
+  // untuk doa anonim, jadi anon_token TIDAK pernah sampai ke komponen klien.
+  prayer: PublicPrayer
 }
 
 export function PrayerCard({ prayer }: PrayerCardProps) {
   const [count, setCount] = useState(prayer.pray_count)
   const [loading, setLoading] = useState(false)
 
-  const displayName = prayer.is_anonymous 
-    ? `Anonim#${(prayer.author as any)?.anon_token?.slice(0,4).toUpperCase()}`
-    : (prayer.author as any)?.full_name
+  const displayName = prayer.author.label
 
   async function handleSupport() {
     if (loading) return
@@ -40,16 +41,16 @@ export function PrayerCard({ prayer }: PrayerCardProps) {
        
        <div className="flex items-center justify-between relative z-10">
           <div className="flex items-center gap-3">
-             <div className={cn(
-               "w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm",
-               prayer.is_anonymous ? "bg-slate-400" : "bg-gradient-to-br from-[var(--gold)] to-[var(--brown)]"
-             )}>
-               {prayer.is_anonymous ? <Shield size={16} /> : (prayer.author as any)?.full_name?.charAt(0)}
-             </div>
-             <div>
-                <div className="text-xs font-bold text-[var(--brown-dark)]">{displayName}</div>
-                <div className="text-[10px] text-[var(--text-muted)]">{getRelativeTime(prayer.created_at)}</div>
-             </div>
+            <div className={cn(
+              "w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm",
+              prayer.is_anonymous ? "bg-slate-400" : "bg-gradient-to-br from-[var(--gold)] to-[var(--brown)]"
+            )}>
+              {prayer.is_anonymous ? <Shield size={16} /> : displayName.charAt(0)}
+            </div>
+            <div>
+               <div className="text-xs font-bold text-[var(--brown-dark)]">{displayName}</div>
+               <div className="text-[10px] text-[var(--text-muted)]">{getRelativeTime(prayer.created_at)}</div>
+            </div>
           </div>
           <div className="text-[var(--gold)] opacity-30">
              <HandsPraying size={20} />

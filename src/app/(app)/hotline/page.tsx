@@ -6,7 +6,7 @@ import {
 import type { HotlineContact } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Layanan Hotline | UPK-Kr. Konseling' }
+export const metadata = { title: 'Layanan Hotline | IKA UPK-Kr FT UNSRAT' }
 
 // Nomor cadangan bila tabel hotline_contacts belum diisi. Ini nomor resmi yang
 // sudah diverifikasi — bukan karangan. Sumber:

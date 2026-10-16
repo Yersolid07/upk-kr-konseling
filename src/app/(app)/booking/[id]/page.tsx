@@ -62,7 +62,7 @@ export default async function BookingDetailPage({ params }: { params: { id: stri
                       <ShieldCheck size={18} />
                    </div>
                    <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                      Konselor profesional berlisensi dan terverifikasi oleh UPK-Kr.
+                      Konselor profesional berlisensi dan terverifikasi oleh IKA UPK-Kr FT UNSRAT.
                    </p>
                 </div>
                 <div className="flex items-start gap-3">
@@ -99,7 +99,7 @@ export default async function BookingDetailPage({ params }: { params: { id: stri
               <div className="space-y-1">
                  <h4 className="text-sm font-bold text-[var(--brown-dark)]">Lokasi & Metode</h4>
                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                    Pertemuan dapat dilakukan secara luring (offline) di kantor UPK-Kr atau secara daring (online) melalui link meeting yang akan dikirimkan setelah konfirmasi.
+                    Pertemuan dapat dilakukan secara luring (offline) di kantor IKA UPK-Kr FT UNSRAT atau secara daring (online) melalui link meeting yang akan dikirimkan setelah konfirmasi.
                  </p>
               </div>
            </div>

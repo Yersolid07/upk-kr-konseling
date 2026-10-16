@@ -86,10 +86,10 @@ export function Sidebar({ profile, unreadMessages = 0 }: SidebarProps) {
             <Logo tile size={42} />
             <div>
               <div className="font-[var(--font-playfair)] text-[15px] font-bold text-white leading-tight">
-                UPK-Kr. Konseling
+                IKA UPK-Kr FT UNSRAT
               </div>
               <div className="text-[10px] text-white/40 uppercase tracking-[0.16em] font-semibold">
-                FT. UNSRAT Alumni
+                Ikatan Alumni
               </div>
             </div>
           </div>

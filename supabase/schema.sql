@@ -1,5 +1,5 @@
 -- =====================================================
--- UPK-Kr. FT. UNSRAT Konseling Platform
+-- Platform Konseling IKA UPK-Kr FT UNSRAT
 -- Supabase Schema — Complete
 -- =====================================================
 

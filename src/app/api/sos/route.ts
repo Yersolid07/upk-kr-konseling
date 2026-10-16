@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       const { sendWhatsApp } = await import('@/lib/fonnte')
       await sendWhatsApp(
         sosNumber,
-        `[SOS UPK-Kr] Bantuan Darurat!\n\nNama: ${(user.user_metadata as any)?.full_name || 'Seorang Anggota'}\nPesan: "${message}"\n\nRespon segera di: ${process.env.NEXT_PUBLIC_APP_URL}/konselor`
+        `[SOS IKA UPK-Kr FT UNSRAT] Bantuan Darurat!\n\nNama: ${(user.user_metadata as any)?.full_name || 'Seorang Anggota'}\nPesan: "${message}"\n\nRespon segera di: ${process.env.NEXT_PUBLIC_APP_URL}/konselor`
       )
     } catch (err) {
       console.error('SOS WhatsApp send failed:', err)

@@ -1,11 +1,14 @@
-// public/sw.js — UPK-Kr. Konseling service worker
+// public/sw.js — IKA UPK-Kr FT UNSRAT service worker
 // Strategy:
 //   - Precache the app shell + offline fallback on install.
 //   - Navigations: network-first, fall back to cache, then /offline.
 //   - Static assets (_next/static, icons, images): stale-while-revalidate.
 //   - Never cache Supabase/API/auth traffic.
 
-const CACHE_VERSION = 'upk-kr-v2'
+// Naikkan versi ini setiap kali aset di PRECACHE_URLS berubah isinya, supaya
+// klien lama membuang cache dan mengambil berkas baru. Cache dengan prefix
+// berbeda dihapus di handler 'activate'.
+const CACHE_VERSION = 'ika-upk-kr-v4'
 const PRECACHE = `${CACHE_VERSION}-precache`
 const RUNTIME = `${CACHE_VERSION}-runtime`
 
@@ -13,6 +16,7 @@ const PRECACHE_URLS = [
   '/',
   '/offline',
   '/manifest.json',
+  '/logo-ika.png',
   '/icon-192.png',
   '/icon-512.png',
 ]

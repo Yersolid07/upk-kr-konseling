@@ -40,7 +40,7 @@ export default function ContactPage() {
         <div className="text-center space-y-4">
           <h1 className="font-[var(--font-playfair)] text-4xl md:text-5xl font-black text-[var(--brown-dark)]">Hubungi Kami</h1>
           <p className="text-[var(--text-muted)] max-w-xl mx-auto leading-relaxed">
-            Tim UPK-Kr siap melayani Anda. Jangan ragu untuk menghubungi kami melalui salah satu saluran di bawah ini.
+            Tim IKA UPK-Kr FT UNSRAT siap melayani Anda. Jangan ragu untuk menghubungi kami melalui salah satu saluran di bawah ini.
           </p>
         </div>
 
@@ -79,7 +79,7 @@ export default function ContactPage() {
           <div className="space-y-2 text-center md:text-left">
             <h3 className="text-xl font-bold text-[var(--brown-dark)]">Alamat Sekretariat</h3>
             <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-              Sekretariat UPK-Kr. Fakultas Teknik<br />
+              Sekretariat IKA UPK-Kr FT UNSRAT<br />
               Universitas Sam Ratulangi<br />
               Jl. Kampus Unsrat, Bahu, Malalayang<br />
               Manado, Sulawesi Utara 95115

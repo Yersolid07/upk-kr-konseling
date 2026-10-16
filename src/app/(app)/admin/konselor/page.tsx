@@ -8,7 +8,7 @@ import { KonselorQueue } from './konselor-queue'
 import type { KonselorApplication } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Pengajuan Konselor | UPK-Kr' }
+export const metadata = { title: 'Pengajuan Konselor | IKA UPK-Kr FT UNSRAT' }
 
 export default async function AdminKonselorPage() {
   const ctx = await getAuthContext()

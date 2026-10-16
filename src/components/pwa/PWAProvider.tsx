@@ -97,11 +97,9 @@ export function PWAProvider() {
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] max-w-md animate-fade-up">
       <div className="bg-[var(--brown-dark)] text-white rounded-2xl shadow-2xl p-4 flex items-center gap-4">
-        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[var(--terra)] to-[var(--gold)] flex items-center justify-center text-lg shrink-0">
-          <LogoMark size={22} />
-        </div>
+        <LogoMark size={44} className="shrink-0 ring-1 ring-white/15" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold leading-tight">Pasang aplikasi UPK-Kr</p>
+          <p className="text-sm font-bold leading-tight">Pasang aplikasi IKA UPK-Kr FT UNSRAT</p>
           <p className="text-[11px] text-white/60 leading-snug">Akses lebih cepat langsung dari layar utama.</p>
         </div>
         <button

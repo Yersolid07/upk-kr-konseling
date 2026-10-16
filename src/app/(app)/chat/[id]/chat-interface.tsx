@@ -100,7 +100,7 @@ export function ChatInterface({ session, initialMessages, currentUserId }: ChatI
                 {otherUser?.full_name?.charAt(0) ?? 'K'}
              </div>
              <div>
-                <h3 className="text-sm font-bold text-[var(--brown-dark)] leading-none">{otherUser?.full_name ?? 'Konselor UPK-Kr'}</h3>
+                <h3 className="text-sm font-bold text-[var(--brown-dark)] leading-none">{otherUser?.full_name ?? 'Konselor IKA UPK-Kr FT UNSRAT'}</h3>
                 <span className="text-[10px] text-green-500 font-bold uppercase tracking-widest mt-1 block">Online</span>
              </div>
           </div>

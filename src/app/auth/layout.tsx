@@ -14,14 +14,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] " />
         
         <div className="relative z-10 text-center space-y-8 animate-fade-in">
-          <Logo tile size={96} className="mx-auto" />
+          <Logo size={104} className="mx-auto shadow-2xl" />
           <div className="space-y-4">
             <h1 className="font-[var(--font-playfair)] text-5xl font-bold text-white leading-tight">
               Melangkah Maju <br /> 
               <span className="text-[var(--terra-light)]">Bersama Iman.</span>
             </h1>
             <p className="text-[var(--cream-dark)] text-lg max-w-md mx-auto leading-relaxed opacity-80">
-              Temukan kedamaian dan dukungan di komunitas Kristen Fakultas Teknik UNSRAT.
+              Temukan kedamaian dan dukungan di komunitas alumni Kristen Fakultas Teknik UNSRAT.
             </p>
           </div>
           

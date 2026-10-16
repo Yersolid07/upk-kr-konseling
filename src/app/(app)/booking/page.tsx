@@ -61,7 +61,7 @@ export default async function BookingPage() {
         <div className="flex items-center justify-between px-2">
            <h2 className="font-[var(--font-playfair)] text-3xl font-bold text-[var(--brown-dark)]">Daftar Konselor</h2>
            <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">
-             <Shield size={14} className="text-[var(--sage)]" /> Terverifikasi oleh UPK-Kr
+             <Shield size={14} className="text-[var(--sage)]" /> Terverifikasi oleh IKA UPK-Kr FT UNSRAT
            </div>
         </div>
 

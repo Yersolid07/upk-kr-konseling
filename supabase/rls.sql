@@ -1,6 +1,6 @@
 -- =====================================================
 -- Row Level Security (RLS) Policies
--- UPK-Kr. FT. UNSRAT Konseling Platform
+-- Platform Konseling IKA UPK-Kr FT UNSRAT
 -- =====================================================
 
 -- Enable RLS on all tables

@@ -7,7 +7,7 @@ import { ApplicationForm } from './application-form'
 import type { KonselorApplication } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Ajukan sebagai Konselor | UPK-Kr' }
+export const metadata = { title: 'Ajukan sebagai Konselor | IKA UPK-Kr FT UNSRAT' }
 
 export default async function KonselorApplyPage() {
   const supabase = createClient()
@@ -45,7 +45,7 @@ export default async function KonselorApplyPage() {
 
       <header className="space-y-3">
         <h1 className="font-[var(--font-playfair)] text-3xl sm:text-4xl font-bold text-[var(--brown-dark)]">
-          Menjadi Konselor UPK-Kr
+          Menjadi Konselor IKA UPK-Kr FT UNSRAT
         </h1>
         <p className="text-[var(--text-muted)] leading-relaxed">
           Konselor mendampingi anggota secara rahasia melalui sesi 1-on-1. Sebelum melayani,

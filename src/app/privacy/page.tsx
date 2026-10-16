@@ -27,12 +27,12 @@ export default function PrivacyPage() {
     {
       icon: <Trash2 size={20} />,
       title: 'Hak Penghapusan',
-      content: 'Anda berhak meminta penghapusan akun dan seluruh data Anda kapan saja dengan menghubungi admin UPK-Kr. Proses penghapusan akan diselesaikan dalam waktu 30 hari kerja.'
+      content: 'Anda berhak meminta penghapusan akun dan seluruh data Anda kapan saja dengan menghubungi admin IKA UPK-Kr FT UNSRAT. Proses penghapusan akan diselesaikan dalam waktu 30 hari kerja.'
     },
     {
       icon: <Mail size={20} />,
       title: 'Kontak Privasi',
-      content: 'Untuk pertanyaan terkait privasi data, silakan hubungi tim UPK-Kr melalui halaman Kontak atau email langsung ke pengurus.'
+      content: 'Untuk pertanyaan terkait privasi data, silakan hubungi tim IKA UPK-Kr FT UNSRAT melalui halaman Kontak atau email langsung ke pengurus.'
     }
   ]
 
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
         <div className="space-y-4">
           <h1 className="font-[var(--font-playfair)] text-4xl md:text-5xl font-black text-[var(--brown-dark)]">Kebijakan Privasi</h1>
           <p className="text-[var(--text-muted)] leading-relaxed">
-            UPK-Kr Konseling berkomitmen menjaga privasi dan kerahasiaan seluruh anggota. Kebijakan ini menjelaskan bagaimana kami mengelola data Anda.
+            IKA UPK-Kr FT UNSRAT berkomitmen menjaga privasi dan kerahasiaan seluruh anggota. Kebijakan ini menjelaskan bagaimana kami mengelola data Anda.
           </p>
           <p className="text-xs text-[var(--text-muted)]">Terakhir diperbarui: {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
         </div>

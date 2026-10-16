@@ -57,11 +57,9 @@ export default function LoginPage() {
     <div className="auth-card backdrop-blur-xl bg-white/90 border border-white/20">
       {/* Brand Header */}
       <div className="flex flex-col items-center mb-10">
-        <div className="w-16 h-16 bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] rounded-2xl flex items-center justify-center text-white shadow-xl mb-4 animate-bounce-slow">
-          <LogoMark size={32} />
-        </div>
+        <LogoMark size={64} className="mb-4 shadow-lg animate-bounce-slow" />
         <h1 className="font-[var(--font-playfair)] text-2xl font-black text-[var(--brown-dark)]">Selamat Datang</h1>
-        <p className="text-xs text-[var(--text-muted)] font-bold uppercase tracking-widest mt-1">UPK-Kr Konseling Platform</p>
+        <p className="text-xs text-[var(--text-muted)] font-bold uppercase tracking-widest mt-1">Platform IKA UPK-Kr FT UNSRAT</p>
       </div>
 
       {/* Tabs */}

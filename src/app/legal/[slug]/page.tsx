@@ -42,7 +42,7 @@ async function loadDoc(slug: string): Promise<Doc | null> {
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const d = await loadDoc(params.slug)
   return {
-    title: d ? `${d.title} | UPK-Kr. Konseling` : 'Dokumen | UPK-Kr. Konseling',
+    title: d ? `${d.title} | IKA UPK-Kr FT UNSRAT` : 'Dokumen | IKA UPK-Kr FT UNSRAT',
     description: d?.summary ?? undefined,
   }
 }

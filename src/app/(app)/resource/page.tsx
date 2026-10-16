@@ -12,7 +12,7 @@ import {
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Resource Kesehatan | UPK-Kr. Konseling',
+  title: 'Resource Kesehatan | IKA UPK-Kr FT UNSRAT',
 }
 
 // Hanya tautan yang benar-benar ada dan bisa dibuka. Tidak ada tombol atau
@@ -27,7 +27,7 @@ const EXTERNAL_RESOURCES = [
       { name: 'Healing119.id — krisis jiwa (Kemenkes)', detail: '119 ekst. 8', href: 'tel:119' },
       { name: "D'Patens — dukungan psikososial", detail: '0811 979 10000', href: 'tel:081197910000' },
       { name: 'RSUP Prof. Dr. R.D. Kandou Manado', detail: '(0431) 838203', href: 'tel:0431838203' },
-      { name: 'Hotline Layanan UPK-Kr', detail: 'Lihat halaman', href: '/hotline' },
+      { name: 'Hotline Layanan IKA UPK-Kr FT UNSRAT', detail: 'Lihat halaman', href: '/hotline' },
     ],
   },
   {
@@ -56,7 +56,7 @@ const EXTERNAL_RESOURCES = [
   {
     title: 'Bertumbuh Bersama',
     description:
-      'Ruang di dalam aplikasi ini untuk berbagi beban dan bertumbuh bersama komunitas UPK-Kr.',
+      'Ruang di dalam aplikasi ini untuk berbagi beban dan bertumbuh bersama komunitas IKA UPK-Kr FT UNSRAT.',
     icon: <HeartHandshake size={24} className="text-[var(--terra)]" />,
     items: [
       { name: 'Forum Diskusi — topik terkurasi', detail: 'Buka', href: '/forum' },

@@ -8,7 +8,7 @@ akan tampil kosong (tidak error, tapi belum ada isinya).
 ## Langkah
 
 1. Buka **https://supabase.com/dashboard** → pilih project
-   `aslvltjvqnpedmnarkea` (UPK-Kr).
+   `aslvltjvqnpedmnarkea` (IKA UPK-Kr FT UNSRAT).
 
 2. Di menu kiri, klik **SQL Editor** → **+ New query**.
 

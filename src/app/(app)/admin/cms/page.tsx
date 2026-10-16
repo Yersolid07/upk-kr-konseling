@@ -8,7 +8,7 @@ import type { HotlineContact, LegalDocument, SiteSetting } from '@/types/databas
 
 export const dynamic = 'force-dynamic'
 
-export const metadata = { title: 'Pengaturan Situs | UPK-Kr' }
+export const metadata = { title: 'Pengaturan Situs | IKA UPK-Kr FT UNSRAT' }
 
 export default async function AdminCmsPage() {
   const ctx = await getAuthContext()

@@ -1,5 +1,5 @@
 -- =====================================================
--- Realtime Setup — UPK-Kr. Konseling
+-- Realtime Setup — IKA UPK-Kr FT UNSRAT
 -- Run this in Supabase SQL Editor
 -- =====================================================
 

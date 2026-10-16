@@ -434,7 +434,7 @@ BEGIN
 
     INSERT INTO public.notifications (user_id, type, title, body, link)
     VALUES (NEW.user_id, 'konselor_verified', 'Pengajuan Konselor Disetujui',
-            'Selamat! Kamu kini terverifikasi sebagai Konselor UPK-Kr.', '/konselor');
+            'Selamat! Kamu kini terverifikasi sebagai Konselor IKA UPK-Kr FT UNSRAT.', '/konselor');
 
     PERFORM public.log_audit('approve', 'konselor_application', NEW.id::text,
                              jsonb_build_object('user_id', NEW.user_id));
@@ -461,7 +461,7 @@ CREATE TRIGGER trg_konselor_approval
 -- 13. SEED: pengaturan default
 -- =====================================================
 INSERT INTO public.site_settings (key, value, description) VALUES
-  ('site_name',          '{"id":"UPK-Kr. Konseling","en":"UPK-Kr. Counseling"}'::jsonb, 'Nama situs'),
+  ('site_name',          '{"id":"IKA UPK-Kr FT UNSRAT","en":"IKA UPK-Kr FT UNSRAT"}'::jsonb, 'Nama situs'),
   ('site_tagline',       '{"id":"Ruang aman untuk berbagi, berdoa, dan bertumbuh bersama"}'::jsonb, 'Tagline'),
   ('article_requires_approval', '{"value":true}'::jsonb, 'Artikel wajib disetujui admin sebelum terbit'),
   ('prayer_requires_approval',  '{"value":false}'::jsonb, 'Permintaan doa wajib disetujui admin'),
@@ -469,6 +469,13 @@ INSERT INTO public.site_settings (key, value, description) VALUES
   ('konselor_recruiting','{"value":true}'::jsonb, 'Menerima pengajuan konselor baru'),
   ('crisis_notice',      '{"id":"Jika Anda dalam bahaya langsung, hubungi 112 atau IGD terdekat."}'::jsonb, 'Peringatan krisis')
 ON CONFLICT (key) DO NOTHING;
+
+-- Upgrade only the previous default; preserve custom names set by super_admin.
+UPDATE public.site_settings
+SET value = jsonb_build_object('id', 'IKA UPK-Kr FT UNSRAT', 'en', 'IKA UPK-Kr FT UNSRAT'),
+    updated_at = now()
+WHERE key = 'site_name'
+  AND value->>'id' IN ('UPK-Kr. Konseling', 'UPK-Kr Konseling');
 
 -- =====================================================
 -- 14. SEED: hotline resmi (bisa diubah super admin dari panel CMS)
@@ -493,16 +500,16 @@ WHERE NOT EXISTS (SELECT 1 FROM public.hotline_contacts);
 INSERT INTO public.legal_documents (slug, title, summary, content, effective_date)
 VALUES
   ('terms', 'Syarat & Ketentuan',
-   'Aturan penggunaan layanan UPK-Kr. Konseling.',
-   E'# Syarat & Ketentuan\n\n## 1. Penerimaan\nDengan membuat akun dan menggunakan UPK-Kr. Konseling, kamu menyetujui ketentuan ini.\n\n## 2. Bukan Layanan Darurat\nAplikasi ini **bukan** layanan gawat darurat. Jika kamu dalam bahaya langsung, hubungi 112 atau IGD terdekat.\n\n## 3. Kerahasiaan\nIdentitas asli penulis konten anonim hanya dapat dibuka oleh super admin melalui prosedur resmi, dan setiap pembukaan tercatat permanen di log audit.\n\n## 4. Tanggung Jawab Pengguna\nKamu bertanggung jawab atas konten yang kamu kirim. Dilarang mengirim konten yang melecehkan, mengancam, atau melanggar hukum.\n\n## 5. Moderasi\nModerator dan admin dapat menandai, menyembunyikan, atau menghapus konten yang melanggar ketentuan.\n\n## 6. Perubahan Ketentuan\nKetentuan dapat diperbarui. Perubahan material akan diberitahukan lewat notifikasi aplikasi.',
+   'Aturan penggunaan layanan IKA UPK-Kr FT UNSRAT.',
+   E'# Syarat & Ketentuan\n\n## 1. Penerimaan\nDengan membuat akun dan menggunakan IKA UPK-Kr FT UNSRAT, kamu menyetujui ketentuan ini.\n\n## 2. Bukan Layanan Darurat\nAplikasi ini **bukan** layanan gawat darurat. Jika kamu dalam bahaya langsung, hubungi 112 atau IGD terdekat.\n\n## 3. Kerahasiaan\nIdentitas asli penulis konten anonim hanya dapat dibuka oleh super admin melalui prosedur resmi, dan setiap pembukaan tercatat permanen di log audit.\n\n## 4. Tanggung Jawab Pengguna\nKamu bertanggung jawab atas konten yang kamu kirim. Dilarang mengirim konten yang melecehkan, mengancam, atau melanggar hukum.\n\n## 5. Moderasi\nModerator dan admin dapat menandai, menyembunyikan, atau menghapus konten yang melanggar ketentuan.\n\n## 6. Perubahan Ketentuan\nKetentuan dapat diperbarui. Perubahan material akan diberitahukan lewat notifikasi aplikasi.',
    CURRENT_DATE),
   ('privacy', 'Kebijakan Privasi',
    'Data apa yang kami kumpulkan dan bagaimana kami melindunginya.',
    E'# Kebijakan Privasi\n\n## 1. Data yang Kami Kumpulkan\nNama lengkap, email, angkatan, jurusan, dan konten yang kamu kirim (diskusi, doa, pesan, lampiran).\n\n## 2. Dasar Penggunaan\nData dipakai untuk menjalankan layanan: menampilkan profil, menghubungkan kamu dengan konselor, dan menampilkan kontenmu di komunitas.\n\n## 3. Mode Anonim\nSaat mode anonim aktif, nama aslimu tidak ditampilkan ke pengguna lain. Identitas tetap tersimpan di sistem agar konselor dapat menindaklanjuti kasus berat.\n\n## 4. Percakapan Konseling\nIsi percakapan 1-on-1 hanya dapat dibaca oleh kamu dan konselor yang bersangkutan.\n\n## 5. Berbagi Data\nKami tidak menjual atau membagikan datamu ke pihak ketiga untuk tujuan komersial.\n\n## 6. Hak Kamu\nKamu dapat meminta ekspor atau penghapusan datamu dengan menghubungi pengelola melalui halaman kontak.\n\n## 7. Retensi\nData disimpan selama akunmu aktif. Setelah penghapusan akun, data pribadi dihapus dan konten publik dianonimkan.',
    CURRENT_DATE),
   ('konselor-guide', 'Panduan Menjadi Konselor',
-   'Alur dan syarat menjadi konselor UPK-Kr.',
-   E'# Panduan Menjadi Konselor\n\n## 1. Syarat\nAnggota terdaftar, berkomitmen menjaga kerahasiaan, dan bersedia mengikuti pembinaan UPK-Kr.\n\n## 2. Alur\n1. Ajukan lewat halaman **Dashboard Konselor** > **Ajukan sebagai Konselor**.\n2. Isi motivasi, pengalaman, spesialisasi, dan lampirkan bukti kredensial bila ada.\n3. Pengajuan ditinjau admin/super admin.\n4. Bila disetujui, peranmu otomatis berubah menjadi `konselor` dan profilmu muncul di halaman booking.\n\n## 3. Kode Etik\nMenjaga kerahasiaan konseli, tidak memberi diagnosis medis, dan merujuk ke profesional saat kasus di luar kompetensi.\n\n## 4. Status Pengajuan\nPantau status di halaman yang sama: *pending*, *under_review*, *approved*, atau *rejected*.',
+   'Alur dan syarat menjadi konselor IKA UPK-Kr FT UNSRAT.',
+   E'# Panduan Menjadi Konselor\n\n## 1. Syarat\nAnggota terdaftar, berkomitmen menjaga kerahasiaan, dan bersedia mengikuti pembinaan IKA UPK-Kr FT UNSRAT.\n\n## 2. Alur\n1. Ajukan lewat halaman **Dashboard Konselor** > **Ajukan sebagai Konselor**.\n2. Isi motivasi, pengalaman, spesialisasi, dan lampirkan bukti kredensial bila ada.\n3. Pengajuan ditinjau admin/super admin.\n4. Bila disetujui, peranmu otomatis berubah menjadi `konselor` dan profilmu muncul di halaman booking.\n\n## 3. Kode Etik\nMenjaga kerahasiaan konseli, tidak memberi diagnosis medis, dan merujuk ke profesional saat kasus di luar kompetensi.\n\n## 4. Status Pengajuan\nPantau status di halaman yang sama: *pending*, *under_review*, *approved*, atau *rejected*.',
    CURRENT_DATE)
 ON CONFLICT (slug) DO NOTHING;
 

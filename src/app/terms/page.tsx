@@ -7,7 +7,7 @@ export default function TermsPage() {
     {
       icon: <Users size={20} />,
       title: '1. Keanggotaan',
-      content: 'Platform ini ditujukan untuk mahasiswa dan alumni UPK-Kr FT UNSRAT. Dengan mendaftar, Anda menyatakan bahwa Anda adalah anggota atau alumni yang sah. Informasi yang Anda berikan saat pendaftaran harus akurat dan benar.'
+      content: 'Platform ini ditujukan untuk alumni dan anggota IKA UPK-Kr FT UNSRAT. Dengan mendaftar, Anda menyatakan bahwa Anda adalah anggota atau alumni yang sah. Informasi yang Anda berikan saat pendaftaran harus akurat dan benar.'
     },
     {
       icon: <Shield size={20} />,
@@ -22,7 +22,7 @@ export default function TermsPage() {
     {
       icon: <AlertTriangle size={20} />,
       title: '4. Batasan Layanan',
-      content: 'Layanan konseling di platform ini bukan pengganti layanan kesehatan mental profesional. Dalam situasi krisis, kami akan merujuk Anda ke tenaga medis profesional. Konselor UPK-Kr memberikan pendampingan spiritual dan psikologis dasar.'
+      content: 'Layanan konseling di platform ini bukan pengganti layanan kesehatan mental profesional. Dalam situasi krisis, kami akan merujuk Anda ke tenaga medis profesional. Konselor IKA UPK-Kr FT UNSRAT memberikan pendampingan spiritual dan psikologis dasar.'
     },
     {
       icon: <Scale size={20} />,
@@ -32,7 +32,7 @@ export default function TermsPage() {
     {
       icon: <FileText size={20} />,
       title: '6. Perubahan Ketentuan',
-      content: 'UPK-Kr berhak mengubah syarat dan ketentuan ini sewaktu-waktu. Perubahan akan diumumkan melalui platform. Dengan terus menggunakan layanan setelah perubahan, Anda dianggap menyetujui ketentuan terbaru.'
+      content: 'IKA UPK-Kr FT UNSRAT berhak mengubah syarat dan ketentuan ini sewaktu-waktu. Perubahan akan diumumkan melalui platform. Dengan terus menggunakan layanan setelah perubahan, Anda dianggap menyetujui ketentuan terbaru.'
     }
   ]
 
@@ -46,7 +46,7 @@ export default function TermsPage() {
         <div className="space-y-4">
           <h1 className="font-[var(--font-playfair)] text-4xl md:text-5xl font-black text-[var(--brown-dark)]">Syarat & Ketentuan</h1>
           <p className="text-[var(--text-muted)] leading-relaxed">
-            Dengan menggunakan platform UPK-Kr Konseling, Anda menyetujui syarat dan ketentuan berikut.
+            Dengan menggunakan platform IKA UPK-Kr FT UNSRAT, Anda menyetujui syarat dan ketentuan berikut.
           </p>
           <p className="text-xs text-[var(--text-muted)]">Terakhir diperbarui: {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
         </div>

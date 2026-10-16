@@ -60,7 +60,7 @@ export default async function RenunganPage() {
                 {featured?.title || 'Bagikan Renungan Pertama Anda'}
               </h1>
            <div className="flex items-center gap-4 text-white/70 text-sm font-medium">
-              <span className="flex items-center gap-1.5"><User size={14} /> {featured?.author?.full_name || 'Tim UPK-Kr'}</span>
+              <span className="flex items-center gap-1.5"><User size={14} /> {featured?.author?.full_name || 'Tim IKA UPK-Kr FT UNSRAT'}</span>
               {featured && <span className="flex items-center gap-1.5"><Clock size={14} /> {Math.max(1, Math.ceil((featured.content?.length || 0) / 1000))} Menit Baca</span>}
            </div>
            {featured && (
@@ -171,7 +171,7 @@ export default async function RenunganPage() {
                  <h3 className="font-[var(--font-playfair)] text-2xl font-bold">Punya Renungan?</h3>
                  <p className="text-white/80 text-sm leading-relaxed">
                     Bagikan apa yang Tuhan ajarkan kepadamu. Tulisanmu bisa menjadi kekuatan
-                    bagi mahasiswa lain yang sedang berjuang.
+                    bagi alumni lain yang sedang berjuang.
                  </p>
               </div>
               <Link

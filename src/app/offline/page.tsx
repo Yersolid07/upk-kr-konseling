@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { WifiOff, RefreshCw } from 'lucide-react'
 
-export const metadata = { title: 'Offline — UPK-Kr. Konseling' }
+export const metadata = { title: 'Offline — IKA UPK-Kr FT UNSRAT' }
 
 export default function OfflinePage() {
   return (

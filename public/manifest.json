@@ -1,7 +1,7 @@
 {
-  "name": "UPK-Kr Konseling",
-  "short_name": "UPK-Kr",
-  "description": "Platform Konseling Mahasiswa Kristen — UPK-Kr FT UNSRAT",
+  "name": "IKA UPK-Kr FT UNSRAT",
+  "short_name": "IKA UPK-Kr FT UNSRAT",
+  "description": "Platform Konseling Alumni Kristen — IKA UPK-Kr FT UNSRAT",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FAF5EF",

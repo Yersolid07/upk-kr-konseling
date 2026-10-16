@@ -18,8 +18,9 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'UPK-Kr. Konseling | FT. UNSRAT Alumni',
-  description: 'Platform konseling dan komunitas rohani alumni UPK-Kr. Fakultas Teknik Universitas Sam Ratulangi',
+  title: 'IKA UPK-Kr FT UNSRAT | Platform Konseling Alumni',
+  description:
+    'Platform konseling dan komunitas rohani Ikatan Alumni UPK-Kr Fakultas Teknik Universitas Sam Ratulangi.',
   manifest: '/manifest.json',
   icons: {
     // Pakai berkas yang BENAR-BENAR ada di public/ — sebelumnya menunjuk
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
     shortcut: '/favicon.ico',
   },
   openGraph: {
-    title: 'UPK-Kr. Konseling',
+    title: 'IKA UPK-Kr FT UNSRAT',
     description: 'Ruang aman untuk berbagi, berdoa, dan bertumbuh bersama',
     type: 'website',
   },

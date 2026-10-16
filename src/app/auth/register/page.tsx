@@ -67,9 +67,7 @@ export default function RegisterPage() {
     <div className="auth-card backdrop-blur-xl bg-white/90 border border-white/20">
       {/* Header */}
       <div className="flex flex-col items-center mb-8">
-        <div className="w-14 h-14 bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] rounded-2xl flex items-center justify-center text-white shadow-xl mb-4">
-          <LogoMark size={26} />
-        </div>
+        <LogoMark size={56} className="mb-4 shadow-lg" />
         <h1 className="font-[var(--font-playfair)] text-2xl font-black text-[var(--brown-dark)]">Bergabunglah</h1>
         <p className="text-[10px] text-[var(--text-muted)] font-black uppercase tracking-[0.2em] mt-1">Membangun Komunitas Iman</p>
       </div>
@@ -179,7 +177,7 @@ export default function RegisterPage() {
              <User size={16} />
           </div>
           <p className="text-[10px] text-[var(--brown)] leading-tight pt-1">
-            Akun akan didaftarkan sebagai <strong>Anggota</strong>. Untuk menjadi konselor, hubungi admin UPK-Kr.
+            Akun akan didaftarkan sebagai <strong>Anggota</strong>. Untuk menjadi konselor, hubungi admin IKA UPK-Kr FT UNSRAT.
           </p>
         </div>
 

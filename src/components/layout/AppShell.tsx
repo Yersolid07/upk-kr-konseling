@@ -43,7 +43,7 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
 
   const title = Object.entries(PAGE_TITLES).find(([key]) =>
     pathname === key || pathname.startsWith(key + '/')
-  )?.[1] ?? 'UPK-Kr. Konseling'
+  )?.[1] ?? 'IKA UPK-Kr FT UNSRAT'
 
   return (
     <div className="app-shell">

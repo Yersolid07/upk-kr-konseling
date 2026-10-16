@@ -1,4 +1,4 @@
-# 🕊️ UPK-Kr. FT. UNSRAT Konseling Platform
+# 🕊️ Platform Konseling IKA UPK-Kr FT UNSRAT
 ## Panduan Setup & Deployment Lengkap
 
 ---
@@ -142,7 +142,7 @@ npm run dev
 ```bash
 git init
 git add .
-git commit -m "feat: initial UPK-Kr Konseling platform"
+git commit -m "feat: initial IKA UPK-Kr FT UNSRAT counseling platform"
 git remote add origin https://github.com/USERNAME/upk-kr-konseling.git
 git push -u origin main
 ```
@@ -342,5 +342,5 @@ npm install  # Pastikan semua dependency terinstall
 
 ---
 
-*Kiranya platform ini menjadi berkat bagi komunitas UPK-Kr. FT. UNSRAT 🙏*
+*Kiranya platform ini menjadi berkat bagi komunitas IKA UPK-Kr FT UNSRAT 🙏*
 *"Karena itu, saling menghiburlah dan saling membangunlah" — 1 Tesalonika 5:11*

@@ -28,8 +28,9 @@ export default async function LandingPage() {
         <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <Logo tile size={34} />
-            <span className="font-[var(--font-playfair)] text-[17px] font-bold text-[var(--brown-dark)] leading-none">
-              UPK-Kr<span className="hidden sm:inline">&nbsp;Konseling</span>
+            <span className="font-[var(--font-playfair)] text-[15px] sm:text-[17px] font-bold text-[var(--brown-dark)] leading-tight">
+              <span className="block sm:inline">IKA UPK-Kr</span>{' '}
+              <span className="block sm:inline">FT UNSRAT</span>
             </span>
           </Link>
 
@@ -65,7 +66,7 @@ export default async function LandingPage() {
               </h1>
 
               <p className="text-[var(--ink-soft)] text-lg leading-relaxed max-w-xl mb-9">
-                Pendampingan rohani dan konseling mahasiswa Kristen — tanpa
+                Pendampingan rohani dan konseling untuk alumni Kristen — tanpa
                 menghakimi. Anda bisa memulai percakapan secara anonim, kapan pun
                 Anda siap.
               </p>
@@ -93,7 +94,7 @@ export default async function LandingPage() {
                 {[
                   { k: 'Konselor terverifikasi', v: 'Pendamping terlatih' },
                   { k: 'Bisa anonim', v: 'Identitas terlindungi' },
-                  { k: 'Gratis', v: 'Untuk mahasiswa FT' },
+                  { k: 'Gratis', v: 'Untuk alumni FT' },
                 ].map(({ k, v }) => (
                   <div key={k}>
                     <dt className="text-sm font-semibold text-[var(--brown-dark)]">
@@ -259,8 +260,8 @@ export default async function LandingPage() {
             Anda tidak harus melewati ini sendirian.
           </h2>
           <p className="text-[var(--ink-soft)] max-w-xl mx-auto mb-9 leading-relaxed">
-            Bergabunglah dengan mahasiswa FT UNSRAT yang saling menguatkan dalam
-            perjalanan iman dan studi.
+            Bergabunglah dengan alumni FT UNSRAT yang saling menguatkan dalam
+            perjalanan iman, karier, dan pelayanan.
           </p>
           <Link
             href="/auth/register"
@@ -283,10 +284,10 @@ export default async function LandingPage() {
               <Logo tile size={30} />
               <div>
                 <div className="text-sm font-semibold text-[var(--brown-dark)]">
-                  UPK-Kr. Konseling
+                  IKA UPK-Kr FT UNSRAT
                 </div>
                 <div className="text-xs text-[var(--text-muted)]">
-                  Unit Pelayanan Kerohanian · FT UNSRAT
+                  Ikatan Alumni UPK-Kr · Fakultas Teknik UNSRAT
                 </div>
               </div>
             </div>
@@ -308,7 +309,7 @@ export default async function LandingPage() {
           </div>
 
           <p className="text-xs text-[var(--text-muted)] mt-8 pt-6 border-t border-[var(--line)]">
-            &copy; {new Date().getFullYear()} UPK-Kr FT UNSRAT. Dibuat untuk melayani.
+            &copy; {new Date().getFullYear()} IKA UPK-Kr FT UNSRAT. Dibuat untuk melayani.
           </p>
         </div>
       </footer>

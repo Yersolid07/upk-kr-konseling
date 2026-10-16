@@ -25,14 +25,14 @@ export const FALLBACK_LEGAL: Record<string, LegalDoc> = {
   terms: {
     slug: 'terms',
     title: 'Syarat & Ketentuan',
-    summary: 'Aturan penggunaan layanan UPK-Kr. Konseling.',
+    summary: 'Aturan penggunaan layanan IKA UPK-Kr FT UNSRAT.',
     version: 1,
     effective_date: today(),
     is_published: true,
     content: `# Syarat & Ketentuan
 
 ## 1. Penerimaan
-Dengan membuat akun dan menggunakan UPK-Kr. Konseling, kamu menyetujui ketentuan ini.
+Dengan membuat akun dan menggunakan IKA UPK-Kr FT UNSRAT, kamu menyetujui ketentuan ini.
 
 ## 2. Bukan Layanan Darurat
 Aplikasi ini **bukan** layanan gawat darurat. Jika kamu dalam bahaya langsung, hubungi 112 atau IGD terdekat.
@@ -84,14 +84,14 @@ Data disimpan selama akunmu aktif. Setelah penghapusan akun, data pribadi dihapu
   'konselor-guide': {
     slug: 'konselor-guide',
     title: 'Panduan Menjadi Konselor',
-    summary: 'Alur dan syarat menjadi konselor UPK-Kr.',
+    summary: 'Alur dan syarat menjadi konselor IKA UPK-Kr FT UNSRAT.',
     version: 1,
     effective_date: today(),
     is_published: true,
     content: `# Panduan Menjadi Konselor
 
 ## 1. Syarat
-Anggota terdaftar, berkomitmen menjaga kerahasiaan, dan bersedia mengikuti pembinaan UPK-Kr.
+Anggota terdaftar, berkomitmen menjaga kerahasiaan, dan bersedia mengikuti pembinaan IKA UPK-Kr FT UNSRAT.
 
 ## 2. Alur
 1. Ajukan lewat halaman **Dashboard Konselor** > **Ajukan sebagai Konselor**.

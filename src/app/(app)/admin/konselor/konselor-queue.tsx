@@ -219,7 +219,7 @@ function ApplicationCard({
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
-          placeholder="mis. Perlu mengikuti pembinaan dasar UPK-Kr terlebih dahulu."
+          placeholder="mis. Perlu mengikuti pembinaan dasar IKA UPK-Kr FT UNSRAT terlebih dahulu."
           className="form-input text-sm resize-none"
         />
       </div>

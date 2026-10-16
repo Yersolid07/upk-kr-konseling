@@ -8,7 +8,7 @@ import { ArticleQueue } from './article-queue'
 import type { Article } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Persetujuan Artikel | UPK-Kr' }
+export const metadata = { title: 'Persetujuan Artikel | IKA UPK-Kr FT UNSRAT' }
 
 export default async function AdminArticlesPage() {
   const ctx = await getAuthContext()

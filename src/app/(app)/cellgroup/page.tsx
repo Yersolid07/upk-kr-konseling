@@ -156,7 +156,7 @@ export default async function CellGroupPage() {
         <div className="space-y-2 flex-1 text-center md:text-left">
           <h3 className="font-bold text-[var(--brown-dark)] text-2xl">Keanggotaan Terverifikasi</h3>
           <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-            Setiap KK/KTB dipimpin oleh kakak pembina yang telah terverifikasi dan dibimbing langsung oleh alumni senior UPK-Kr.
+            Setiap KK/KTB dipimpin oleh kakak pembina yang telah terverifikasi dan dibimbing langsung oleh alumni senior IKA UPK-Kr FT UNSRAT.
           </p>
         </div>
         <Link href="/contact" className="text-sm font-black text-[var(--sage)] uppercase tracking-widest hover:underline flex items-center gap-2">

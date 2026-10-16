@@ -103,7 +103,7 @@ export default async function ChatListPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <h3 className="font-bold text-[var(--brown-dark)] group-hover:text-[var(--terra)] transition-colors">
-                        {otherUser?.full_name ?? 'Konselor UPK-Kr'}
+                        {otherUser?.full_name ?? 'Konselor IKA UPK-Kr FT UNSRAT'}
                       </h3>
                       <span className="text-[10px] text-[var(--text-muted)] font-medium">
                         {getRelativeTime(session.updated_at)}

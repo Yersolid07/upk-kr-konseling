@@ -20,8 +20,28 @@ describe('normalizeWaNumber', () => {
     assert.equal(normalizeWaNumber('+62 811-9791-0000'), '6281197910000')
   })
 
-  test('membuang titik dan kurung', () => {
-    assert.equal(normalizeWaNumber('(0431) 838203'), '0431838203')
+  test('awalan 0 diubah jadi kode negara 62', () => {
+    // Bug nyata: nomor diisi pengurus sebagai "0811 979 10000" dan tautannya
+    // menjadi wa.me/081197910000 — WhatsApp menolaknya, karena wa.me mewajibkan
+    // kode negara. Nomor lokal Indonesia harus diubah, bukan hanya dirapikan.
+    assert.equal(normalizeWaNumber('0811 979 10000'), '6281197910000')
+    assert.equal(normalizeWaNumber('081197910000'), '6281197910000')
+  })
+
+  test('0 setelah kode negara juga diratakan', () => {
+    assert.equal(normalizeWaNumber('+62 0811 9791 0000'), '6281197910000')
+    assert.equal(normalizeWaNumber('62081197910000'), '6281197910000')
+  })
+
+  test('menolak nomor non-Indonesia', () => {
+    // wa.me memang menerima nomor negara lain, tetapi tombol ini khusus
+    // konselor piket UPK-Kr. Nomor asing hampir pasti salah ketik.
+    assert.equal(normalizeWaNumber('+1 415 555 0100'), null)
+    assert.equal(normalizeWaNumber('6581234567'), null)
+  })
+
+  test('menolak nomor terlalu panjang', () => {
+    assert.equal(normalizeWaNumber('62' + '9'.repeat(20)), null)
   })
 
   test('menolak kosong dan null', () => {
@@ -37,11 +57,11 @@ describe('normalizeWaNumber', () => {
 
   test('menolak nomor terlalu pendek', () => {
     assert.equal(normalizeWaNumber('119'), null)
-    assert.equal(normalizeWaNumber('1234567'), null)
+    assert.equal(normalizeWaNumber('0812345'), null)
   })
 
-  test('menerima tepat di ambang minimum', () => {
-    assert.equal(normalizeWaNumber('12345678'), '12345678')
+  test('menerima tepat di ambang minimum (62 + 8 digit)', () => {
+    assert.equal(normalizeWaNumber('6212345678'), '6212345678')
   })
 
   test('menolak teks tanpa angka', () => {

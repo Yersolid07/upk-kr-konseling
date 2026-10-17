@@ -71,7 +71,7 @@ Preview, dan Development):
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Project URL Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | anon/public key |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ | **server-only**, jangan pernah di client |
-| `NEXT_PUBLIC_APP_URL` | ✅ | `https://<domain>.vercel.app` |
+| ~~`NEXT_PUBLIC_APP_URL`~~ | — | **Tidak perlu lagi.** Alamat publik diturunkan dari header permintaan (`x-forwarded-host`). Setel `APP_URL` hanya bila ingin memaksa domain kanonik. |
 | `NEXT_PUBLIC_APP_NAME` | ⬜ | `IKA UPK-Kr FT UNSRAT` |
 | `FONNTE_TOKEN` | ⬜ | WhatsApp SOS |
 | `NEXT_PUBLIC_SOS_WA_NUMBER` | ⬜ | nomor WA konselor piket |

@@ -5,6 +5,7 @@
 import { createAdminClient } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { appUrlFrom } from '@/lib/app-url'
 
 export async function POST(request: NextRequest) {
   const supabase = createClient()
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
       const { sendWhatsApp } = await import('@/lib/fonnte')
       await sendWhatsApp(
         sosNumber,
-        `[SOS IKA UPK-Kr FT UNSRAT] Bantuan Darurat!\n\nNama: ${(user.user_metadata as any)?.full_name || 'Seorang Anggota'}\nPesan: "${message}"\n\nRespon segera di: ${process.env.NEXT_PUBLIC_APP_URL}/konselor`
+        `[SOS IKA UPK-Kr FT UNSRAT] Bantuan Darurat!\n\nNama: ${(user.user_metadata as any)?.full_name || 'Seorang Anggota'}\nPesan: "${message}"\n\nRespon segera di: ${appUrlFrom(request)}/konselor`
       )
     } catch (err) {
       console.error('SOS WhatsApp send failed:', err)

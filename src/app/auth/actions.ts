@@ -4,6 +4,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import { appUrl } from '@/lib/app-url'
 
 // Note: login is now handled via /api/auth/login Route Handler to avoid Next.js Server Action cookie issues.
 export async function register(formData: FormData) {
@@ -26,7 +27,7 @@ export async function register(formData: FormData) {
         jurusan,
         role: 'member', // HARDCODED — cannot be overridden
       },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+      emailRedirectTo: `${await appUrl()}/auth/callback`,
     },
   })
 
@@ -58,7 +59,7 @@ export async function forgotPassword(formData: FormData) {
   const email = formData.get('email') as string
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/auth/reset-password`,
+    redirectTo: `${await appUrl()}/auth/callback?next=/auth/reset-password`,
   })
 
   if (error) return { error: 'Gagal mengirim email reset. Coba lagi.' }

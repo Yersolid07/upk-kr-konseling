@@ -15,39 +15,11 @@
 // database di setiap render; setiap kali CMS menyimpan, tag itu di-revalidate.
 
 import { cache } from 'react'
-import { SETTINGS_BY_KEY, PUBLIC_SETTING_KEYS, type SettingKey } from './registry'
+import { SETTINGS_BY_KEY, PUBLIC_SETTING_KEYS, coerceSetting, type SettingKey } from './registry'
 
-/** Baca satu nilai dari objek pengaturan mentah. */
-function unwrap(raw: unknown): unknown {
-  if (raw && typeof raw === 'object' && !Array.isArray(raw) && 'value' in raw) {
-    return (raw as { value: unknown }).value
-  }
-  return raw
-}
-
-/**
- * Validasi nilai mentah terhadap skema kunci tersebut.
- * Mengembalikan default bila tidak valid.
- */
-export function coerceSetting(key: string, raw: unknown): unknown {
-  const def = SETTINGS_BY_KEY[key]
-  if (!def) return undefined
-
-  let value = unwrap(raw)
-
-  // Toleransi bentuk lama: boolean disimpan sebagai string "on"/"true"/"false",
-  // angka sebagai string. Ini yang membuat toggle dulu tampak "tertutup".
-  if (typeof value === 'string') {
-    const v = value.trim().toLowerCase()
-    if (v === 'on' || v === 'true') value = true
-    else if (v === 'off' || v === 'false') value = false
-    else if (v === '') value = undefined
-    else if (typeof def.default === 'number' && !Number.isNaN(Number(v))) value = Number(v)
-  }
-
-  const parsed = def.schema.safeParse(value)
-  return parsed.success ? parsed.data : def.default
-}
+// coerceSetting pindah ke registry.ts (murni, bisa diuji). Diekspor ulang di
+// sini supaya pemanggil lama tidak perlu diubah.
+export { coerceSetting }
 
 // ─────────────────────────────────────────────────────────────
 // Jalur server

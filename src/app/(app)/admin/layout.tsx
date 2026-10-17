@@ -8,6 +8,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { hasMinRole, can, type Capability } from '@/lib/rbac'
+import { mfaState } from '@/lib/mfa'
 import type { Profile } from '@/types/database'
 import { AdminNav, type NavGroup } from './admin-nav'
 
@@ -33,6 +34,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // Anggota & konselor tidak punya urusan di panel admin.
   if (!hasMinRole(p.role, 'moderator')) {
     redirect('/dashboard')
+  }
+
+  // Kewajiban verifikasi dua langkah (pengaturan require_mfa_for_admins).
+  //
+  // Ditegakkan di LAYOUT, bukan di setiap halaman: satu tempat yang tidak bisa
+  // terlewat saat rute admin baru ditambah. Pengalihan ke /keamanan — bukan
+  // penolakan — supaya admin tanpa faktor tetap bisa MENDAFTARKAN faktornya.
+  // Tanpa itu, mengaktifkan pengaturan ini akan mengunci setiap admin di luar
+  // panelnya sendiri.
+  const mfa = await mfaState(p.role)
+  if (mfa !== 'ok') {
+    redirect('/keamanan')
   }
 
   const allow = (cap: Capability) => can(p.role, cap)

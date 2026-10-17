@@ -37,10 +37,33 @@ const LINK_HOSTS = [
   'www.healing119.id',
 ] as const
 
-/** Berkas yang diunggah sendiri selalu berada di bucket storage Supabase. */
+/**
+ * Host storage milik project INI.
+ *
+ * Sebelumnya pemeriksaannya hanya `hostname.endsWith('.supabase.co')`, yang
+ * menerima project Supabase MILIK SIAPA PUN — cukup orang membuat project
+ * gratis lalu menyematkan berkas dari sana. Sekarang host dibandingkan dengan
+ * `NEXT_PUBLIC_SUPABASE_URL` milik aplikasi ini.
+ *
+ * Bila env tidak terbaca (mis. saat build tanpa env), fungsi mengembalikan
+ * `false` — gagal tertutup. Lampiran yang sah akan ditolak, bukan yang asing
+ * diterima.
+ */
+function ownStorageHost(): string | null {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (!raw) return null
+  try {
+    return new URL(raw).hostname.toLowerCase()
+  } catch {
+    return null
+  }
+}
+
 function isOwnStorageUrl(url: URL): boolean {
+  const host = ownStorageHost()
+  if (!host) return false
   return (
-    url.hostname.endsWith('.supabase.co') &&
+    url.hostname.toLowerCase() === host &&
     url.pathname.startsWith('/storage/v1/object/public/media/')
   )
 }

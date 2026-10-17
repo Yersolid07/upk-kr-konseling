@@ -344,3 +344,35 @@ npm install  # Pastikan semua dependency terinstall
 
 *Kiranya platform ini menjadi berkat bagi komunitas IKA UPK-Kr FT UNSRAT 🙏*
 *"Karena itu, saling menghiburlah dan saling membangunlah" — 1 Tesalonika 5:11*
+
+## Pengembangan
+
+```bash
+npm install
+npm run dev        # http://localhost:3000
+npm test           # uji logika murni (Node >= 22)
+npx tsc --noEmit   # type-check
+npm run build      # build produksi
+```
+
+Uji memakai `node:test` bawaan — tanpa Jest, Vitest, atau dependensi tambahan.
+Berkas uji ada di `test/`, mengimpor modul sumber langsung dengan
+`--experimental-strip-types` (Node >= 22).
+
+### Gerbang SQL
+
+```bash
+python tools/validate_sql.py          # sintaks semua migrasi (butuh pglast)
+python tools/lint_sql_null_guards.py  # penjaga izin yang tahan NULL
+python tools/precheck_phase4.py       # kecocokan tabel/kolom vs skema NYATA
+```
+
+`precheck_phase4.py` butuh kunci service_role dan dijalankan **sebelum**
+menjalankan migrasi. Dua yang pertama jalan di CI.
+
+### Verifikasi dua langkah
+
+Admin bisa mengaktifkannya di `/keamanan`. Kewajiban untuk semua admin diatur
+lewat Pengaturan → Keamanan (`require_mfa_for_admins`). Saat kewajiban aktif,
+admin tanpa faktor diarahkan ke `/keamanan` untuk mendaftar — bukan dikunci di
+luar panel.

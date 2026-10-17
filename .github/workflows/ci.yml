@@ -1,0 +1,90 @@
+name: CI
+
+# Tiga gerbang, semuanya cepat dan tidak butuh rahasia:
+#   1. type-check + build  — memastikan kode bisa dikompilasi
+#   2. test                — logika murni (rbac, kebijakan lampiran, pengaturan)
+#   3. sql                 — sintaks + penjaga NULL + kecocokan skema
+#
+# Yang SENGAJA tidak ada di sini: uji end-to-end. Uji itu butuh sesi Supabase
+# nyata dan basis data sungguhan, jadi dijalankan lokal sebelum rilis. CI yang
+# butuh rahasia produksi akan mati begitu kunci dirotasi.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck-and-build:
+    name: Type-check & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Build
+        # Nilai di bawah BUKAN rahasia: hanya placeholder agar modul yang
+        # membaca env saat build tidak gagal. Tidak ada koneksi ke Supabase
+        # yang dibuat selama build.
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: placeholder-service-key
+        run: npx next build
+
+  test:
+    name: Unit test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Butuh >= 22 untuk --experimental-strip-types.
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Test
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+        run: npm test
+
+  sql:
+    name: SQL
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Pasang pglast
+        run: pip install pglast
+
+      - name: Sintaks SQL
+        run: python tools/validate_sql.py
+
+      - name: Penjaga NULL
+        run: python tools/lint_sql_null_guards.py
+
+      # precheck_phase4.py SENGAJA tidak dijalankan di sini: ia butuh kunci
+      # service_role untuk membaca skema nyata. Dijalankan lokal sebelum
+      # migrasi dijalankan di Supabase.

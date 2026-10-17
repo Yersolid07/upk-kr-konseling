@@ -280,3 +280,49 @@ export type SettingKey = (typeof SETTINGS)[number]['key']
 
 /** Kunci pengaturan yang boleh dibaca tanpa login. */
 export const PUBLIC_SETTING_KEYS: string[] = SETTINGS.filter((s) => s.public).map((s) => s.key)
+
+// ─────────────────────────────────────────────────────────────
+// Membaca nilai
+// ─────────────────────────────────────────────────────────────
+//
+// coerceSetting tinggal DI SINI, bukan di get.ts, karena ia murni: masuk nilai
+// mentah, keluar nilai tervalidasi. Menempatkannya bersama skemanya membuat
+// satu berkas yang bisa diuji tanpa menyentuh Supabase atau Next.js.
+
+/** Lepas pembungkus { value: X }; toleran terhadap bentuk lama (nilai telanjang). */
+function unwrap(raw: unknown): unknown {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw) && 'value' in raw) {
+    return (raw as { value: unknown }).value
+  }
+  return raw
+}
+
+/**
+ * Validasi nilai mentah terhadap skema kunci tersebut.
+ * Mengembalikan default bila tidak valid, `undefined` bila kuncinya asing.
+ */
+export function coerceSetting(key: string, raw: unknown): unknown {
+  const def = SETTINGS_BY_KEY[key]
+  if (!def) return undefined
+
+  let value = unwrap(raw)
+
+  // Toleransi bentuk lama: boolean disimpan sebagai string "on"/"true"/"false",
+  // angka sebagai string. Inilah yang dulu membuat toggle tampak "tertutup".
+  if (typeof value === 'string') {
+    const v = value.trim().toLowerCase()
+    if (v === 'on' || v === 'true') value = true
+    else if (v === 'off' || v === 'false') value = false
+    else if (v === '') {
+      // String kosong hanya berarti "kosongkan" bila nilai bawaannya memang
+      // teks. Untuk field boolean/angka, kosong berarti "belum diisi" dan
+      // harus jatuh ke default. Tanpa pemisahan ini, admin tidak bisa
+      // mengosongkan crisis_keywords untuk mematikan deteksi — nilainya
+      // diam-diam kembali ke daftar bawaan.
+      value = typeof def.default === 'string' ? '' : undefined
+    } else if (typeof def.default === 'number' && !Number.isNaN(Number(v))) value = Number(v)
+  }
+
+  const parsed = def.schema.safeParse(value)
+  return parsed.success ? parsed.data : def.default
+}

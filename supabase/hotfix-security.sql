@@ -115,7 +115,14 @@ ORDER BY p.created_at;
 --   - super_admin -> bebas
 --   - admin        -> hanya boleh mengubah role ke/dari bawah admin
 --                     (tidak bisa menyentuh admin & super_admin)
---   - selain itu   -> role, is_active, is_verified, anon_token dikunci
+--   - selain itu   -> role, is_active, is_verified dikunci
+--
+-- CATATAN: kolom `anon_token` TIDAK disebut di sini. Setelah
+-- supabase/phase1-data-security.sql dijalankan, kolom itu pindah ke tabel
+-- privat `profile_secrets` dan baris `NEW.anon_token` akan membuat SELURUH
+-- update profil gagal ("record new has no field anon_token"). Perlindungan
+-- token anonim setelah Fase 1 dipegang oleh RLS `profile_secrets`
+-- (hanya pemilik baris + super admin) dan RPC `rotate_anon_token()`.
 --
 -- Catatan: trigger memulihkan nilai lama alih-alih melempar error, supaya
 -- update kolom lain di baris yang sama (mis. ganti nama) tetap berhasil.

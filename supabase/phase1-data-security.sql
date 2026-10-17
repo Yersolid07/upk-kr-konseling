@@ -108,6 +108,54 @@ $$;
 REVOKE ALL ON FUNCTION public.rotate_anon_token() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.rotate_anon_token() TO authenticated;
 
+-- Kolom anon_token sudah tidak ada di `profiles`, tetapi trigger
+-- protect_profile_columns() (dibuat supabase/hotfix-security.sql) MASIH
+-- merujuk `NEW.anon_token`. PL/pgSQL menyiapkan pernyataan saat pertama kali
+-- dijalankan, jadi setiap UPDATE profil akan gagal dengan
+--   ERROR: record "new" has no field "anon_token"
+-- begitu kolomnya hilang. Fungsi di bawah adalah versi yang sama TANPA baris
+-- itu — perlindungan token sekarang dipegang RLS `profile_secrets` di atas
+-- dan RPC rotate_anon_token().
+CREATE OR REPLACE FUNCTION public.protect_profile_columns()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public
+AS $$
+DECLARE
+  v_caller public.user_role;
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  v_caller := public.current_user_role();
+
+  IF v_caller IS DISTINCT FROM 'super_admin' THEN
+    -- (a) Perubahan role
+    IF NEW.role IS DISTINCT FROM OLD.role THEN
+      IF v_caller IS DISTINCT FROM 'admin'
+         OR public.role_rank(OLD.role) >= 4
+         OR public.role_rank(NEW.role) >= 4
+         OR OLD.id = auth.uid() THEN
+        NEW.role := OLD.role;
+      END IF;
+    END IF;
+
+    -- (b) Kolom sensitif: hanya admin ke atas
+    IF v_caller IS DISTINCT FROM 'admin' THEN
+      NEW.is_active   := OLD.is_active;
+      NEW.is_verified := OLD.is_verified;
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_protect_profile_columns ON public.profiles;
+CREATE TRIGGER trg_protect_profile_columns BEFORE UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.protect_profile_columns();
+
 
 -- =====================================================
 -- 2. VIEW PUBLIK (K2) — PSEUDONIM PER-KONTEN, author_id DISEMBUNYIKAN

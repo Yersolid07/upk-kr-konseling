@@ -1,4 +1,4 @@
-// src/app/(app)/admin/cms/actions.ts
+// src/app/(app)/admin/_shared/actions.ts
 'use server'
 
 // Server actions untuk panel CMS. Semua aksi di sini HANYA untuk super_admin

@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { cn } from '@/lib/utils'
-import { approveArticle, rejectArticle, archiveArticle } from '../cms/actions-articles'
+import { approveArticle, rejectArticle, archiveArticle } from '../_shared/article-actions'
 import type { Article } from '@/types/database'
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {

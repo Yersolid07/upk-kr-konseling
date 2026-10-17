@@ -12,6 +12,12 @@ export type NotificationType =
   | 'konselor_verified' | 'new_thread' | 'session_request'
 export type ContentType = 'thread' | 'comment' | 'message' | 'prayer'
 export type PublicationStatus = 'draft' | 'pending_review' | 'published' | 'rejected' | 'archived'
+/**
+ * Status moderasi bersama untuk semua tabel konten (Fase 2).
+ * 'visible' default; 'hidden' = disembunyikan staf; 'pending'/'rejected'
+ * dipakai artikel pada alur persetujuan.
+ */
+export type ModerationStatus = 'visible' | 'hidden' | 'pending' | 'rejected'
 export type ApplicationStatus = 'pending' | 'under_review' | 'approved' | 'rejected' | 'withdrawn'
 export type AttachmentKind = 'image' | 'video' | 'audio' | 'document' | 'link' | 'embed'
 export type ContentKind =
@@ -104,16 +110,30 @@ export type KonselorProfile = {
   updated_at: string
 }
 
+export type AuditAction =
+  | 'create' | 'update' | 'delete' | 'publish' | 'unpublish'
+  | 'approve' | 'reject' | 'role_change' | 'settings_change' | 'login' | 'export'
+  // Fase 2 (supabase/cms-superadmin.sql)
+  | 'restore' | 'hide' | 'unhide' | 'purge' | 'ban' | 'unban'
+  | 'reveal_identity' | 'break_glass_read' | 'broadcast' | 'bulk'
+
 export type AuditLogEntry = {
   id: string
   actor_id: string | null
   actor_role: UserRole | null
-  action: 'create' | 'update' | 'delete' | 'publish' | 'unpublish'
-    | 'approve' | 'reject' | 'role_change' | 'settings_change' | 'login' | 'export'
+  action: AuditAction
   entity: string
   entity_id: string | null
   detail: Record<string, unknown>
+  // Audit v2 — snapshot sebelum/sesudah, alasan, dan asal permintaan.
+  before: Record<string, unknown> | null
+  after: Record<string, unknown> | null
+  reason: string | null
+  ip: string | null
+  user_agent: string | null
   created_at: string
+  // Joins
+  actor?: Profile
 }
 
 export type IdentityRevealLog = {
@@ -158,7 +178,21 @@ export type ThreadCategory = {
   sort_order: number
 }
 
-export type Thread = {
+/**
+ * Kolom moderasi yang dibagikan semua tabel konten (Fase 2).
+ * Lihat supabase/cms-superadmin.sql.
+ */
+export type ModerationFields = {
+  moderation_status: ModerationStatus
+  hidden_by: string | null
+  hidden_reason: string | null
+  hidden_at: string | null
+  deleted_at: string | null
+  deleted_by: string | null
+  delete_reason: string | null
+}
+
+export type Thread = ModerationFields & {
   id: string
   author_id: string
   category_id: string | null
@@ -179,7 +213,7 @@ export type Thread = {
   user_reaction?: Reaction | null
 }
 
-export type Comment = {
+export type Comment = ModerationFields & {
   id: string
   thread_id: string
   author_id: string
@@ -269,7 +303,7 @@ export type Booking = {
   konselor?: Profile
 }
 
-export type PrayerRequest = {
+export type PrayerRequest = ModerationFields & {
   id: string
   author_id: string
   content: string
@@ -286,7 +320,7 @@ export type PrayerRequest = {
   attachments?: Attachment[]
 }
 
-export type Article = {
+export type Article = ModerationFields & {
   id: string
   author_id: string
   category_id: string | null
@@ -300,6 +334,7 @@ export type Article = {
   tags: string[] | null
   published_at: string | null
   created_at: string
+  updated_at: string
   // Alur persetujuan (lihat supabase/cms-rbac.sql)
   status: PublicationStatus
   reviewed_by: string | null
@@ -311,7 +346,7 @@ export type Article = {
   attachments?: Attachment[]
 }
 
-export type CellGroup = {
+export type CellGroup = ModerationFields & {
   id: string
   name: string
   description: string | null
@@ -326,7 +361,7 @@ export type CellGroup = {
   unread_count?: number
 }
 
-export type CellGroupMessage = {
+export type CellGroupMessage = ModerationFields & {
   id: string
   group_id: string
   sender_id: string

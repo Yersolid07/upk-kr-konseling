@@ -41,17 +41,41 @@ export const ROLE_DESCRIPTION: Record<UserRole, string> = {
 
 /** Daftar peran yang boleh melakukan aksi tertentu. */
 export const ROLE_CAPABILITIES = {
+  // Pengaturan & identitas situs
   manageSettings: ['super_admin'],
   manageHotlines: ['super_admin'],
   manageLegal: ['super_admin'],
   manageAdmins: ['super_admin'],
   revealIdentity: ['super_admin'],
   viewAuditLog: ['super_admin', 'admin'],
-  approveArticles: ['super_admin', 'admin'],
-  approveKonselor: ['super_admin', 'admin'],
+
+  // Pengguna & konselor
   manageUsers: ['super_admin', 'admin'],
+  approveKonselor: ['super_admin', 'admin'],
+  banUsers: ['super_admin', 'admin'],
+  approveArticles: ['super_admin', 'admin'],
+
+  // Moderasi konten
   moderateContent: ['super_admin', 'admin', 'moderator'],
+  softDeleteContent: ['super_admin', 'admin', 'moderator'],
+  restoreContent: ['super_admin', 'admin', 'moderator'],
+  /** Hapus PERMANEN hanya super_admin — tidak bisa dibatalkan. */
+  purgeContent: ['super_admin'],
+  manageCategories: ['super_admin', 'admin'],
+  manageReports: ['super_admin', 'admin', 'moderator'],
+
+  // Konseling & komunitas
   manageBookings: ['super_admin', 'admin', 'moderator', 'konselor'],
+  manageCellGroups: ['super_admin', 'admin', 'moderator', 'konselor'],
+  manageKonselorProfiles: ['super_admin', 'admin'],
+  breakGlassRead: ['super_admin'],
+
+  // Operasional
+  broadcast: ['super_admin', 'admin'],
+  manageMedia: ['super_admin', 'admin', 'moderator'],
+  manageSiteContent: ['super_admin', 'admin'],
+  manageVerses: ['super_admin', 'admin'],
+  exportData: ['super_admin'],
 } satisfies Record<string, UserRole[]>
 
 export type Capability = keyof typeof ROLE_CAPABILITIES

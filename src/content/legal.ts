@@ -4,7 +4,7 @@
 // Kenapa ada di kode, bukan hanya di database:
 // dokumen legal harus SELALU bisa dibaca publik — termasuk sebelum migrasi
 // `supabase/cms-rbac.sql` dijalankan atau saat tabel `legal_documents` kosong.
-// Super admin tetap bisa menimpa isi ini lewat panel CMS (/admin/cms); begitu
+// Super admin tetap bisa menimpa isi ini lewat panel admin (/admin/legal); begitu
 // ada baris di DB, versi DB yang dipakai.
 //
 // Sinkronkan isi ini dengan seed di supabase/cms-rbac.sql bila diubah.

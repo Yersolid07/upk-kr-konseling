@@ -1,427 +1,287 @@
-// src/app/admin/page.tsx
-'use client'
+// src/app/(app)/admin/page.tsx
+// Dasbor konsol admin — ringkasan angka yang benar-benar dipakai staf.
+//
+// Prinsip: setiap angka di sini harus bisa ditindaklanjuti. "Jumlah pengguna"
+// hanya berguna bila ada pekerjaan yang menunggu di baliknya, jadi kartu
+// utama adalah ANTRIAN (laporan masuk, artikel menunggu, konselor menunggu),
+// bukan total kumulatif.
 
-import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
+import type { LucideIcon } from 'lucide-react'
 import {
-  Users, MessageCircle, ShieldCheck, Flag, Unlock, Info, AlertTriangle,
-  Check, ChevronDown, type LucideIcon,
+  Flag, Newspaper, HeartHandshake, Users, MessagesSquare, HandHeart,
+  TrendingUp, AlertTriangle, ArrowRight, ShieldCheck, Activity,
 } from 'lucide-react'
-import toast from 'react-hot-toast'
-import type { Profile } from '@/types/database'
+import { createClient } from '@/lib/supabase/server'
+import { requireAdminPage } from '@/lib/auth-guard'
+import { checkSchema } from '@/lib/cms/schema'
+import { MigrationBanner } from '@/components/admin/migration-banner'
+import { ROLE_LABEL } from '@/lib/rbac'
 
-function getModerationAuthor(row: { is_anonymous?: boolean; anon_label?: string | null; author_name?: string | null }) {
-  return row.is_anonymous ? `Anonim#${row.anon_label ?? '????'}` : row.author_name ?? 'Pengguna'
+export const dynamic = 'force-dynamic'
+
+interface StatCard {
+  label: string
+  value: number | string
+  hint?: string
+  href?: string
+  icon: LucideIcon
+  tone: 'neutral' | 'warn' | 'good' | 'info'
 }
 
-type Tab = 'users' | 'konselor-pending' | 'reports' | 'identity' | 'content'
+const TONE: Record<StatCard['tone'], string> = {
+  neutral: 'bg-[var(--surface)] text-[var(--brown)]',
+  warn: 'bg-amber-50 text-amber-700',
+  good: 'bg-emerald-50 text-emerald-700',
+  info: 'bg-blue-50 text-blue-700',
+}
 
-export default function AdminPage() {
-  const [tab, setTab] = useState<Tab>('users')
-  const [users, setUsers] = useState<Profile[]>([])
-  const [pendingKonselor, setPendingKonselor] = useState<Profile[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-
+export default async function AdminDashboard() {
+  const { profile } = await requireAdminPage('moderateContent')
   const supabase = createClient()
+  const schema = await checkSchema()
+  const hasModeration = schema.moderation
 
-  const fetchUsers = useCallback(async () => {
-    setLoading(true)
-    const q = supabase.from('profiles').select('*').order('created_at', { ascending: false })
-    const { data } = search ? await q.ilike('full_name', `%${search}%`) : await q
-    setUsers(data ?? [])
-    setLoading(false)
-  }, [search])
+  // Semua hitungan dijalankan paralel — dasbor tidak boleh lambat karena
+  // menunggu tujuh query berurutan.
+  const [
+    reportsRes,
+    articlesRes,
+    konselorRes,
+    threadsRes,
+    prayersRes,
+    usersRes,
+    flaggedRes,
+    trashRes,
+  ] = await Promise.all([
+    supabase
+      .from('content_reports')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending'),
+    supabase
+      .from('articles')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending_review'),
+    supabase
+      .from('konselor_applications')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending'),
+    // Sebelum migrasi Fase 2, kolom deleted_at belum ada — hitung semua baris.
+    hasModeration
+      ? supabase.from('threads').select('id', { count: 'exact', head: true }).is('deleted_at', null)
+      : supabase.from('threads').select('id', { count: 'exact', head: true }),
+    hasModeration
+      ? supabase
+          .from('prayer_requests')
+          .select('id', { count: 'exact', head: true })
+          .is('deleted_at', null)
+      : supabase.from('prayer_requests').select('id', { count: 'exact', head: true }),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }),
+    supabase
+      .from('threads')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_flagged', true),
+    hasModeration
+      ? supabase
+          .from('threads')
+          .select('id', { count: 'exact', head: true })
+          .not('deleted_at', 'is', null)
+      : Promise.resolve({ count: 0, error: null }),
+  ])
 
-  const fetchPendingKonselor = useCallback(async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('role', 'member')
-      .eq('is_verified', false)
-      .order('created_at', { ascending: false })
-    setPendingKonselor(data ?? [])
-  }, [])
+  // `count` bernilai null bila query gagal (mis. migrasi belum dijalankan).
+  // Ditampilkan sebagai 0 dengan penanda, bukan membuat halaman error.
+  const n = (r: { count: number | null; error: unknown }) =>
+    r.error ? null : (r.count ?? 0)
 
-  useEffect(() => {
-    fetchUsers()
-    fetchPendingKonselor()
-  }, [fetchUsers, fetchPendingKonselor])
+  const reports = n(reportsRes)
+  const articles = n(articlesRes)
+  const konselor = n(konselorRes)
+  const threads = n(threadsRes)
+  const prayers = n(prayersRes)
+  const users = n(usersRes)
+  const flagged = n(flaggedRes)
+  const trash = n(trashRes)
 
-  async function assignRole(userId: string, role: string, specialization?: string[]) {
-    // Lewat Server Action (bukan route handler): guard, validasi zod, dan
-    // audit dijalankan di satu tempat yang sama. Route /api/admin/assign-role
-    // sudah dinonaktifkan karena tidak memeriksa peringkat peran target.
-    const { assignRole: doAssign } = await import('./actions')
-    const res = await doAssign({
-      user_id: userId,
-      role,
-      specialization,
-      is_verified: role === 'konselor',
-    })
-    if ('error' in res) {
-      toast.error(res.error)
-    } else {
-      toast.success(`Peran berhasil diubah menjadi ${role}`)
-      fetchUsers()
-      fetchPendingKonselor()
-    }
-  }
+  const pendingTotal = (reports ?? 0) + (articles ?? 0) + (konselor ?? 0)
 
-  const TABS: { id: Tab | 'content'; label: string; icon: LucideIcon }[] = [
-    { id: 'users',            label: 'Semua Pengguna', icon: Users },
-    { id: 'konselor-pending', label: 'Tambah Konselor', icon: MessageCircle },
-    { id: 'content',          label: 'Moderasi Konten', icon: ShieldCheck },
-    { id: 'reports',          label: 'Laporan Konten',  icon: Flag },
-    { id: 'identity',         label: 'Buka Identitas (Darurat)', icon: Unlock },
+  const queue: StatCard[] = [
+    {
+      label: 'Laporan menunggu',
+      value: reports ?? '—',
+      hint: 'Keluhan konten yang belum ditinjau',
+      href: '/admin/laporan',
+      icon: Flag,
+      tone: (reports ?? 0) > 0 ? 'warn' : 'neutral',
+    },
+    {
+      label: 'Artikel menunggu',
+      value: articles ?? '—',
+      hint: 'Menunggu persetujuan terbit',
+      href: '/admin/articles',
+      icon: Newspaper,
+      tone: (articles ?? 0) > 0 ? 'info' : 'neutral',
+    },
+    {
+      label: 'Konselor menunggu',
+      value: konselor ?? '—',
+      hint: 'Pengajuan calon konselor',
+      href: '/admin/konselor',
+      icon: HeartHandshake,
+      tone: (konselor ?? 0) > 0 ? 'info' : 'neutral',
+    },
   ]
 
-  return (
-    <div>
-      {/* Tab buttons */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-        {TABS.map(t => {
-          const Icon = t.icon
-          return (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={tab === t.id ? 'btn-primary' : 'btn-secondary'}
-            style={{ width: 'auto', padding: '9px 16px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 7 }}
-          >
-            <Icon size={15} /> {t.label}
-          </button>
-          )
-        })}
-      </div>
+  const overview: StatCard[] = [
+    { label: 'Anggota', value: users ?? '—', icon: Users, tone: 'neutral' },
+    { label: 'Diskusi aktif', value: threads ?? '—', icon: MessagesSquare, tone: 'neutral' },
+    { label: 'Permohonan doa', value: prayers ?? '—', icon: HandHeart, tone: 'neutral' },
+    {
+      label: 'Ditandai',
+      value: flagged ?? '—',
+      hint: 'Perlu ditinjau moderator',
+      href: '/admin/forum?filter=flagged',
+      icon: AlertTriangle,
+      tone: (flagged ?? 0) > 0 ? 'warn' : 'neutral',
+    },
+    {
+      label: 'Di tempat sampah',
+      value: trash ?? '—',
+      href: '/admin/sampah',
+      icon: ShieldCheck,
+      tone: 'neutral',
+    },
+  ]
 
-      {/* ── USERS TAB ── */}
-      {tab === 'users' && (
-        <div className="card">
-          <div className="card-header">
-            <span className="card-title">Daftar Pengguna ({users.length})</span>
-            <input
-              className="form-input"
-              style={{ width: 200, padding: '8px 12px', fontSize: 13 }}
-              placeholder="Cari nama..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  {['Nama', 'Email', 'Angkatan', 'Role', 'Status', 'Bergabung', 'Aksi'].map(h => (
-                    <th key={h} style={{ textAlign: 'left', padding: '10px 14px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', borderBottom: '2px solid var(--cream-dark)' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr><td colSpan={7} style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)' }}>Memuat...</td></tr>
-                ) : users.map(u => (
-                  <tr key={u.id} style={{ borderBottom: '1px solid var(--cream)' }}>
-                    <td style={{ padding: '12px 14px', fontSize: 14 }}><strong>{u.full_name}</strong></td>
-                    <td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-muted)' }}>—</td>
-                    <td style={{ padding: '12px 14px', fontSize: 13 }}>{u.angkatan ?? '—'}</td>
-                    <td style={{ padding: '12px 14px' }}>
-                      <span className={`tag ${u.role === 'konselor' ? 'tag-iman' : u.role === 'admin' ? 'tag-cemas' : ''}`}>
-                        {u.role}
-                      </span>
-                    </td>
-                    <td style={{ padding: '12px 14px' }}>
-                      <span className={`status-badge ${u.is_verified ? 'status-verified' : u.is_active ? 'status-active' : 'status-pending'}`}>
-                        {u.is_verified ? 'Terverifikasi' : u.is_active ? 'Aktif' : 'Nonaktif'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-muted)' }}>
-                      {new Date(u.created_at).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
-                    </td>
-                    <td style={{ padding: '12px 14px' }}>
-                      <RoleDropdown user={u} onAssign={assignRole} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ── ASSIGN KONSELOR TAB ── */}
-      {tab === 'konselor-pending' && (
-        <div>
-          <div className="role-info-banner" style={{ marginBottom: 20 }}>
-            <Info size={16} />
-            <span>
-              Untuk menjadikan seseorang konselor, cari nama mereka di tab <strong>Semua Pengguna</strong> dan ubah role-nya ke <strong>Konselor</strong>.
-              Atau, jika mereka sudah mengajukan permohonan, tampil di sini.
-            </span>
-          </div>
-          <div className="card">
-            <div className="card-header">
-              <span className="card-title">Permohonan Konselor</span>
-            </div>
-            <div className="card-body">
-              {pendingKonselor.length === 0 ? (
-                <p style={{ color: 'var(--text-muted)', fontSize: 14, textAlign: 'center', padding: 20 }}>
-                  Tidak ada permohonan konselor saat ini.
-                </p>
-              ) : pendingKonselor.map(u => (
-                <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderBottom: '1px solid var(--cream)' }}>
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, var(--terra), var(--brown))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--white)', fontWeight: 700, flexShrink: 0 }}>
-                    {u.full_name.charAt(0)}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <strong style={{ fontSize: 14 }}>{u.full_name}</strong>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Angkatan {u.angkatan ?? '—'} · {u.jurusan ?? '—'}</div>
-                  </div>
-                  <button
-                    className="btn-primary"
-                    style={{ width: 'auto', padding: '8px 16px', fontSize: 13 }}
-                    onClick={() => assignRole(u.id, 'konselor')}
-                  >
-                    <Check size={14} /> Jadikan Konselor
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── CONTENT MODERATION TAB ── */}
-      {tab === 'content' && (
-        <ContentModeration />
-      )}
-
-      {/* ── REPORTS TAB ── */}
-      {tab === 'reports' && (
-        <div className="card">
-          <div className="card-header"><span className="card-title">Laporan Konten</span></div>
-          <div className="card-body">
-            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Belum ada laporan yang masuk.</p>
-          </div>
-        </div>
-      )}
-
-      {/* ── IDENTITY REVEAL TAB ── */}
-      {tab === 'identity' && (
-        <div>
-          <div className="error-banner" style={{ marginBottom: 20 }}>
-            <AlertTriangle size={16} /> <strong>Peringatan:</strong> Fitur ini hanya untuk keadaan darurat (ancaman bahaya nyata). Setiap pembukaan identitas dicatat dalam audit log dan tidak dapat dihapus.
-          </div>
-          <div className="card">
-            <div className="card-header"><span className="card-title" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><Unlock size={16} /> Buka Identitas Darurat</span></div>
-            <div className="card-body">
-              <IdentityRevealForm />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function RoleDropdown({ user, onAssign }: { user: Profile; onAssign: (id: string, role: string) => void }) {
-  const [open, setOpen] = useState(false)
-  const roles = ['member', 'moderator', 'konselor', 'admin']
-  return (
-    <div style={{ position: 'relative' }}>
-      <button
-        className="btn-secondary"
-        style={{ fontSize: 12, padding: '5px 12px' }}
-        onClick={() => setOpen(!open)}
-      >
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          Ubah Role <ChevronDown size={13} />
-        </span>
-      </button>
-      {open && (
-        <>
-          <div style={{ position: 'fixed', inset: 0, zIndex: 98 }} onClick={() => setOpen(false)} />
-          <div style={{
-            position: 'absolute', right: 0, top: '100%', marginTop: 4,
-            background: 'var(--white)', borderRadius: 10, boxShadow: 'var(--shadow-md)',
-            border: '1px solid var(--cream-dark)', zIndex: 99, overflow: 'hidden', minWidth: 140
-          }}>
-            {roles.map(r => (
-              <button
-                key={r}
-                onClick={() => { onAssign(user.id, r); setOpen(false) }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left',
-                  padding: '9px 14px', border: 'none', background: user.role === r ? 'var(--cream-dark)' : 'transparent',
-                  fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-sans)',
-                  color: r === 'konselor' ? 'var(--gold)' : r === 'admin' ? 'var(--terra)' : 'var(--text)',
-                  fontWeight: user.role === r ? 700 : 400,
-                  transition: 'background 0.15s'
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'var(--cream)')}
-                onMouseLeave={e => (e.currentTarget.style.background = user.role === r ? 'var(--cream-dark)' : 'transparent')}
-              >
-                {r === 'konselor' ? <MessageCircle size={14} /> : r === 'admin' ? <ShieldCheck size={14} /> : <span style={{ width: 14 }} />}
-                {r.charAt(0).toUpperCase() + r.slice(1)}
-                {user.role === r ? <Check size={14} style={{ marginLeft: 'auto' }} /> : null}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  )
-}
-
-function IdentityRevealForm() {
-  // Menempelkan tautan atau ID konten, BUKAN awalan kode anonim. Awalan 4 huruf
-  // bisa bentrok antar pengguna, dan pencarian identitas dari browser tidak
-  // pernah tercatat. Server Action revealIdentity menulis log dulu (RPC
-  // reveal_identity) baru mengembalikan identitas.
-  const [contentRef, setContentRef] = useState('')
-  const [contentType, setContentType] = useState<'thread' | 'comment' | 'prayer'>('thread')
-  const [reason, setReason] = useState('')
-  const [result, setResult] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-
-  async function handleReveal(e: React.FormEvent) {
-    e.preventDefault()
-    setBusy(true)
-    setResult(null)
-
-    const fd = new FormData()
-    fd.set('content_ref', contentRef)
-    fd.set('content_type', contentType)
-    fd.set('reason', reason)
-
-    const { revealIdentity } = await import('./actions')
-    const res = await revealIdentity(fd)
-    setBusy(false)
-
-    if ('error' in res) {
-      toast.error(res.error)
-      return
-    }
-    setResult(res.identity)
-    toast.success('Identitas dibuka. Tindakan ini tercatat di log audit.')
-  }
-
-  return (
-    <form onSubmit={handleReveal} style={{ maxWidth: 460 }}>
-      <div className="form-group">
-        <label className="form-label">Jenis Konten</label>
-        <select
-          className="form-input"
-          value={contentType}
-          onChange={(e) => setContentType(e.target.value as 'thread' | 'comment' | 'prayer')}
-        >
-          <option value="thread">Diskusi (thread)</option>
-          <option value="comment">Komentar</option>
-          <option value="prayer">Permohonan doa</option>
-        </select>
-      </div>
-      <div className="form-group">
-        <label className="form-label">Tautan atau ID Konten</label>
-        <input
-          className="form-input"
-          placeholder="Tempelkan tautan konten, mis. /forum/3f2a… atau ID-nya"
-          value={contentRef}
-          onChange={(e) => setContentRef(e.target.value)}
-          required
-        />
-      </div>
-      <div className="form-group">
-        <label className="form-label">Alasan Pembukaan (wajib, min. 20 karakter)</label>
-        <textarea
-          className="form-input"
-          placeholder="Contoh: Pengguna mengindikasikan ancaman bahaya diri pada diskusi ini."
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          rows={3}
-          required
-          minLength={20}
-          style={{ resize: 'vertical' }}
-        />
-      </div>
-      {result && (
-        <div className="success-banner" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Check size={15} /> Identitas: <strong>{result}</strong>
-        </div>
-      )}
-      <button
-        type="submit"
-        className="btn-primary"
-        disabled={busy}
-        style={{ background: 'linear-gradient(135deg, var(--danger), #a93226)', display: 'inline-flex', alignItems: 'center', gap: 7, width: 'auto' }}
-      >
-        <Unlock size={15} /> {busy ? 'Memproses…' : 'Buka Identitas'}
-      </button>
-    </form>
-  )
-}
-
-function ContentModeration() {
-  const [content, setContent] = useState<any>({ threads: [], comments: [], prayers: [] })
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchContent()
-  }, [])
-
-  async function fetchContent() {
-    setLoading(true)
-    const { getAdminContent } = await import('./actions')
-    const res = await getAdminContent()
-    if (!('error' in res)) setContent(res)
-    setLoading(false)
-  }
-
-  async function handleDelete(type: 'thread' | 'comment' | 'prayer', id: string) {
-    if (!confirm('Hapus konten ini secara permanen?')) return
-    const { deleteContent } = await import('./actions')
-    const res = await deleteContent(type, id)
-    if ('error' in res) {
-      toast.error(res.error)
-    } else {
-      toast.success('Konten berhasil dihapus')
-      fetchContent()
-    }
-  }
-
-  if (loading) return <div className="card-body text-center text-sm text-[var(--text-muted)]">Memuat data konten...</div>
+  const migrationPending = [reports, articles, konselor, threads].some((v) => v === null)
 
   return (
     <div className="space-y-6">
-      <div className="card">
-        <div className="card-header"><span className="card-title">Moderasi Forum (Threads)</span></div>
-        <div className="card-body">
-          {content.threads?.map((t: any) => (
-            <div key={t.id} className="py-3 border-b border-[var(--cream)] flex justify-between items-start">
-              <div>
-                <strong className="text-sm block">{t.title}</strong>
-                <span className="text-xs text-[var(--text-muted)]">Oleh: {getModerationAuthor(t)}</span>
-              </div>
-              <button onClick={() => handleDelete('thread', t.id)} className="btn-icon text-red-500 text-xs px-2 border border-red-200 rounded">Hapus</button>
-            </div>
+      {/* Sapaan + status */}
+      <section className="card-premium p-5">
+        <div className="flex items-start gap-3">
+          <span className="shrink-0 w-10 h-10 rounded-xl bg-[var(--brown-dark)] text-[var(--cream)] flex items-center justify-center">
+            <Activity size={18} />
+          </span>
+          <div className="min-w-0">
+            <h1 className="text-lg font-bold text-[var(--brown-dark)] leading-tight">
+              Selamat bertugas, {profile.full_name.split(' ')[0]}
+            </h1>
+            <p className="text-sm text-[var(--text-muted)] mt-0.5">
+              Masuk sebagai {ROLE_LABEL[profile.role]}.{' '}
+              {pendingTotal > 0 ? (
+                <span className="text-amber-700 font-semibold">
+                  {pendingTotal} hal menunggu tindakan.
+                </span>
+              ) : (
+                <span className="text-emerald-700 font-semibold">Tidak ada antrean mendesak.</span>
+              )}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {(migrationPending || !hasModeration) && (
+        <MigrationBanner
+          file="supabase/cms-superadmin.sql"
+          detail={
+            !hasModeration
+              ? 'Kolom moderasi (moderation_status, deleted_at) belum ada.'
+              : 'Sebagian hitungan tidak bisa dibaca.'
+          }
+        />
+      )}
+
+      {/* Antrean — bagian yang paling sering dibuka staf */}
+      <section>
+        <h2 className="section-title mb-3 flex items-center gap-2">
+          <TrendingUp size={15} /> Perlu tindakan
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {queue.map((c) => (
+            <StatCardView key={c.label} card={c} />
           ))}
         </div>
-      </div>
-      
-      <div className="card">
-        <div className="card-header"><span className="card-title">Moderasi Komentar</span></div>
-        <div className="card-body">
-          {content.comments?.map((c: any) => (
-            <div key={c.id} className="py-3 border-b border-[var(--cream)] flex justify-between items-start">
-              <div>
-                <p className="text-sm line-clamp-2">{c.content}</p>
-                <span className="text-xs text-[var(--text-muted)]">Oleh: {getModerationAuthor(c)}</span>
-              </div>
-              <button onClick={() => handleDelete('comment', c.id)} className="btn-icon text-red-500 text-xs px-2 border border-red-200 rounded">Hapus</button>
-            </div>
+      </section>
+
+      {/* Ikhtisar */}
+      <section>
+        <h2 className="section-title mb-3">Ikhtisar situs</h2>
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
+          {overview.map((c) => (
+            <StatCardView key={c.label} card={c} compact />
           ))}
         </div>
-      </div>
+      </section>
+
+      {/* Tautan cepat ke pekerjaan yang sering dipakai */}
+      <section>
+        <h2 className="section-title mb-3">Pintasan</h2>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            { href: '/admin/forum', label: 'Moderasi forum', desc: 'Sembunyikan atau tandai diskusi' },
+            { href: '/admin/prayer', label: 'Moderasi doa', desc: 'Tinjau permohonan doa' },
+            { href: '/admin/pengguna', label: 'Kelola pengguna', desc: 'Peran, status, dan pemblokiran' },
+            { href: '/admin/pengaturan', label: 'Pengaturan situs', desc: 'Nama, fitur, dan kebijakan' },
+            { href: '/admin/audit', label: 'Jejak audit', desc: 'Riwayat tindakan admin' },
+            { href: '/admin/sampah', label: 'Tempat sampah', desc: 'Pulihkan atau hapus permanen' },
+          ].map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="group flex items-center gap-3 rounded-xl border border-[var(--cream-dark)] bg-[var(--surface)] px-4 py-3 transition-colors hover:border-[var(--terra)]"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-[var(--brown-dark)]">
+                  {l.label}
+                </span>
+                <span className="block text-xs text-[var(--text-muted)] mt-0.5">{l.desc}</span>
+              </span>
+              <ArrowRight
+                size={15}
+                className="shrink-0 text-[var(--text-muted)] transition-transform group-hover:translate-x-0.5 group-hover:text-[var(--terra)]"
+              />
+            </Link>
+          ))}
+        </div>
+      </section>
     </div>
   )
 }
 
+function StatCardView({ card, compact = false }: { card: StatCard; compact?: boolean }) {
+  const Icon = card.icon
+  const body = (
+    <>
+      <span
+        className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${TONE[card.tone]}`}
+      >
+        <Icon size={16} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+          {card.label}
+        </span>
+        <span
+          className={`block font-bold text-[var(--brown-dark)] ${compact ? 'text-xl' : 'text-2xl'} leading-tight`}
+        >
+          {card.value}
+        </span>
+        {card.hint && !compact && (
+          <span className="block text-[11px] text-[var(--text-muted)] mt-0.5">{card.hint}</span>
+        )}
+      </span>
+    </>
+  )
+
+  const cls =
+    'flex items-start gap-3 rounded-xl border border-[var(--cream-dark)] bg-[var(--surface)] p-4'
+
+  return card.href ? (
+    <Link href={card.href} className={`${cls} transition-colors hover:border-[var(--terra)]`}>
+      {body}
+    </Link>
+  ) : (
+    <div className={cls}>{body}</div>
+  )
+}

@@ -19,7 +19,15 @@ import type {
   HotlineContact, KonselorApplication, KonselorProfile, LegalDocument,
   SiteSetting, UserRole, SessionStatus, BookingStatus, ReportStatus,
   PublicationStatus, ApplicationStatus, ContentType, NotificationType,
+  ModerationFields, ModerationStatus, AuditAction,
 } from './database'
+
+/**
+ * Nama kolom moderasi. Dipakai untuk membuang kolom-kolom ini dari tipe
+ * `Insert` lalu menambahkannya kembali sebagai OPSIONAL (Partial) — kolom
+ * moderasi selalu punya DEFAULT di database dan hanya diisi oleh CMS.
+ */
+type ModerationKeys = keyof ModerationFields
 
 type Rel = {
   foreignKeyName: string
@@ -48,7 +56,7 @@ export interface Database {
       }
       threads: {
         Row: Thread
-        Insert: Omit<Thread, 'id' | 'created_at' | 'updated_at' | 'view_count' | 'comment_count'>
+        Insert: Omit<Thread, 'id' | 'created_at' | 'updated_at' | 'view_count' | 'comment_count' | ModerationKeys> & Partial<ModerationFields>
         Update: Partial<Thread>
         Relationships: [
           Rel & { foreignKeyName: 'threads_author_id_fkey'; columns: ['author_id']; referencedRelation: 'profiles' },
@@ -57,7 +65,7 @@ export interface Database {
       }
       comments: {
         Row: Comment
-        Insert: Omit<Comment, 'id' | 'created_at' | 'updated_at'>
+        Insert: Omit<Comment, 'id' | 'created_at' | 'updated_at' | ModerationKeys> & Partial<ModerationFields>
         Update: Partial<Comment>
         Relationships: [
           Rel & { foreignKeyName: 'comments_author_id_fkey'; columns: ['author_id']; referencedRelation: 'profiles' },
@@ -109,7 +117,7 @@ export interface Database {
       }
       prayer_requests: {
         Row: PrayerRequest
-        Insert: Omit<PrayerRequest, 'id' | 'created_at' | 'updated_at' | 'pray_count'>
+        Insert: Omit<PrayerRequest, 'id' | 'created_at' | 'updated_at' | 'pray_count' | ModerationKeys> & Partial<ModerationFields>
         Update: Partial<PrayerRequest>
         Relationships: [
           Rel & { foreignKeyName: 'prayer_requests_author_id_fkey'; columns: ['author_id']; referencedRelation: 'profiles' },
@@ -127,7 +135,7 @@ export interface Database {
       }
       articles: {
         Row: Article
-        Insert: Omit<Article, 'id' | 'created_at' | 'read_count' | 'status' | 'reviewed_by' | 'reviewed_at' | 'review_notes' | 'tags' | 'excerpt' | 'cover_url' | 'category_id' | 'published_at'> & {
+        Insert: Omit<Article, 'id' | 'created_at' | 'read_count' | 'status' | 'reviewed_by' | 'reviewed_at' | 'review_notes' | 'tags' | 'excerpt' | 'cover_url' | 'category_id' | 'published_at' | 'updated_at' | ModerationKeys> & {
           status?: PublicationStatus
           tags?: string[] | null
           excerpt?: string | null
@@ -137,8 +145,9 @@ export interface Database {
           reviewed_by?: string | null
           reviewed_at?: string | null
           review_notes?: string | null
+          updated_at?: string
           id?: string
-        }
+        } & Partial<ModerationFields>
         Update: Partial<Article>
         Relationships: [
           Rel & { foreignKeyName: 'articles_author_id_fkey'; columns: ['author_id']; referencedRelation: 'profiles' },
@@ -147,7 +156,7 @@ export interface Database {
       }
       cell_groups: {
         Row: CellGroup
-        Insert: Omit<CellGroup, 'id' | 'created_at'>
+        Insert: Omit<CellGroup, 'id' | 'created_at' | ModerationKeys> & Partial<ModerationFields>
         Update: Partial<CellGroup>
         Relationships: [
           Rel & { foreignKeyName: 'cell_groups_leader_id_fkey'; columns: ['leader_id']; referencedRelation: 'profiles'; isOneToOne: true },
@@ -164,8 +173,8 @@ export interface Database {
       }
       cell_group_messages: {
         Row: CellGroupMessage
-        Insert: Omit<CellGroupMessage, 'id' | 'created_at'>
-        Update: never
+        Insert: Omit<CellGroupMessage, 'id' | 'created_at' | ModerationKeys> & Partial<ModerationFields>
+        Update: Partial<CellGroupMessage>
         Relationships: [
           Rel & { foreignKeyName: 'cell_group_messages_group_id_fkey'; columns: ['group_id']; referencedRelation: 'cell_groups' },
           Rel & { foreignKeyName: 'cell_group_messages_sender_id_fkey'; columns: ['sender_id']; referencedRelation: 'profiles' },
@@ -381,6 +390,23 @@ export interface Database {
           p_detail?: Record<string, unknown>
         }
         Returns: undefined
+      }
+      /**
+       * Audit v2 — snapshot before/after + alasan + asal permintaan.
+       * Dipanggil oleh `cmsAction`. Lihat supabase/cms-superadmin.sql seksi 3.
+       */
+      log_audit_v2: {
+        Args: {
+          p_action: AuditAction
+          p_entity: string
+          p_entity_id?: string | null
+          p_before?: Record<string, unknown> | null
+          p_after?: Record<string, unknown> | null
+          p_reason?: string | null
+          p_ip?: string | null
+          p_ua?: string | null
+        }
+        Returns: string
       }
       increment_thread_views: { Args: { thread_id: string }; Returns: undefined }
       // Pembukaan identitas penulis anonim. Menulis identity_reveal_log

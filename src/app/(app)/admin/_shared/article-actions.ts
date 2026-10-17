@@ -1,4 +1,4 @@
-// src/app/(app)/admin/cms/actions-articles.ts
+// src/app/(app)/admin/_shared/actions-articles.ts
 'use server'
 
 // Antrean persetujuan artikel. Artikel dari anggota/konselor masuk sebagai

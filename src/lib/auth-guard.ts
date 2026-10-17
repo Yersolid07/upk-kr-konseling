@@ -66,6 +66,24 @@ export async function requireCap(capability: Capability): Promise<AuthContext> {
 }
 
 /**
+ * Guard untuk HALAMAN (bukan Server Action).
+ *
+ * Bedanya dengan requireCap: halaman harus MENGALIHKAN pengunjung, bukan
+ * melempar error — melempar error di Server Component hanya menghasilkan
+ * layar "Application error" yang membingungkan.
+ *
+ * Dipakai di setiap page.tsx di bawah /admin.
+ */
+export async function requireAdminPage(capability?: Capability): Promise<AuthContext> {
+  const { redirect } = await import('next/navigation')
+  const ctx = await getAuthContext()
+  if (!ctx) redirect('/auth/login')
+  if (!hasMinRole(ctx.role, 'moderator')) redirect('/dashboard')
+  if (capability && !can(ctx.role, capability)) redirect('/admin')
+  return ctx
+}
+
+/**
  * Bungkus Server Action: ubah AuthorizationError jadi { error } yang ramah,
  * dan error tak terduga jadi pesan generik + log server.
  */

@@ -21,6 +21,7 @@ import {
   Languages,
   ChevronRight,
   Phone,
+  ShieldCheck,
   X
 } from 'lucide-react'
 import { HandsPraying } from '@/components/icons/HandsPraying'
@@ -51,6 +52,7 @@ const SPIRITUAL_ITEMS: NavItem[] = [
 
 const GROUP_ITEMS: NavItem[] = [
   { href: '/cellgroup', icon: <UsersIcon size={18} />, label: 'KK & KTB',     labelEn: 'Small Groups' },
+  { href: '/privasi-saya', icon: <ShieldCheck size={18} />, label: 'Privasi Saya', labelEn: 'My Privacy' },
 ]
 
 const STAFF_ITEMS: NavItem[] = [

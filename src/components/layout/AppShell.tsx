@@ -10,7 +10,9 @@ import { SOSModal } from '@/components/ui/SOSModal'
 import { useAppStore } from '@/store/useAppStore'
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications'
 import { usePresence } from '@/hooks/usePresence'
+import { SiteBanner } from './SiteBanner'
 import type { Profile } from '@/types/database'
+import type { SiteBanner as BannerRow } from '@/types/database'
 
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard':  'Beranda',
@@ -25,7 +27,17 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin':      'Panel Admin',
 }
 
-export function AppShell({ profile, children }: { profile: Profile; children: React.ReactNode }) {
+export function AppShell({
+  profile,
+  banners = [],
+  footerPages = [],
+  children,
+}: {
+  profile: Profile
+  banners?: BannerRow[]
+  footerPages?: { slug: string; title: string }[]
+  children: React.ReactNode
+}) {
   const pathname = usePathname()
   const { setProfile, setSidebarOpen, sidebarOpen } = useAppStore()
 
@@ -70,7 +82,27 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
         />
         <div className="view-container">
           <div className="max-w-7xl mx-auto">
+            <SiteBanner
+              banners={banners.map((b) => ({
+                id: b.id,
+                message: b.message,
+                level: b.level,
+                dismissible: b.dismissible,
+              }))}
+            />
             {children}
+
+            {footerPages.length > 0 && (
+              <footer className="mt-10 pt-6 border-t border-[var(--cream-dark)]">
+                <nav className="flex flex-wrap gap-x-4 gap-y-1.5 text-[11px] text-[var(--text-muted)]">
+                  {footerPages.map((f) => (
+                    <a key={f.slug} href={`/halaman/${f.slug}`} className="hover:text-[var(--terra)]">
+                      {f.title}
+                    </a>
+                  ))}
+                </nav>
+              </footer>
+            )}
           </div>
         </div>
       </main>

@@ -93,6 +93,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       ],
     },
     {
+      title: 'Komunitas',
+      items: [
+        ...(allow('manageCellGroups')
+          ? [{ href: '/admin/kk-ktb', label: 'KK & KTB', icon: 'cellGroups' as const }]
+          : []),
+        ...(allow('manageKonseling')
+          ? [{ href: '/admin/konseling', label: 'Sesi Konseling', icon: 'sessions' as const }]
+          : []),
+        ...(allow('broadcast')
+          ? [{ href: '/admin/siaran', label: 'Siaran', icon: 'broadcast' as const }]
+          : []),
+      ],
+    },
+    {
       title: 'Situs',
       items: [
         ...(allow('manageSettings')
@@ -102,8 +116,25 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               { href: '/admin/legal', label: 'Dokumen Legal', icon: 'legal' as const },
             ]
           : []),
+        ...(allow('manageSiteContent')
+          ? [{ href: '/admin/konten-situs', label: 'Konten Situs', icon: 'siteContent' as const }]
+          : []),
         ...(allow('viewAuditLog')
           ? [{ href: '/admin/audit', label: 'Jejak Audit', icon: 'audit' as const }]
+          : []),
+      ],
+    },
+    {
+      title: 'Sistem',
+      items: [
+        ...(allow('manageMedia')
+          ? [{ href: '/admin/media', label: 'Media', icon: 'media' as const }]
+          : []),
+        ...(allow('managePrivacy')
+          ? [{ href: '/admin/privasi', label: 'Privasi', icon: 'privacy' as const }]
+          : []),
+        ...(allow('manageSystem')
+          ? [{ href: '/admin/sistem', label: 'Status Sistem', icon: 'system' as const }]
           : []),
       ],
     },

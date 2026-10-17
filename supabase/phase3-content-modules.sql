@@ -238,7 +238,7 @@ DECLARE
   v_t TEXT;
 BEGIN
   -- Hanya super admin (atau pemanggil internal tanpa auth.uid()).
-  IF auth.uid() IS NOT NULL AND NOT public.is_super_admin() THEN
+  IF auth.uid() IS NOT NULL AND public.is_super_admin() IS NOT TRUE THEN
     RAISE EXCEPTION 'forbidden: hanya super admin' USING ERRCODE = '42501';
   END IF;
 

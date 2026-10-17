@@ -51,28 +51,22 @@ export async function createCellGroup(formData: FormData) {
   redirect(`/cellgroup/${group.id}`)
 }
 
-/** Join an active KK/KTB by id. */
-export async function joinCellGroup(groupId: string) {
+/**
+ * Bergabung ke KK/KTB.
+ *
+ * Memakai RPC `join_cell_group`, bukan insert langsung. Pemeriksaan kode
+ * undangan, status arsip, dan batas anggota harus terjadi dalam SATU transaksi:
+ * dua orang yang menekan "Gabung" bersamaan tidak boleh sama-sama lolos saat
+ * grup tersisa satu kursi.
+ */
+export async function joinCellGroup(groupId: string, inviteCode?: string) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Anda harus masuk.' }
 
-  // Already a member?
-  const { data: existing } = await supabase
-    .from('cell_group_members')
-    .select('id')
-    .eq('group_id', groupId)
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  if (existing) {
-    revalidatePath('/cellgroup')
-    return { success: true, alreadyMember: true }
-  }
-
-  const { error } = await (supabase.from('cell_group_members') as any).insert({
-    group_id: groupId,
-    user_id: user.id,
+  const { data, error } = await supabase.rpc('join_cell_group', {
+    p_group_id: groupId,
+    p_invite_code: inviteCode?.trim() || null,
   })
 
   if (error) {
@@ -80,9 +74,17 @@ export async function joinCellGroup(groupId: string) {
     return { error: 'Gagal bergabung. Silakan coba lagi.' }
   }
 
+  const res = data as unknown as {
+    ok: boolean
+    error?: string
+    joined?: boolean
+    already_member?: boolean
+  }
+  if (!res?.ok) return { error: res?.error ?? 'Gagal bergabung.' }
+
   revalidatePath('/cellgroup')
   revalidatePath(`/cellgroup/${groupId}`)
-  return { success: true }
+  return { success: true, alreadyMember: Boolean(res.already_member) }
 }
 
 /** Leave a KK/KTB (leader cannot leave their own group). */
@@ -123,6 +125,18 @@ export async function sendGroupMessage(groupId: string, content: string, isAnony
 
   const trimmed = content?.trim()
   if (!trimmed) return { error: 'Pesan tidak boleh kosong.' }
+
+  // Grup yang diarsipkan tidak menerima pesan baru — riwayat tetap terbaca.
+  const { data: grp } = await supabase
+    .from('cell_groups')
+    .select('is_archived, is_active')
+    .eq('id', groupId)
+    .maybeSingle()
+
+  const g = grp as unknown as { is_archived: boolean; is_active: boolean } | null
+  if (!g) return { error: 'Grup tidak ditemukan.' }
+  if (g.is_archived) return { error: 'Grup ini sudah diarsipkan dan tidak menerima pesan baru.' }
+  if (!g.is_active) return { error: 'Grup ini sedang tidak aktif.' }
 
   const { error } = await (supabase.from('cell_group_messages') as any).insert({
     group_id: groupId,

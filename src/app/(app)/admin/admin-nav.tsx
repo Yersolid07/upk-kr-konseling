@@ -15,6 +15,8 @@ import {
   HandHeart, HeartHandshake, BookOpenText, CalendarCheck,
   Settings, ScrollText, Trash2, Phone, ShieldCheck, FileText,
   FlagTriangleRight, FolderTree, PenLine, Ban,
+  UsersRound, MessagesSquare as MsgSq, Megaphone, LayoutTemplate,
+  HardDrive, ShieldAlert, Activity,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Capability } from '@/lib/rbac'
@@ -48,6 +50,13 @@ const ICONS = {
   hotlines: Phone,
   legal: FileText,
   admins: ShieldCheck,
+  cellGroups: UsersRound,
+  sessions: MsgSq,
+  broadcast: Megaphone,
+  siteContent: LayoutTemplate,
+  media: HardDrive,
+  privacy: ShieldAlert,
+  system: Activity,
 } as const
 
 export interface NavGroup {

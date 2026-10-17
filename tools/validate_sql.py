@@ -14,6 +14,8 @@ FILES = [
     "supabase/phase1-data-security.sql",
     "supabase/cms-superadmin.sql",
     "supabase/phase3-content-modules.sql",
+    "supabase/phase4-advanced-modules.sql",
+    "supabase/patch-null-guards.sql",
 ]
 
 root = Path(__file__).resolve().parent.parent

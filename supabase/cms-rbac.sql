@@ -88,10 +88,13 @@ SET search_path = public AS $$
   SELECT public.has_min_role('admin');
 $$;
 
+-- COALESCE wajib: saat tidak ada sesi, current_user_role() NULL sehingga
+-- ekspresi ini NULL. Di RLS itu gagal tertutup, tetapi di PL/pgSQL
+-- `IF NOT NULL` TIDAK masuk cabang — penjaga izin justru terlewati.
 CREATE OR REPLACE FUNCTION public.is_super_admin()
 RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE
 SET search_path = public AS $$
-  SELECT public.current_user_role() = 'super_admin';
+  SELECT COALESCE(public.current_user_role() = 'super_admin', FALSE);
 $$;
 
 -- =====================================================
@@ -390,7 +393,9 @@ RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = public AS $$
 BEGIN
   -- (a) Anggota dan konselor tidak boleh menerbitkan sendiri.
-  IF NOT public.is_admin_or_above() AND NEW.status = 'published' THEN
+  -- `IS NOT TRUE`: bila peran tidak terbaca (NULL), artikel tetap ditahan
+  -- untuk ditinjau — bukan lolos terbit.
+  IF public.is_admin_or_above() IS NOT TRUE AND NEW.status = 'published' THEN
     NEW.status := 'pending_review';
   END IF;
 

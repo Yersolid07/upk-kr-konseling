@@ -21,7 +21,7 @@ BEGIN
   -- Jika user mencoba mengubah kolom role
   IF NEW.role IS DISTINCT FROM OLD.role THEN
     -- Hanya super_admin atau admin yang boleh mengubah role orang lain
-    IF NOT public.is_admin_or_above() THEN
+    IF public.is_admin_or_above() IS NOT TRUE THEN
       -- Jika bukan admin, paksa role kembali ke role lama (mengabaikan percobaan eksploitasi)
       NEW.role = OLD.role;
     END IF;

@@ -2,7 +2,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AppShell } from '@/components/layout/AppShell'
-import { cookies } from 'next/headers'
+import { loadActiveBanners, loadFooterPages } from '@/lib/site-content'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -35,5 +35,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/auth/setup-error')
   }
 
-  return <AppShell profile={profile}>{children}</AppShell>
+  // Banner pengumuman (M10). Tidak pernah melempar — bila tabel belum ada,
+  // hasilnya array kosong dan AppShell tampil seperti biasa.
+  const [banners, footerPages] = await Promise.all([loadActiveBanners(), loadFooterPages()])
+
+  return (
+    <AppShell profile={profile} banners={banners} footerPages={footerPages}>
+      {children}
+    </AppShell>
+  )
 }

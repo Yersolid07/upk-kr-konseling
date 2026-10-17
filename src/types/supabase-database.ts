@@ -17,6 +17,8 @@ import type {
   Profile, Thread, Comment, Reaction, ChatSession, Message, Booking,
   KonselorAvailability, PrayerRequest, Article, CellGroup, CellGroupMessage,
   Notification, ContentReport, DailyVerse, ThreadCategory,
+  SessionNote, BreakGlassRead, Broadcast, BroadcastTemplate,
+  SitePage, SiteBanner, Resource, DataRequest, SchemaMigration,
   Attachment, AttachmentKind, ContentKind, AuditLogEntry, IdentityRevealLog,
   HotlineContact, KonselorApplication, KonselorProfile, LegalDocument,
   SiteSetting, UserRole, SessionStatus, BookingStatus, ReportStatus,
@@ -164,6 +166,8 @@ export interface Database {
           Rel & { foreignKeyName: 'cell_groups_leader_id_fkey'; columns: ['leader_id']; referencedRelation: 'profiles'; isOneToOne: true },
         ]
       }
+      // Kolom Fase 4 (M6): arsip, batas anggota, kode undangan wajib.
+      // Ditulis eksplisit supaya `select('...')` mengenali kolomnya.
       cell_group_members: {
         Row: { id: string; group_id: string; user_id: string; is_leader: boolean; joined_at: string }
         Insert: { group_id: string; user_id: string; is_leader?: boolean }
@@ -304,6 +308,81 @@ export interface Database {
         Row: BannedWord
         Insert: Omit<BannedWord, 'id' | 'created_at'> & { id?: string; created_at?: string }
         Update: Partial<BannedWord>
+        Relationships: []
+      }
+      // ─── FASE 4 (supabase/phase4-advanced-modules.sql) ───
+      session_notes: {
+        Row: SessionNote
+        Insert: Omit<SessionNote, 'id' | 'created_at' | 'updated_at'> & {
+          id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<SessionNote>
+        Relationships: []
+      }
+      break_glass_reads: {
+        Row: BreakGlassRead
+        Insert: Omit<BreakGlassRead, 'id' | 'created_at' | 'expires_at'> & {
+          id?: string
+          created_at?: string
+          expires_at?: string
+        }
+        Update: never
+        Relationships: []
+      }
+      broadcasts: {
+        Row: Broadcast
+        Insert: Omit<Broadcast, 'id' | 'created_at' | 'updated_at'> & {
+          id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<Broadcast>
+        Relationships: []
+      }
+      broadcast_templates: {
+        Row: BroadcastTemplate
+        Insert: Omit<BroadcastTemplate, 'id' | 'created_at'> & { id?: string; created_at?: string }
+        Update: Partial<BroadcastTemplate>
+        Relationships: []
+      }
+      site_pages: {
+        Row: SitePage
+        Insert: Omit<SitePage, 'id' | 'created_at' | 'updated_at'> & {
+          id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<SitePage>
+        Relationships: []
+      }
+      site_banners: {
+        Row: SiteBanner
+        Insert: Omit<SiteBanner, 'id' | 'created_at' | 'starts_at'> & {
+          id?: string
+          created_at?: string
+          starts_at?: string
+        }
+        Update: Partial<SiteBanner>
+        Relationships: []
+      }
+      resources: {
+        Row: Resource
+        Insert: Omit<Resource, 'id' | 'created_at'> & { id?: string; created_at?: string }
+        Update: Partial<Resource>
+        Relationships: []
+      }
+      data_requests: {
+        Row: DataRequest
+        Insert: Omit<DataRequest, 'id' | 'created_at'> & { id?: string; created_at?: string }
+        Update: Partial<DataRequest>
+        Relationships: []
+      }
+      schema_migrations: {
+        Row: SchemaMigration
+        Insert: Omit<SchemaMigration, 'applied_at'> & { applied_at?: string }
+        Update: Partial<SchemaMigration>
         Relationships: []
       }
     }
@@ -462,6 +541,51 @@ export interface Database {
       }
       // Anggota biasa memberi tahu admin (artikel baru, pengajuan konselor).
       // Tujuan terkunci ke akun admin/super_admin saja.
+      // ─── FASE 4 ───
+      join_cell_group: {
+        Args: { p_group_id: string; p_invite_code?: string | null }
+        Returns: { ok: boolean; error?: string; joined?: boolean; already_member?: boolean }
+      }
+      rotate_invite_code: { Args: { p_group_id: string }; Returns: string }
+      remove_cell_group_member: {
+        Args: { p_group_id: string; p_user_id: string }
+        Returns: { ok: boolean; error?: string }
+      }
+      break_glass_open_session: {
+        Args: { p_session_id: string; p_reason: string }
+        Returns: {
+          ok: boolean
+          messages: { id: string; sender_id: string; content: string; created_at: string }[]
+        }
+      }
+      notify_booking_member: {
+        Args: { p_booking_id: string; p_title: string; p_body?: string | null }
+        Returns: { ok: boolean; error?: string }
+      }
+      reassign_session: {
+        Args: { p_session_id: string; p_new_konselor: string; p_reason?: string | null }
+        Returns: { ok: boolean; error?: string; previous?: string | null }
+      }
+      send_broadcast: {
+        Args: { p_broadcast_id: string }
+        Returns: { ok: boolean; error?: string; recipients?: number }
+      }
+      get_daily_verse: {
+        Args: { p_date?: string }
+        Returns: {
+          id: string
+          verse_text: string
+          verse_ref: string
+          verse_text_en: string | null
+          verse_ref_en: string | null
+          display_date: string | null
+        } | null
+      }
+      storage_usage_by_user: {
+        Args: Record<never, never>
+        Returns: { user_id: string; file_count: number; total_bytes: number }[]
+      }
+      system_status: { Args: Record<never, never>; Returns: Record<string, number> }
       notify_admins: {
         Args: {
           p_type: NotificationType

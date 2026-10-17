@@ -68,6 +68,11 @@ export const ROLE_CAPABILITIES = {
   manageBookings: ['super_admin', 'admin', 'moderator', 'konselor'],
   manageCellGroups: ['super_admin', 'admin', 'moderator', 'konselor'],
   manageKonselorProfiles: ['super_admin', 'admin'],
+  /**
+   * Mengalihkan sesi ke konselor lain. Sengaja TIDAK diberikan ke konselor:
+   * seorang konselor tidak boleh memindahkan beban sesi yang sedang ia pegang.
+   */
+  manageKonseling: ['super_admin', 'admin'],
   breakGlassRead: ['super_admin'],
 
   // Operasional
@@ -76,6 +81,10 @@ export const ROLE_CAPABILITIES = {
   manageSiteContent: ['super_admin', 'admin'],
   manageVerses: ['super_admin', 'admin'],
   exportData: ['super_admin'],
+  /** Permintaan data & hapus akun dari anggota (UU PDP). */
+  managePrivacy: ['super_admin', 'admin'],
+  /** Status sistem, migrasi, kesehatan basis data. */
+  manageSystem: ['super_admin'],
 } satisfies Record<string, UserRole[]>
 
 export type Capability = keyof typeof ROLE_CAPABILITIES

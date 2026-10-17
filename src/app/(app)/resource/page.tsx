@@ -10,6 +10,7 @@ import {
   Link2
 } from 'lucide-react'
 import Link from 'next/link'
+import { loadResources } from '@/lib/site-content'
 
 export const metadata = {
   title: 'Resource Kesehatan | IKA UPK-Kr FT UNSRAT',
@@ -67,7 +68,12 @@ const EXTERNAL_RESOURCES = [
   },
 ]
 
-export default function ResourcePage() {
+export const dynamic = 'force-dynamic'
+
+export default async function ResourcePage() {
+  // Resource tambahan dari admin (M10). Bila tabel belum ada, array kosong.
+  const extra = await loadResources()
+
   return (
     <div className="max-w-6xl mx-auto space-y-12 animate-fade-in pb-20">
       <section className="text-center space-y-4">
@@ -122,6 +128,46 @@ export default function ResourcePage() {
           </div>
         ))}
       </div>
+
+      {extra.length > 0 && (
+        <section className="space-y-4">
+          <div>
+            <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-[var(--brown-dark)]">
+              Dari pembina
+            </h2>
+            <p className="text-sm text-[var(--text-muted)] mt-1">
+              Tautan dan materi yang ditambahkan pengurus.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {extra.map((r) => (
+              <a
+                key={r.id}
+                href={r.url}
+                target={r.url.startsWith('http') ? '_blank' : undefined}
+                rel={r.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+                className="card-premium flex items-start gap-3 p-4 hover:border-[var(--terra)] transition-colors"
+              >
+                <div className="w-9 h-9 rounded-lg bg-[var(--cream)] flex items-center justify-center shrink-0 text-[var(--sage)]">
+                  <Link2 size={16} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-[var(--brown-dark)]">{r.title}</p>
+                  {r.description && (
+                    <p className="text-[11px] text-[var(--text-muted)] mt-0.5 leading-relaxed">
+                      {r.description}
+                    </p>
+                  )}
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                    {r.category}
+                  </p>
+                </div>
+                <ExternalLink size={13} className="shrink-0 text-[var(--text-muted)] mt-1" />
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Crisis guidance — menggantikan "Wellness Check" yang tidak punya fungsi */}
       <div className="card-premium p-6 sm:p-10 bg-gradient-to-br from-[var(--brown-dark)] to-[var(--brown)] text-white">

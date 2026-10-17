@@ -17,6 +17,7 @@ import { cn, getRelativeTime } from '@/lib/utils'
 import { hasMinRole } from '@/lib/rbac'
 
 import { CounselorOnboarding } from '@/components/konselor/counselor-onboarding'
+import { BookingActions } from '@/components/konselor/booking-actions'
 
 export const dynamic = 'force-dynamic'
 
@@ -51,6 +52,13 @@ export default async function KonselorDashboardPage() {
     .eq('konselor_id', user.id)
     .eq('status', 'pending')
     .order('scheduled_at', { ascending: true })
+
+  // Jumlah sesi selesai milik konselor ini — bukan angka karangan.
+  const { count: completedSessions } = await supabase
+    .from('chat_sessions')
+    .select('id', { count: 'exact', head: true })
+    .eq('konselor_id', user.id)
+    .eq('status', 'completed')
 
   // Fetch active chats
   const { data: activeChats } = await supabase
@@ -140,9 +148,8 @@ export default async function KonselorDashboardPage() {
                               </p>
                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                           <button className="px-4 py-2 bg-[var(--sage)]/10 text-[var(--sage)] text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-[var(--sage)]/20 transition-all">Konfirmasi</button>
-                           <button className="px-4 py-2 bg-red-50 text-red-500 text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-red-100 transition-all">Tolak</button>
+                        <div className="flex flex-wrap items-center gap-2">
+                           <BookingActions bookingId={booking.id} status={booking.status} />
                         </div>
                      </div>
                   ))}
@@ -160,7 +167,7 @@ export default async function KonselorDashboardPage() {
                   <p className="text-[9px] font-black uppercase tracking-widest opacity-70">Chat Aktif</p>
                </div>
                <div className="card-premium p-6 bg-white text-[var(--brown-dark)]">
-                  <span className="text-2xl font-black">12</span>
+                  <span className="text-2xl font-black">{completedSessions ?? 0}</span>
                   <p className="text-[9px] font-black uppercase tracking-widest opacity-50">Total Sesi</p>
                </div>
             </section>

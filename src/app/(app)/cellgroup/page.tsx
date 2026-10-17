@@ -37,7 +37,9 @@ export default async function CellGroupPage() {
     .select('*, leader:profiles!cell_groups_leader_id_fkey(id, full_name, avatar_url)')
     .eq('is_active', true)
     .order('created_at', { ascending: false })
-  const groups = (groupsData ?? []) as any[]
+  // Grup terarsip tidak ditawarkan untuk diikuti; riwayatnya tetap bisa
+  // dibuka anggota lama lewat tautan langsung.
+  const groups = ((groupsData ?? []) as any[]).filter((g) => !g.is_archived)
 
   // Membership of current user
   const { data: myMemberships } = await supabase
@@ -98,7 +100,8 @@ export default async function CellGroupPage() {
                   <h4 className="font-bold text-[var(--brown-dark)] text-lg group-hover:text-[var(--terra)] transition-colors truncate">{g.name}</h4>
                   <div className="flex items-center gap-4 mt-2">
                     <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
-                      <Users size={12} /> {countByGroup.get(g.id) ?? 0} anggota
+                      <Users size={12} /> {countByGroup.get(g.id) ?? 0}
+                      {g.max_members > 0 ? `/${g.max_members}` : ''} anggota
                     </div>
                     {g.leader?.full_name && (
                       <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest truncate">
@@ -134,14 +137,19 @@ export default async function CellGroupPage() {
                   <h4 className="font-bold text-[var(--brown-dark)] text-lg truncate">{g.name}</h4>
                   <div className="flex items-center gap-4 mt-2">
                     <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
-                      <Users size={12} /> {countByGroup.get(g.id) ?? 0} anggota
+                      <Users size={12} /> {countByGroup.get(g.id) ?? 0}
+                      {g.max_members > 0 ? `/${g.max_members}` : ''} anggota
                     </div>
                     <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
                       <Calendar size={12} /> Aktif
                     </div>
                   </div>
                 </div>
-                <JoinGroupButton groupId={g.id} />
+                <JoinGroupButton
+                  groupId={g.id}
+                  requiresCode={g.invite_code_required !== false}
+                  isFull={g.max_members > 0 && (countByGroup.get(g.id) ?? 0) >= g.max_members}
+                />
               </div>
             ))
           )}

@@ -242,10 +242,10 @@ DECLARE v_id UUID;
 BEGIN
   -- Boleh: admin ke atas (mengirim ke siapa pun) atau pengguna mengirim
   -- notifikasi ke dirinya sendiri (dipakai untuk pengingat pribadi).
-  IF NOT (
-    public.is_admin_or_above()
-    OR auth.uid() = p_user_id
-  ) THEN
+  -- `IS NOT TRUE`, bukan `NOT (...)`: bila auth.uid() NULL, perbandingan
+  -- `auth.uid() = p_user_id` juga NULL, dan `NOT NULL` di PL/pgSQL tidak masuk
+  -- cabang — penjaganya terlewati.
+  IF (public.is_admin_or_above() IS NOT TRUE AND auth.uid() IS DISTINCT FROM p_user_id) THEN
     RAISE EXCEPTION 'forbidden' USING ERRCODE = '42501';
   END IF;
 

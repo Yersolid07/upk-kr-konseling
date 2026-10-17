@@ -43,6 +43,10 @@ export type Attachment = {
   mime_type: string | null
   size_bytes: number | null
   sort_order: number
+  // Fase 4 (M12): jalur objek di Storage + penanda berkas yatim.
+  storage_path: string | null
+  is_orphan: boolean
+  checked_at: string | null
   created_at: string
 }
 
@@ -354,6 +358,14 @@ export type CellGroup = ModerationFields & {
   leader_id: string | null
   invite_code: string
   is_active: boolean
+  // Fase 4 (M6): grup bisa diarsipkan tanpa menghapus riwayat, dan
+  // keanggotaan bisa dibatasi jumlah serta diwajibkan memakai kode undangan.
+  is_archived: boolean
+  invite_code_required: boolean
+  max_members: number
+  archived_at: string | null
+  archived_by: string | null
+  updated_at: string
   created_at: string
   // Joins
   leader?: Profile
@@ -425,6 +437,112 @@ export type BannedWord = {
   category: string
   is_active: boolean
   created_at: string
+}
+
+// ─────────────── FASE 4 (M7, M9, M10, M12, M13, M14) ───────────────
+
+export type SessionNote = {
+  id: string
+  session_id: string
+  konselor_id: string
+  /** Nama kolom di database adalah `note` (sejak phase1-data-security.sql). */
+  note: string
+  created_at: string
+  updated_at: string
+}
+
+export type BreakGlassRead = {
+  id: string
+  session_id: string
+  actor_id: string
+  reason: string
+  message_count: number
+  expires_at: string
+  created_at: string
+}
+
+export type Broadcast = {
+  id: string
+  title: string
+  body: string
+  link: string | null
+  audience: 'all' | 'role' | 'angkatan' | 'cell_group'
+  audience_value: string | null
+  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed'
+  scheduled_at: string | null
+  sent_at: string | null
+  recipient_count: number
+  read_count: number
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type BroadcastTemplate = {
+  id: string
+  name: string
+  title: string
+  body: string
+  link: string | null
+  created_at: string
+}
+
+export type SitePage = {
+  id: string
+  slug: string
+  title: string
+  title_en: string | null
+  content: string
+  content_en: string | null
+  status: 'draft' | 'published'
+  sort_order: number
+  show_in_footer: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type SiteBanner = {
+  id: string
+  message: string
+  message_en: string | null
+  level: 'info' | 'warning' | 'critical'
+  starts_at: string
+  ends_at: string | null
+  target_role: string | null
+  dismissible: boolean
+  is_active: boolean
+  created_at: string
+}
+
+export type Resource = {
+  id: string
+  title: string
+  title_en: string | null
+  description: string | null
+  description_en: string | null
+  url: string
+  category: string
+  sort_order: number
+  is_active: boolean
+  created_at: string
+}
+
+export type DataRequest = {
+  id: string
+  user_id: string
+  kind: 'export' | 'delete'
+  status: 'pending' | 'processing' | 'completed' | 'rejected'
+  note: string | null
+  handled_by: string | null
+  handled_at: string | null
+  created_at: string
+}
+
+export type SchemaMigration = {
+  version: string
+  description: string | null
+  applied_at: string
+  applied_by: string | null
 }
 
 export type DailyVerse = {

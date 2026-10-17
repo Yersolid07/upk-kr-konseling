@@ -31,11 +31,13 @@ export function AppShell({
   profile,
   banners = [],
   footerPages = [],
+  sosNumber = null,
   children,
 }: {
   profile: Profile
   banners?: BannerRow[]
   footerPages?: { slug: string; title: string }[]
+  sosNumber?: string | null
   children: React.ReactNode
 }) {
   const pathname = usePathname()
@@ -108,7 +110,7 @@ export function AppShell({
       </main>
 
       <BottomNav profile={profile} />
-      <SOSModal />
+      <SOSModal waNumber={sosNumber} />
     </div>
   )
 }

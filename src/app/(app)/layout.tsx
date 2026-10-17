@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AppShell } from '@/components/layout/AppShell'
 import { loadActiveBanners, loadFooterPages } from '@/lib/site-content'
+import { getSetting } from '@/lib/settings/get'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -37,10 +38,25 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   // Banner pengumuman (M10). Tidak pernah melempar — bila tabel belum ada,
   // hasilnya array kosong dan AppShell tampil seperti biasa.
-  const [banners, footerPages] = await Promise.all([loadActiveBanners(), loadFooterPages()])
+  // Nomor WhatsApp konselor piket: pengaturan situs lebih dulu, env cadangan.
+  // Tanpa ini tombol SOS membuka wa.me/undefined.
+  const [banners, footerPages, sosSetting] = await Promise.all([
+    loadActiveBanners(),
+    loadFooterPages(),
+    getSetting('sos_whatsapp_number'),
+  ])
+  const sosNumber =
+    (typeof sosSetting === 'string' && sosSetting.trim()) ||
+    process.env.NEXT_PUBLIC_SOS_WA_NUMBER ||
+    null
 
   return (
-    <AppShell profile={profile} banners={banners} footerPages={footerPages}>
+    <AppShell
+      profile={profile}
+      banners={banners}
+      footerPages={footerPages}
+      sosNumber={sosNumber}
+    >
       {children}
     </AppShell>
   )

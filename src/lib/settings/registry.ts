@@ -269,6 +269,17 @@ export const SETTINGS: readonly SettingDef[] = [
     default: '',
     public: true,
   },
+  {
+    key: 'fonnte_token',
+    group: 'notifikasi',
+    label: 'Token Fonnte (WhatsApp)',
+    help:
+      'Token pengiriman WhatsApp. Disimpan di sini supaya bisa diganti tanpa deploy ulang saat token dicabut. Kosongkan untuk memakai variabel lingkungan FONNTE_TOKEN.',
+    schema: text(200),
+    // SENGAJA tidak `public`: token ini setara kata sandi. RLS pada site_settings
+    // hanya mengembalikan kunci publik kepada pengunjung anonim.
+    default: '',
+  },
 ]
 
 /** Peta cepat key -> definisi. */

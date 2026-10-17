@@ -16,8 +16,9 @@ import {
   Loader2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { waLink } from '@/lib/sos'
 
-export function SOSModal() {
+export function SOSModal({ waNumber = null }: { waNumber?: string | null }) {
   const { sosOpen, setSosOpen } = useAppStore()
   const [loading, setLoading] = useState(false)
 
@@ -88,12 +89,25 @@ export function SOSModal() {
             desc="Layanan pencegahan bunuh diri · 24 Jam"
             onClick={() => window.open('tel:119')}
           />
-          <SOSOption
-            icon={<Heart size={24} />}
-            title="WhatsApp Konselor Piket"
-            desc="Respons cepat dalam 15 menit"
-            onClick={() => window.open(`https://wa.me/${process.env.NEXT_PUBLIC_SOS_WA_NUMBER}`)}
-          />
+          {/* Tombol WhatsApp hanya tampil bila nomornya benar-benar diatur.
+              Sebelumnya tombol ini selalu tampil dan membuka wa.me/undefined —
+              tautan mati pada tombol paling penting di aplikasi. */}
+          {waLink(waNumber) ? (
+            <SOSOption
+              icon={<Heart size={24} />}
+              title="WhatsApp Konselor Piket"
+              desc="Respons cepat dalam 15 menit"
+              onClick={() => window.open(waLink(waNumber) as string)}
+            />
+          ) : (
+            <SOSOption
+              icon={<Heart size={24} />}
+              title="WhatsApp Konselor Piket"
+              desc="Nomor belum diatur pengurus"
+              disabled
+              onClick={() => {}}
+            />
+          )}
           <SOSOption
             icon={<Hospital size={24} />}
             title="RSJ Prof. Dr. V. L. Ratumbuysang"
@@ -117,17 +131,20 @@ export function SOSModal() {
   )
 }
 
-function SOSOption({ icon, title, desc, onClick, loading, primary }: {
-  icon: React.ReactNode; 
-  title: string; 
-  desc: string; 
-  onClick: () => void; 
+function SOSOption({ icon, title, desc, onClick, loading, primary, disabled }: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  onClick: () => void;
   loading?: boolean;
   primary?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <button
-      onClick={loading ? undefined : onClick}
+      onClick={loading || disabled ? undefined : onClick}
+      disabled={disabled}
+      aria-disabled={disabled || undefined}
       className={cn(
         "w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left group cursor-pointer",
         loading ? "opacity-60 cursor-not-allowed" : "hover:shadow-lg active:scale-[0.98]",

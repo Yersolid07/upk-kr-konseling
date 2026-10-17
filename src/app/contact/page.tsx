@@ -1,24 +1,49 @@
 // src/app/contact/page.tsx
+//
+// Nomor WhatsApp dibaca dari pengaturan situs, bukan variabel lingkungan.
+// Sebelumnya halaman ini menampilkan placeholder "628xxxxxxxxxxxx" ke publik
+// karena NEXT_PUBLIC_SOS_WA_NUMBER tidak pernah disetel.
+
 import Link from 'next/link'
 import { ArrowLeft, Mail, Phone, MapPin, MessageCircle, Clock, ExternalLink } from 'lucide-react'
+import { getSetting } from '@/lib/settings/get'
+import { waLink, normalizeWaNumber } from '@/lib/sos'
 
-export default function ContactPage() {
+export const dynamic = 'force-dynamic'
+
+export default async function ContactPage() {
+  const setting = await getSetting('sos_whatsapp_number')
+  const rawNumber =
+    (typeof setting === 'string' && setting.trim()) ||
+    process.env.NEXT_PUBLIC_SOS_WA_NUMBER ||
+    null
+
+  const wa = waLink(rawNumber)
+  const waDisplay = normalizeWaNumber(rawNumber)
+
   const contacts = [
-    {
-      icon: <MessageCircle size={24} />,
-      label: 'WhatsApp Pengurus',
-      value: process.env.NEXT_PUBLIC_SOS_WA_NUMBER || '628xxxxxxxxxxxx',
-      href: `https://wa.me/${(process.env.NEXT_PUBLIC_SOS_WA_NUMBER || '628xxxxxxxxxxxx').replace(/\D/g, '')}`,
-      color: 'var(--sage)',
-      desc: 'Respon cepat untuk pertanyaan umum'
-    },
+    // Kartu WhatsApp hanya muncul bila nomornya benar-benar ada. Menampilkan
+    // nomor palsu lebih buruk daripada tidak menampilkan apa pun — pengunjung
+    // mengira pengurus bisa dihubungi padahal tidak.
+    ...(wa && waDisplay
+      ? [
+          {
+            icon: <MessageCircle size={24} />,
+            label: 'WhatsApp Pengurus',
+            value: `+${waDisplay}`,
+            href: wa,
+            color: 'var(--sage)',
+            desc: 'Respon cepat untuk pertanyaan umum',
+          },
+        ]
+      : []),
     {
       icon: <Mail size={24} />,
       label: 'Email',
       value: 'upk-kr@ft.unsrat.ac.id',
       href: 'mailto:upk-kr@ft.unsrat.ac.id',
       color: 'var(--terra)',
-      desc: 'Untuk korespondensi resmi'
+      desc: 'Untuk korespondensi resmi',
     },
     {
       icon: <Phone size={24} />,
@@ -26,8 +51,8 @@ export default function ContactPage() {
       value: '(0431) 863886',
       href: 'tel:0431863886',
       color: 'var(--brown)',
-      desc: 'Senin - Jumat, 08:00 - 16:00 WITA'
-    }
+      desc: 'Senin - Jumat, 08:00 - 16:00 WITA',
+    },
   ]
 
   return (

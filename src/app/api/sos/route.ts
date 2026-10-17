@@ -59,8 +59,17 @@ export async function POST(request: NextRequest) {
     .select()
     .single()
 
-  // WhatsApp alert to the on-duty counselor number, if configured.
-  const sosNumber = process.env.NEXT_PUBLIC_SOS_WA_NUMBER
+  // Peringatan WhatsApp ke konselor piket. Nomor dibaca dari pengaturan situs
+  // lebih dulu — env NEXT_PUBLIC_SOS_WA_NUMBER tidak disetel di Vercel,
+  // sehingga jalur ini dulu tidak pernah berjalan sama sekali.
+  const sosSetting = await import('@/lib/settings/get').then((m) =>
+    m.getSetting('sos_whatsapp_number')
+  )
+  const sosNumber =
+    (typeof sosSetting === 'string' && sosSetting.trim()) ||
+    process.env.NEXT_PUBLIC_SOS_WA_NUMBER ||
+    null
+
   if (sosNumber) {
     try {
       const { sendWhatsApp } = await import('@/lib/fonnte')

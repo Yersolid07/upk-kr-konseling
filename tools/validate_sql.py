@@ -13,6 +13,7 @@ FILES = [
     "supabase/hotfix-security.sql",
     "supabase/phase1-data-security.sql",
     "supabase/cms-superadmin.sql",
+    "supabase/phase3-content-modules.sql",
 ]
 
 root = Path(__file__).resolve().parent.parent

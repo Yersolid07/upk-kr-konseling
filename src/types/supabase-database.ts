@@ -12,6 +12,8 @@
 // (mis. `author:profiles(...)`) didaftarkan agar tipe hasil select tetap akurat.
 
 import type {
+  ArticleRevision,
+  BannedWord,
   Profile, Thread, Comment, Reaction, ChatSession, Message, Booking,
   KonselorAvailability, PrayerRequest, Article, CellGroup, CellGroupMessage,
   Notification, ContentReport, DailyVerse, ThreadCategory,
@@ -284,6 +286,26 @@ export interface Database {
           Rel & { foreignKeyName: 'identity_reveal_log_revealed_user_id_fkey'; columns: ['revealed_user_id']; referencedRelation: 'profiles' },
         ]
       }
+      // ─── Fase 3 (supabase/phase3-content-modules.sql) ───
+      article_revisions: {
+        Row: ArticleRevision
+        Insert: Omit<ArticleRevision, 'id' | 'created_at' | 'version'> & {
+          id?: string
+          created_at?: string
+          version?: number
+        }
+        Update: never
+        Relationships: [
+          Rel & { foreignKeyName: 'article_revisions_article_id_fkey'; columns: ['article_id']; referencedRelation: 'articles' },
+          Rel & { foreignKeyName: 'article_revisions_edited_by_fkey'; columns: ['edited_by']; referencedRelation: 'profiles' },
+        ]
+      }
+      banned_words: {
+        Row: BannedWord
+        Insert: Omit<BannedWord, 'id' | 'created_at'> & { id?: string; created_at?: string }
+        Update: Partial<BannedWord>
+        Relationships: []
+      }
     }
     // ─── VIEW PUBLIK (supabase/phase1-data-security.sql) ───
     //
@@ -448,6 +470,39 @@ export interface Database {
           p_link?: string | null
         }
         Returns: number
+      }
+      // Sembunyikan konten SEMENTARA saat laporan menembus ambang. Dipanggil
+      // dari jalur anggota, jadi harus SECURITY DEFINER — anggota tidak punya
+      // izin UPDATE pada tabel konten.
+      auto_hide_reported_content: {
+        Args: {
+          p_content_type: string
+          p_content_id: string
+          p_threshold?: number
+        }
+        Returns: boolean
+      }
+      // Bersihkan tempat sampah kedaluwarsa. Hanya super admin.
+      purge_expired_trash: {
+        Args: { p_days?: number | null }
+        Returns: { table_name: string; deleted_count: number }[]
+      }
+      report_queue_stats: {
+        Args: Record<string, never>
+        Returns: { pending: number; reviewed: number; high_severity: number; total: number }[]
+      }
+      list_active_categories: {
+        Args: Record<string, never>
+        Returns: {
+          id: string
+          name: string
+          name_en: string | null
+          slug: string
+          icon: string
+          color: string
+          sort_order: number
+          thread_count: number
+        }[]
       }
     }
     Enums: {

@@ -19,6 +19,12 @@ export interface SchemaState {
   moderation: boolean
   /** Migrasi Fase 1 (phase1-data-security.sql) sudah dijalankan. */
   publicViews: boolean
+  /** Migrasi Fase 3 (phase3-content-modules.sql) — riwayat revisi artikel. */
+  articleRevisions: boolean
+  /** Migrasi Fase 3 — kategori dengan kolom arsip. */
+  categories: boolean
+  /** Migrasi Fase 3 — kolom laporan v2 (severity, action_taken). */
+  reports: boolean
 }
 
 /**
@@ -28,15 +34,21 @@ export interface SchemaState {
 export const checkSchema = cache(async (): Promise<SchemaState> => {
   const supabase = createClient()
 
-  const [mod, views] = await Promise.all([
+  const [mod, views, revisions, categories, reports] = await Promise.all([
     supabase.from('threads').select('id, moderation_status').limit(1),
     supabase.from('threads_public').select('id, anon_label').limit(1),
+    supabase.from('article_revisions').select('id').limit(1),
+    supabase.from('thread_categories').select('id, is_archived').limit(1),
+    supabase.from('content_reports').select('id, severity, action_taken').limit(1),
   ])
 
   return {
     // Kode error 42703 = kolom tidak ada; PGRST205 = tabel tidak ada.
     moderation: !mod.error,
     publicViews: !views.error,
+    articleRevisions: !revisions.error,
+    categories: !categories.error,
+    reports: !reports.error,
   }
 })
 
@@ -48,6 +60,8 @@ export function migrationNotice(missing: keyof SchemaState): string {
   const file =
     missing === 'moderation'
       ? 'supabase/cms-superadmin.sql'
-      : 'supabase/phase1-data-security.sql'
+      : missing === 'publicViews'
+        ? 'supabase/phase1-data-security.sql'
+        : 'supabase/phase3-content-modules.sql'
   return `Migrasi ${file} belum dijalankan di Supabase. Buka Supabase → SQL Editor, tempel isi berkas itu, lalu Run. Urutan lengkap ada di JALANKAN-MIGRASI.md.`
 }

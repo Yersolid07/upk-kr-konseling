@@ -122,6 +122,25 @@ export const SETTINGS: readonly SettingDef[] = [
     schema: bool(),
     default: false,
   },
+  {
+    key: 'auto_hide_report_threshold',
+    group: 'moderasi',
+    label: 'Sembunyikan otomatis setelah (laporan)',
+    help:
+      'Konten disembunyikan sementara saat jumlah laporan menunggu mencapai angka ini. Isi 0 untuk mematikan.',
+    schema: int(0, 50),
+    default: 3,
+  },
+  {
+    key: 'crisis_keywords',
+    group: 'moderasi',
+    label: 'Kata kunci krisis',
+    help:
+      'Dipisah koma. Konten yang memuat kata ini masuk antrean prioritas tinggi dan memicu notifikasi konselor. Tidak menyembunyikan konten — justru mempercepat bantuan.',
+    schema: text(500),
+    default:
+      'bunuh diri, mengakhiri hidup, mau mati, tidak ingin hidup, menyakiti diri, self harm, overdose',
+  },
 
   // ── Fitur ──
   {

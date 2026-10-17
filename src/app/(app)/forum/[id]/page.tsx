@@ -20,11 +20,19 @@ import { getThread, listComments } from '@/lib/public-content'
 import { CommentForm } from './comment-form'
 import { LikeButton } from '@/components/forum/like-button'
 import { RealtimeComments } from '@/components/forum/realtime-comments'
+import { ReportButton } from '@/components/reports/report-button'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ThreadDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
+
+  // Untuk menyembunyikan tombol "Laporkan" pada konten sendiri. Server Action
+  // tetap menolak laporan atas konten sendiri, jadi ini hanya kenyamanan.
+  const {
+    data: { user: viewer },
+  } = await supabase.auth.getUser()
+  const currentUserId = viewer?.id ?? null
 
   // Thread + komentar lewat helper yang menyembunyikan identitas penulis
   // anonim (author_id NULL, label pseudonim per-konten).
@@ -124,6 +132,12 @@ export default async function ThreadDetailPage({ params }: { params: { id: strin
                           >
                             {(threadData.category as any)?.name}
                           </span>
+                          {threadData.editedByStaff && (
+                            <>
+                              <span>•</span>
+                              <span className="italic">diedit moderator</span>
+                            </>
+                          )}
                        </div>
                     </div>
                  </div>
@@ -149,6 +163,11 @@ export default async function ThreadDetailPage({ params }: { params: { id: strin
                     <div className="ml-auto flex items-center gap-2 text-[var(--text-muted)] font-bold text-sm">
                        <TrendingUp size={20} /> {threadData.view_count} Views
                     </div>
+                    <ReportButton
+                      contentType="thread"
+                      contentId={params.id}
+                      isOwn={Boolean(currentUserId && threadData.authorId === currentUserId)}
+                    />
                  </div>
               </div>
            </article>

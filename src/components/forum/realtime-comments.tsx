@@ -14,6 +14,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getRelativeTime } from '@/lib/utils'
 import { fetchCommentPublic } from '@/app/(app)/forum/actions'
+import { ReportButton } from '@/components/reports/report-button'
 import type { PublicComment } from '@/lib/public-content'
 
 interface RealtimeCommentsProps {
@@ -90,6 +91,11 @@ export function RealtimeComments({ initialComments, threadId }: RealtimeComments
                    <span className="text-[10px] text-[var(--text-muted)] font-medium">
                      {getRelativeTime(comment.created_at)}
                    </span>
+                   <ReportButton
+                     contentType="comment"
+                     contentId={comment.id}
+                     compact
+                   />
                 </div>
                 <p className="text-sm text-[var(--text)] leading-relaxed">{comment.content}</p>
              </div>

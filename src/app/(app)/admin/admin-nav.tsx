@@ -14,6 +14,7 @@ import {
   LayoutDashboard, Flag, Newspaper, Users, MessagesSquare,
   HandHeart, HeartHandshake, BookOpenText, CalendarCheck,
   Settings, ScrollText, Trash2, Phone, ShieldCheck, FileText,
+  FlagTriangleRight, FolderTree, PenLine, Ban,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Capability } from '@/lib/rbac'
@@ -30,6 +31,10 @@ export interface NavItem {
 const ICONS = {
   dashboard: LayoutDashboard,
   reports: Flag,
+  reportsQueue: FlagTriangleRight,
+  categories: FolderTree,
+  write: PenLine,
+  banned: Ban,
   articles: Newspaper,
   users: Users,
   forum: MessagesSquare,

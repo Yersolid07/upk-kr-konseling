@@ -77,6 +77,14 @@ export interface PublicThread {
   created_at: string
   category_id: string | null
   author: PublicAuthor
+  /**
+   * ID penulis — NULL untuk konten anonim, karena view publik memang
+   * menyamarkannya. Dipakai hanya untuk menyembunyikan tombol "Laporkan"
+   * pada konten sendiri; tidak pernah ditampilkan.
+   */
+  authorId: string | null
+  /** TRUE bila staf pernah menyunting judul/isi thread ini. */
+  editedByStaff: boolean
   category?: { name: string; slug: string; icon: string; color: string } | null
 }
 
@@ -92,6 +100,7 @@ export async function listThreads(
     .select(
       `id, title, content, is_anonymous, is_pinned, is_locked, view_count, comment_count,
        created_at, category_id, author_id, anon_label, author_name, author_avatar, author_role,
+       edited_by_staff,
        category:thread_categories(name, slug, icon, color)`
     )
     .eq('is_flagged', false)
@@ -178,6 +187,8 @@ function normalizeThread(r: Record<string, unknown>, fromView: boolean): PublicT
     created_at: String(r.created_at),
     category_id: (r.category_id as string | null) ?? null,
     author,
+    authorId: (r.author_id as string | null) ?? null,
+    editedByStaff: Boolean(r.edited_by_staff),
     category: (r.category as PublicThread['category']) ?? null,
   }
 }
@@ -203,6 +214,7 @@ export async function getThread(supabase: Db, id: string): Promise<PublicThread 
     .select(
       `id, title, content, is_anonymous, is_pinned, is_locked, view_count, comment_count,
        created_at, category_id, author_id, anon_label, author_name, author_avatar, author_role,
+       edited_by_staff,
        category:thread_categories(name, slug, icon, color)`
     )
     .eq('id', id)

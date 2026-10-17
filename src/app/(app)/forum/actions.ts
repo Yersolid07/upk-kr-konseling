@@ -8,6 +8,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getThread, listComments } from '@/lib/public-content'
 import type { PublicComment } from '@/lib/public-content'
+import { scanText, rejectionMessage } from '@/lib/moderation/banned-words'
 
 export async function createThread(formData: FormData) {
   const supabase = createClient()
@@ -19,6 +20,11 @@ export async function createThread(formData: FormData) {
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Anda harus masuk untuk memposting.' }
+
+  // Saring kata terlarang SEBELUM menyimpan. Konten krisis tidak pernah
+  // ditolak — hanya ditandai agar cepat dilihat konselor.
+  const scan = await scanText(`${title ?? ''} ${content ?? ''}`)
+  if (scan.hits.length > 0) return { error: rejectionMessage(scan.hits) }
 
   const { data, error } = await (supabase.from('threads') as any)
     .insert({
@@ -44,6 +50,9 @@ export async function createComment(threadId: string, content: string, isAnonymo
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Anda harus masuk untuk berkomentar.' }
+
+  const scan = await scanText(content)
+  if (scan.hits.length > 0) return { error: rejectionMessage(scan.hits) }
 
   const { error } = await (supabase.from('comments') as any)
     .insert({

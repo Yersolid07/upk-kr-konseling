@@ -396,6 +396,35 @@ export type ContentReport = {
   reviewed_at: string | null
   resolution: string | null
   created_at: string
+  // Ditambahkan supabase/phase3-content-modules.sql
+  action_taken: string | null
+  notified_reporter_at: string | null
+  /** 'normal' atau 'high' (kata kunci krisis). */
+  severity: string
+  auto_hidden: boolean
+}
+
+// supabase/phase3-content-modules.sql
+export type ArticleRevision = {
+  id: string
+  article_id: string
+  title: string
+  content: string
+  excerpt: string | null
+  status: PublicationStatus | null
+  edited_by: string | null
+  edit_reason: string | null
+  version: number
+  created_at: string
+}
+
+export type BannedWord = {
+  id: string
+  word: string
+  /** 'spam' | 'kasar' | 'krisis' */
+  category: string
+  is_active: boolean
+  created_at: string
 }
 
 export type DailyVerse = {

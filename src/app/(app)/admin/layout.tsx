@@ -45,7 +45,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       items: [
         { href: '/admin', label: 'Dasbor', icon: 'dashboard' },
         ...(allow('manageReports')
-          ? [{ href: '/admin/laporan', label: 'Laporan', icon: 'reports' as const }]
+          ? [
+              { href: '/admin/laporan-modul', label: 'Antrean Laporan', icon: 'reportsQueue' as const },
+              { href: '/admin/laporan', label: 'Panel Moderasi', icon: 'reports' as const },
+            ]
           : []),
       ],
     },
@@ -58,8 +61,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               { href: '/admin/prayer', label: 'Permohonan Doa', icon: 'prayer' as const },
             ]
           : []),
+        ...(allow('manageSiteContent')
+          ? [{ href: '/admin/artikel', label: 'Tulis Artikel', icon: 'write' as const }]
+          : []),
         ...(allow('approveArticles')
-          ? [{ href: '/admin/articles', label: 'Artikel', icon: 'articles' as const }]
+          ? [{ href: '/admin/articles', label: 'Antrean Artikel', icon: 'articles' as const }]
+          : []),
+        ...(allow('manageCategories')
+          ? [{ href: '/admin/kategori', label: 'Kategori', icon: 'categories' as const }]
+          : []),
+        ...(allow('moderateContent')
+          ? [{ href: '/admin/kata-terlarang', label: 'Kata Terlarang', icon: 'banned' as const }]
           : []),
         ...(allow('restoreContent')
           ? [{ href: '/admin/sampah', label: 'Tempat Sampah', icon: 'trash' as const }]

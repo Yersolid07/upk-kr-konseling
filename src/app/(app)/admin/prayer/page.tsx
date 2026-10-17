@@ -48,6 +48,8 @@ export default async function AdminPrayerPage({
 
   if (canModerate) {
     if (params.scope === 'trash') query = query.not('deleted_at', 'is', null)
+    else if (params.scope === 'pending')
+      query = query.eq('moderation_status', 'pending').is('deleted_at', null)
     else if (params.scope === 'hidden')
       query = query.eq('moderation_status', 'hidden').is('deleted_at', null)
     else if (params.scope === 'answered')

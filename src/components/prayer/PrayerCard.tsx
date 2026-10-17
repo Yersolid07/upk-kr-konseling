@@ -4,7 +4,8 @@
 import { useState } from 'react'
 import { supportPrayer } from '@/app/(app)/prayer/actions'
 import { HandsPraying } from '@/components/icons/HandsPraying'
-import { MessageCircle, Shield } from 'lucide-react'
+import { ReportButton } from '@/components/reports/report-button'
+import { Shield } from 'lucide-react'
 import { cn, getRelativeTime } from '@/lib/utils'
 import type { PublicPrayer } from '@/lib/public-content'
 
@@ -76,9 +77,7 @@ export function PrayerCard({ prayer }: PrayerCardProps) {
              <span className="text-sm font-black uppercase tracking-widest">Amin ({count})</span>
           </button>
           
-          <button className="text-[var(--text-muted)] hover:text-[var(--brown)] transition-all">
-             <MessageCircle size={18} />
-          </button>
+          <ReportButton contentType="prayer" contentId={prayer.id} compact />
        </div>
     </div>
   )

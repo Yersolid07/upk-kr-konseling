@@ -126,11 +126,11 @@ function normalizeInput(raw: unknown): unknown {
   return out
 }
 
-/** Cari field alasan apa pun namanya (`reason` atau `delete_reason`). */
+/** Cari field alasan apa pun namanya (`reason`, `note`, atau turunannya). */
 function pickReason(input: unknown): string | null {
   if (!input || typeof input !== 'object') return null
   const o = input as Record<string, unknown>
-  const raw = o.reason ?? o.delete_reason ?? o.hidden_reason
+  const raw = o.reason ?? o.note ?? o.delete_reason ?? o.hidden_reason
   return typeof raw === 'string' && raw.trim() ? raw.trim() : null
 }
 

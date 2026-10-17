@@ -4,6 +4,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getSetting } from '@/lib/settings/get'
+import { scanText, rejectionMessage } from '@/lib/moderation/banned-words'
 
 export async function supportPrayer(requestId: string) {
   const supabase = createClient()
@@ -71,10 +73,18 @@ export async function createPrayer(formData: FormData) {
     return { error: 'Pokok doa tidak boleh kosong.' }
   }
 
+  const scan = await scanText(content.trim())
+  if (scan.hits.length > 0) return { error: rejectionMessage(scan.hits) }
+
+  // Bila moderasi awal diaktifkan, doa baru masuk antrean persetujuan dan
+  // TIDAK tampil di dinding sampai moderator menyetujuinya.
+  const needsApproval = Boolean(await getSetting('prayer_requires_approval'))
+
   const { error } = await (supabase.from('prayer_requests') as any).insert({
     author_id: user.id,
     content: content.trim(),
     is_anonymous: isAnonymous,
+    ...(needsApproval ? { moderation_status: 'pending' } : {}),
   })
 
   if (error) {
@@ -83,7 +93,8 @@ export async function createPrayer(formData: FormData) {
   }
 
   revalidatePath('/prayer')
-  redirect('/prayer')
+  revalidatePath('/admin/prayer')
+  redirect(needsApproval ? '/prayer?menunggu=1' : '/prayer')
 }
 
 // Alias for backward compatibility

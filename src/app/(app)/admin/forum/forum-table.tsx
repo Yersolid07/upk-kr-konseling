@@ -15,8 +15,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import {
-  Pin, Lock, Flag, EyeOff, Eye, Trash2, RotateCcw, Flame,
-  MessageSquare, ExternalLink,
+  Pin, PinOff, Lock, LockOpen, Flag, EyeOff, Eye, Trash2, RotateCcw, Flame,
+  MessageSquare, ExternalLink, FolderInput,
 } from 'lucide-react'
 import Link from 'next/link'
 import { DataTable, type Column } from '@/components/admin/data-table'
@@ -26,6 +26,7 @@ import { formatDateTime } from '@/lib/utils'
 import {
   hideContent, unhideContent, trashContent, restoreContent, purgeContent, flagContent,
 } from '@/lib/cms/content-actions'
+import { toggleThreadFlag } from './thread-edit-actions'
 
 export interface ForumRow {
   id: string
@@ -53,7 +54,17 @@ const SCOPES = [
 
 /** Aksi yang sedang menunggu konfirmasi. */
 interface PendingAction {
-  kind: 'hide' | 'unhide' | 'trash' | 'restore' | 'purge' | 'flag'
+  kind:
+    | 'hide'
+    | 'unhide'
+    | 'trash'
+    | 'restore'
+    | 'purge'
+    | 'flag'
+    | 'pin'
+    | 'unpin'
+    | 'lock'
+    | 'unlock'
   row: ForumRow
   title: string
   description: string
@@ -197,6 +208,39 @@ export function ForumTable({
           level: 'normal',
           confirmLabel: 'Pulihkan',
         })
+      case 'pin':
+        return setPending({
+          ...base,
+          title: 'Sematkan diskusi ini?',
+          description: 'Diskusi tersemat tampil paling atas di daftar forum.',
+          level: 'normal',
+          confirmLabel: 'Sematkan',
+        })
+      case 'unpin':
+        return setPending({
+          ...base,
+          title: 'Lepas sematan?',
+          description: 'Diskusi kembali mengikuti urutan waktu biasa.',
+          level: 'normal',
+          confirmLabel: 'Lepas',
+        })
+      case 'lock':
+        return setPending({
+          ...base,
+          title: 'Kunci diskusi ini?',
+          description:
+            'Anggota tidak bisa menambah komentar baru. Komentar yang sudah ada tetap terlihat.',
+          level: 'normal',
+          confirmLabel: 'Kunci',
+        })
+      case 'unlock':
+        return setPending({
+          ...base,
+          title: 'Buka kunci diskusi?',
+          description: 'Anggota bisa berkomentar lagi.',
+          level: 'normal',
+          confirmLabel: 'Buka kunci',
+        })
       case 'purge':
         return setPending({
           ...base,
@@ -217,7 +261,11 @@ export function ForumTable({
     const payload = { table: 'threads' as const, id: row.id, reason: data.reason }
 
     const res =
-      kind === 'hide'
+      kind === 'pin' || kind === 'unpin'
+        ? await toggleThreadFlag({ id: row.id, field: 'is_pinned', value: kind === 'pin' })
+        : kind === 'lock' || kind === 'unlock'
+          ? await toggleThreadFlag({ id: row.id, field: 'is_locked', value: kind === 'lock' })
+          : kind === 'hide'
         ? await hideContent(payload)
         : kind === 'unhide'
           ? await unhideContent({ table: 'threads', id: row.id })
@@ -392,6 +440,20 @@ function RowActions({
           <Flag size={13} /> Tandai
         </button>
       )}
+      <button
+        className={`${btn} border-[var(--cream-dark)] text-[var(--text-2)] hover:border-[var(--terra)]`}
+        onClick={() => onAsk(row.isPinned ? 'unpin' : 'pin')}
+      >
+        {row.isPinned ? <PinOff size={13} /> : <Pin size={13} />}
+        {row.isPinned ? 'Lepas sematan' : 'Sematkan'}
+      </button>
+      <button
+        className={`${btn} border-[var(--cream-dark)] text-[var(--text-2)] hover:border-[var(--terra)]`}
+        onClick={() => onAsk(row.isLocked ? 'unlock' : 'lock')}
+      >
+        {row.isLocked ? <LockOpen size={13} /> : <Lock size={13} />}
+        {row.isLocked ? 'Buka kunci' : 'Kunci'}
+      </button>
       <button
         className={`${btn} border-red-200 text-red-700 hover:bg-red-50`}
         onClick={() => onAsk('trash')}

@@ -12,6 +12,8 @@ import { CONTENT_TABLES, type ContentTable } from '@/lib/cms/content-tables'
 import { checkSchema } from '@/lib/cms/schema'
 import { MigrationBanner } from '@/components/admin/migration-banner'
 import { TrashList, type TrashItem } from './trash-list'
+import { PurgePanel } from './purge-panel'
+import { getSetting } from '@/lib/settings/get'
 
 export const dynamic = 'force-dynamic'
 
@@ -90,6 +92,10 @@ export default async function TrashPage() {
           Hapus permanen hanya tersedia bagi super admin.
         </p>
       </header>
+
+      {profile?.role === 'super_admin' && (
+        <PurgePanel retentionDays={Number(await getSetting('trash_retention_days'))} />
+      )}
 
       {failed.length > 0 && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">

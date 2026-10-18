@@ -75,8 +75,39 @@ def request(method: str, path: str, token: str, payload: dict | None = None) -> 
             "Content-Type": "application/json",
         },
     )
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return json.load(resp)
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            return json.load(resp)
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace")[:300]
+        if exc.code == 401:
+            raise SystemExit(
+                "401 Unauthorized — token ditolak Supabase.\n"
+                "\n"
+                "Periksa tiga hal ini:\n"
+                "  1. Token dibuat di https://supabase.com/dashboard/account/tokens\n"
+                "     (Personal Access Token), BUKAN di Settings -> API proyek.\n"
+                "  2. Token diawali 'sbp_'. Kalau tidak, itu kunci yang salah.\n"
+                "  3. Token belum dicabut dan tidak terpotong saat disalin.\n"
+                "\n"
+                f"Yang terbaca: panjang {len(token)} karakter, "
+                f"awalan {token[:4]!r}, akhiran {token[-2:]!r}.\n"
+                "Kalau ada spasi di dalamnya, hapus — itu sebab paling sering.\n"
+                f"\nRespons Supabase: {detail}"
+            )
+        if exc.code == 403:
+            raise SystemExit(
+                "403 Forbidden — token valid tetapi tidak punya akses ke proyek "
+                f"{PROJECT_REF}.\nPastikan akun pemilik token adalah anggota proyek ini.\n"
+                f"\nRespons Supabase: {detail}"
+            )
+        if exc.code == 404:
+            raise SystemExit(
+                f"404 Not Found — proyek {PROJECT_REF} tidak ditemukan oleh token ini.\n"
+                "Periksa PROJECT_REF di berkas ini terhadap ref proyek di Dashboard.\n"
+                f"\nRespons Supabase: {detail}"
+            )
+        raise SystemExit(f"HTTP {exc.code} dari Management API.\n{detail}")
 
 
 def read_template(name: str) -> tuple[str, str]:
@@ -104,6 +135,28 @@ def main() -> int:
         print("Buat di https://supabase.com/dashboard/account/tokens lalu jalankan:", file=sys.stderr)
         print("  SUPABASE_ACCESS_TOKEN=sbp_xxx python tools/install_email_templates.py", file=sys.stderr)
         return 2
+
+    # Periksa bentuk token SEBELUM memanggil API. Kesalahan yang paling sering
+    # adalah memakai anon/service_role key proyek (JWT panjang, diawali 'eyJ')
+    # atau service_role key baru ('sb_secret_'), yang keduanya bukan token
+    # Management API dan selalu berakhir 401 dengan pesan yang tidak menjelaskan.
+    if not token.startswith("sbp_"):
+        kind = (
+            "kunci proyek (anon/service_role)"
+            if token.startswith(("eyJ", "sb_secret_", "sb_publishable_"))
+            else "nilai yang tidak dikenal"
+        )
+        raise SystemExit(
+            f"SUPABASE_ACCESS_TOKEN berisi {kind}, bukan Personal Access Token.\n"
+            "\n"
+            "Yang dibutuhkan adalah token AKUN, dibuat di:\n"
+            "  https://supabase.com/dashboard/account/tokens  -> Generate new token\n"
+            "Bentuknya: sbp_ diikuti ~40 karakter.\n"
+            "\n"
+            "Kunci di Settings -> API proyek TIDAK bisa dipakai di sini — kunci itu\n"
+            "untuk aplikasi, bukan untuk Management API.\n"
+            f"\n(terbaca: panjang {len(token)}, awalan {token[:7]!r})"
+        )
 
     # ── 1. URL konfigurasi ────────────────────────────────────────────────
     print("Membaca konfigurasi auth saat ini...")

@@ -20,6 +20,11 @@ export default function ResetPasswordPage() {
       setLoading(false)
       return
     }
+    if ((formData.get('password') as string).length < 8) {
+      setError('Password minimal 8 karakter.')
+      setLoading(false)
+      return
+    }
 
     const result = await updatePassword(formData)
     if (result?.error) {
@@ -49,9 +54,9 @@ export default function ResetPasswordPage() {
             name="password"
             type="password"
             className="form-input focus:ring-4 focus:ring-[var(--terra)]/10"
-            placeholder="Minimal 6 karakter"
+            placeholder="Minimal 8 karakter"
             required
-            minLength={6}
+            minLength={8}
           />
         </div>
 
@@ -65,7 +70,7 @@ export default function ResetPasswordPage() {
             className="form-input focus:ring-4 focus:ring-[var(--terra)]/10"
             placeholder="Ketik ulang password baru"
             required
-            minLength={6}
+            minLength={8}
           />
         </div>
 

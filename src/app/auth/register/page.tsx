@@ -2,17 +2,18 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { register } from '../actions'
 
 const ANGKATAN_OPTIONS = Array.from({ length: 2026 - 1970 + 1 }, (_, i) => String(1970 + i)).reverse()
 
 import { LogoMark } from '@/components/brand/Logo'
-import { User, Mail, Calendar, BookOpen, Lock, Eye, EyeOff, CheckCircle, Shield, ArrowRight } from 'lucide-react'
+import { User, Mail, Calendar, BookOpen, Lock, Eye, EyeOff, Shield, ArrowRight, Loader2 } from 'lucide-react'
 
 export default function RegisterPage() {
+  const router = useRouter()
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
@@ -20,9 +21,9 @@ export default function RegisterPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    setSuccess('')
 
     const formData = new FormData(e.currentTarget)
+    const email = (formData.get('email') as string).trim()
     const password = formData.get('password') as string
     const confirm = formData.get('confirm_password') as string
 
@@ -40,27 +41,16 @@ export default function RegisterPage() {
     const result = await register(formData)
     if (result?.error) {
       setError(result.error)
-    } else if (result?.success) {
-      setSuccess(result.success)
+      setLoading(false)
+      return
     }
-    setLoading(false)
-  }
 
-  if (success) {
-    return (
-      <div className="auth-card backdrop-blur-xl bg-white/90 border border-white/20 text-center py-10 space-y-6">
-        <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-4xl animate-pulse">
-          <CheckCircle size={48} />
-        </div>
-        <div className="space-y-2">
-          <h2 className="font-[var(--font-playfair)] text-3xl font-black text-[var(--brown-dark)]">Berhasil!</h2>
-          <p className="text-sm text-[var(--text-muted)] max-w-xs mx-auto leading-relaxed">{success}</p>
-        </div>
-        <Link href="/auth/login" className="btn-primary inline-flex items-center gap-2 group">
-          Masuk Sekarang <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-        </Link>
-      </div>
-    )
+    // Pendaftaran berhasil -> halaman tunggu verifikasi, BUKAN langsung ke
+    // halaman masuk. Di sana pengguna melihat status secara langsung dan
+    // halaman itu berpindah sendiri begitu emailnya terverifikasi. Sebelumnya
+    // pengguna dilempar ke halaman masuk lalu ditolak dengan "verifikasi dulu",
+    // tanpa tahu harus menunggu sampai kapan.
+    router.push(`/auth/verify-status?email=${encodeURIComponent(email)}`)
   }
 
   return (
@@ -184,7 +174,16 @@ export default function RegisterPage() {
         <div className="form-group pt-2">
           <label className="form-checkbox items-center">
             <input name="agree_tos" type="checkbox" required className="w-4 h-4" />
-            <span className="text-[11px]">Saya menyetujui <a href="/tos" className="font-bold underline">Syarat & Ketentuan</a></span>
+            <span className="text-[11px]">
+              Saya menyetujui{' '}
+              <Link href="/terms" target="_blank" className="font-bold underline">
+                Syarat &amp; Ketentuan
+              </Link>{' '}
+              dan{' '}
+              <Link href="/privacy" target="_blank" className="font-bold underline">
+                Kebijakan Privasi
+              </Link>
+            </span>
           </label>
         </div>
 

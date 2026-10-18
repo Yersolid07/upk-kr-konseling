@@ -1,14 +1,55 @@
 // src/app/auth/login/page.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
-import { Mail, Lock, ArrowRight, Shield } from 'lucide-react'
+import { Mail, Lock, ArrowRight, Shield, CheckCircle2, KeyRound } from 'lucide-react'
 import { LogoMark } from '@/components/brand/Logo'
 
-export default function LoginPage() {
+/**
+ * Pesan hasil pengalihan dari halaman lain.
+ *
+ * Tanpa ini, pengguna yang baru selesai mengatur ulang kata sandi mendarat di
+ * halaman masuk tanpa satu pun penjelasan — dan tidak tahu apakah kata
+ * sandinya benar-benar berubah.
+ */
+function RedirectNotice() {
+  const params = useSearchParams()
+  const reset = params.get('reset') === '1'
+  const verified = params.get('verified') === '1'
+  const authError = params.get('error')
+
+  if (!reset && !verified && !authError) return null
+
+  const isPositive = reset || verified
+  return (
+    <div
+      className={
+        isPositive
+          ? 'rounded-xl border border-[var(--sage)]/30 bg-[var(--sage)]/10 px-4 py-3 text-xs font-medium text-[var(--sage)] flex items-start gap-2'
+          : 'rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700 flex items-start gap-2'
+      }
+    >
+      {isPositive ? (
+        <CheckCircle2 size={15} className="mt-0.5 shrink-0" />
+      ) : (
+        <Shield size={15} className="mt-0.5 shrink-0" />
+      )}
+      <span>
+        {verified
+          ? 'Email kamu sudah terverifikasi. Silakan masuk.'
+          : reset
+            ? 'Kata sandi berhasil diubah. Masuk dengan kata sandi baru.'
+            : 'Tautan tidak berlaku atau sudah kedaluwarsa. Coba minta tautan baru.'}
+      </span>
+    </div>
+  )
+}
+
+function LoginForm() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -69,6 +110,9 @@ export default function LoginPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        <Suspense fallback={null}>
+          <RedirectNotice />
+        </Suspense>
         <div className="form-group">
           <label className="form-label flex items-center gap-2">
             <Mail size={12} className="text-[var(--terra)]" /> Email Address
@@ -120,5 +164,15 @@ export default function LoginPage() {
         <cite className="block mt-2 font-bold not-italic opacity-60">— 1 Petrus 5:7</cite>
       </div>
     </div>
+  )
+}
+
+// `useSearchParams` mewajibkan batas Suspense di Next 14; tanpa itu seluruh
+// halaman jadi dynamic dan build menolak.
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   )
 }

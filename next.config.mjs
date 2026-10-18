@@ -38,6 +38,19 @@ const CSP = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  /**
+   * Alias /tos -> /terms.
+   *
+   * Semula halaman `src/app/tos/page.tsx` berisi `permanentRedirect('/terms')`.
+   * Next memprerender hasilnya saat build menjadi 308 TANPA header `Location`
+   * (lihat `.next/server/app/tos.meta`), sehingga tautan "Syarat & Ketentuan"
+   * di formulir pendaftaran berputar ke dirinya sendiri dan tidak pernah
+   * sampai ke dokumennya. `redirects()` berjalan di lapisan HTTP sebelum
+   * router, jadi tidak bisa di-prerender salah seperti itu.
+   */
+  async redirects() {
+    return [{ source: '/tos', destination: '/terms', permanent: true }]
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/**' },

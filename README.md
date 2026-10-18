@@ -101,9 +101,16 @@ Supabase → **Project Settings** → **API**:
 - `SUPABASE_SERVICE_ROLE_KEY` = service_role key (**JANGAN expose ke client!**)
 
 ### 1.4 Konfigurasi Auth Email
-Supabase → **Authentication** → **Email Templates**:
-- Ganti template "Confirm signup" dan "Reset Password" dengan teks dalam bahasa Indonesia
-- Tambahkan domain Vercel-mu ke **Redirect URLs**
+**Wajib.** Tanpa langkah ini, setiap tautan verifikasi dan reset kata sandi di
+email akan mendarat di `localhost:3000` milik penerima.
+
+```bash
+# Token: https://supabase.com/dashboard/account/tokens
+SUPABASE_ACCESS_TOKEN=sbp_xxx python tools/install_email_templates.py
+```
+
+Skrip memasang 4 template (berkop logo UPK) dan mengisi Site URL + Redirect URLs.
+Bila lebih suka manual, lihat **[EMAIL-AUTH.md](EMAIL-AUTH.md)**.
 
 ### 1.5 Buat Super Admin pertama
 Setelah ada 1 akun yang mendaftar via aplikasi, jalankan SQL ini untuk menjadikannya super_admin:

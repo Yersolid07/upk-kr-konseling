@@ -165,10 +165,14 @@ BEGIN
     END IF;
 
     -- (b) Kolom sensitif: hanya admin ke atas
+    -- `anon_token` TIDAK disentuh: kolomnya sudah pindah ke profile_secrets.
+    -- Menyebut NEW.anon_token di sini membuat PL/pgSQL menyiapkan pernyataan
+    -- yang merujuk kolom yang tidak ada, sehingga SETIAP update profil gagal
+    -- 400 "record new has no field anon_token" — termasuk ganti nama dan
+    -- foto. Perlindungan token anonim dipegang RLS profile_secrets.
     IF v_caller IS DISTINCT FROM 'admin' THEN
       NEW.is_active   := OLD.is_active;
       NEW.is_verified := OLD.is_verified;
-      NEW.anon_token  := OLD.anon_token;
     END IF;
   END IF;
 

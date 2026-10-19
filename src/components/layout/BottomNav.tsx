@@ -3,16 +3,17 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, MessageCircle, Calendar, BookOpen, User } from 'lucide-react'
+import { Home, MessageCircle, Calendar, BookOpen, Heart, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Profile } from '@/types/database'
 
 const ITEMS = [
   { href: '/dashboard', label: 'Beranda', icon: Home },
   { href: '/forum', label: 'Forum', icon: MessageCircle },
-  { href: '/chat', label: 'Konseling', icon: User },
+  { href: '/chat', label: 'Konseling', icon: Heart },
   { href: '/booking', label: 'Jadwal', icon: Calendar },
   { href: '/renungan', label: 'Renungan', icon: BookOpen },
+  { href: '/pengaturan', label: 'Akun', icon: Settings },
 ]
 
 export function BottomNav({ profile }: { profile: Profile }) {
@@ -24,7 +25,7 @@ export function BottomNav({ profile }: { profile: Profile }) {
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       aria-label="Navigasi utama"
     >
-      <div className="grid grid-cols-5">
+      <div className="grid grid-cols-6">
         {ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (

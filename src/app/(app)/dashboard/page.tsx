@@ -346,14 +346,7 @@ export default async function DashboardPage() {
         </aside>
       </div>
 
-      {/* FAB (mobile) */}
-      <Link
-        href="/forum/new"
-        aria-label="Mulai diskusi baru"
-        className="fixed bottom-24 right-5 w-13 h-13 p-3.5 bg-[var(--brown-dark)] text-white rounded-full shadow-[var(--shadow-lg)] flex items-center justify-center lg:hidden z-40 active:scale-95 transition-transform"
-      >
-        <PlusCircle size={24} />
-      </Link>
+      {/* Tombol tambah kini global (UniversalCreateButton di AppShell). */}
     </div>
   )
 }

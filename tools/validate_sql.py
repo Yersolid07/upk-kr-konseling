@@ -17,6 +17,7 @@ FILES = [
     "supabase/phase4-advanced-modules.sql",
     "supabase/patch-null-guards.sql",
     "supabase/public-settings-read.sql",
+    "supabase/chat-fix-sessions.sql",
 ]
 
 root = Path(__file__).resolve().parent.parent

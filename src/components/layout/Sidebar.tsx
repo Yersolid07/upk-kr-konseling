@@ -54,6 +54,7 @@ const SPIRITUAL_ITEMS: NavItem[] = [
 const GROUP_ITEMS: NavItem[] = [
   { href: '/cellgroup', icon: <UsersIcon size={18} />, label: 'KK & KTB',     labelEn: 'Small Groups' },
   { href: '/privasi-saya', icon: <ShieldCheck size={18} />, label: 'Privasi Saya', labelEn: 'My Privacy' },
+  { href: '/pengaturan', icon: <Settings size={18} />, label: 'Pengaturan', labelEn: 'Settings' },
   { href: '/keamanan', icon: <KeyRound size={18} />, label: 'Keamanan Akun', labelEn: 'Account Security' },
 ]
 

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { BottomNav } from './BottomNav'
+import { UniversalCreateButton } from './UniversalCreateButton'
 import { SOSModal } from '@/components/ui/SOSModal'
 import { useAppStore } from '@/store/useAppStore'
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications'
@@ -110,6 +111,7 @@ export function AppShell({
       </main>
 
       <BottomNav profile={profile} />
+      <UniversalCreateButton role={profile.role} />
       <SOSModal waNumber={sosNumber} />
     </div>
   )

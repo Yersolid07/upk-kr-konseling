@@ -8,6 +8,17 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { Avatar } from '@/components/profile/Avatar'
 
+// Jam pesan memakai zona waktu tetap. Tanpa ini server merender di zona
+// waktu mesin dan browser di zona pengguna, sehingga React melaporkan
+// hydration mismatch (#425) setiap kali ruang chat dibuka.
+function jamPesan(iso: string) {
+  return new Date(iso).toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Makassar',
+  })
+}
+
 interface Message {
   id: string
   session_id: string
@@ -191,10 +202,7 @@ export function ChatInterface({ session, initialMessages, currentUserId }: ChatI
                 {msg.content}
               </div>
               <span className="text-[9px] text-[var(--text-muted)] mt-1 font-medium px-2">
-                {new Date(msg.created_at).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+                {jamPesan(msg.created_at)}
               </span>
             </div>
           )

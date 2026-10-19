@@ -1,6 +1,7 @@
 // src/app/forum/page.tsx
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { Avatar } from '@/components/profile/Avatar'
 import { 
   MessageSquare, 
   Search, 
@@ -127,11 +128,19 @@ export default async function ForumPage({
               >
                 <div className="flex gap-5">
                   {/* Author Avatar */}
-                  <div className={cn(
-                    "w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg shrink-0 transition-transform group-hover:rotate-3",
-                    thread.is_anonymous ? "bg-slate-400" : "bg-gradient-to-br from-[var(--terra)] to-[var(--brown)]"
-                  )}>
-                    {thread.is_anonymous ? <Lock size={24} /> : (thread.author as any)?.full_name?.charAt(0)}
+                  <div className="shrink-0 transition-transform group-hover:rotate-3">
+                    {thread.is_anonymous ? (
+                      <div className="w-14 h-14 rounded-2xl bg-slate-400 flex items-center justify-center text-white shadow-lg">
+                        <Lock size={24} />
+                      </div>
+                    ) : (
+                      <Avatar
+                        src={(thread.author as any)?.avatarUrl}
+                        name={(thread.author as any)?.label}
+                        size="lg"
+                        className="!rounded-2xl shadow-lg"
+                      />
+                    )}
                   </div>
 
                   <div className="flex-1 min-w-0">

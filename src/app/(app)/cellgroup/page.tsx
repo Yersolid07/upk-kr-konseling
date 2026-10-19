@@ -11,6 +11,7 @@ import {
   Sparkles
 } from 'lucide-react'
 import Link from 'next/link'
+import { Avatar } from '@/components/profile/Avatar'
 import { cn } from '@/lib/utils'
 import { JoinGroupButton } from './join-group-button'
 import { CreateGroupDialog } from './create-group-dialog'

@@ -10,6 +10,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/store/useAppStore'
 import { updateProfile, changePassword } from './actions'
+import { AvatarUpload } from '@/components/profile/AvatarUpload'
 import type { Profile } from '@/types/database'
 
 type Tab = 'profil' | 'akun' | 'notifikasi' | 'tampilan'
@@ -84,6 +85,11 @@ function ProfileTab({ profile }: { profile: Profile }) {
 
   return (
     <div className="space-y-4">
+      <div className="pb-4 border-b border-[var(--cream-dark)]">
+        <p className="text-xs font-bold text-[var(--brown-dark)] mb-2.5">Foto profil</p>
+        <AvatarUpload userId={profile.id} fullName={profile.full_name} currentUrl={profile.avatar_url} />
+      </div>
+
       <Field label="Nama lengkap" hint="Terlihat oleh anggota lain di forum dan doa.">
         <input className="form-input" value={form.full_name} onChange={set('full_name')} maxLength={80} />
       </Field>

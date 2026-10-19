@@ -2,6 +2,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { Avatar } from '@/components/profile/Avatar'
 import { 
   MessageSquare, 
   ArrowLeft, 
@@ -110,12 +111,18 @@ export default async function ThreadDetailPage({ params }: { params: { id: strin
               <div className="p-8 md:p-10 space-y-6">
                  {/* Metadata */}
                  <div className="flex items-center gap-4">
-                    <div className={cn(
-                      "w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg",
-                      threadData.is_anonymous ? "bg-slate-400" : "bg-gradient-to-br from-[var(--terra)] to-[var(--brown)]"
-                    )}>
-                      {threadData.is_anonymous ? <Lock size={22} /> : displayName.charAt(0)}
-                    </div>
+                    {threadData.is_anonymous ? (
+                      <div className="w-14 h-14 rounded-2xl bg-slate-400 flex items-center justify-center text-white shadow-lg shrink-0">
+                        <Lock size={22} />
+                      </div>
+                    ) : (
+                      <Avatar
+                        src={(threadData.author as any)?.avatarUrl}
+                        name={displayName}
+                        size="lg"
+                        className="!rounded-2xl shadow-lg"
+                      />
+                    )}
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-bold text-[var(--brown-dark)]">{displayName}</span>

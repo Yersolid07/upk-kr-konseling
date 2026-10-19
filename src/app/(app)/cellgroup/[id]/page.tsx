@@ -2,6 +2,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
+import { Avatar } from '@/components/profile/Avatar'
 import { ArrowLeft, Users, ShieldCheck } from 'lucide-react'
 import { GroupIcon, normalizeGroupIcon } from '@/components/ui/icons'
 import { GroupChat } from './group-chat'
@@ -80,9 +81,7 @@ export default async function CellGroupDetailPage({ params }: { params: { id: st
       <div className="flex items-center gap-2 flex-wrap px-2">
         {members.slice(0, 12).map((m: any) => (
           <div key={m.user_id} className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white border border-[var(--cream-dark)] shadow-sm">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[var(--sage)] to-[var(--sage-light)] flex items-center justify-center text-white text-[9px] font-bold">
-              {m.profile?.full_name?.slice(0, 2).toUpperCase() ?? '??'}
-            </div>
+            <Avatar src={m.profile?.avatar_url} name={m.profile?.full_name} size="xs" />
             <span className="text-[10px] font-bold text-[var(--text-muted)] truncate max-w-[100px]">{m.profile?.full_name ?? 'Anggota'}</span>
             {m.is_leader && <ShieldCheck size={11} className="text-[var(--terra)]" />}
           </div>

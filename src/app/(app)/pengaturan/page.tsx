@@ -6,6 +6,7 @@ import {
   User, Lock, Bell, Palette, ShieldCheck, FileText, LogOut, ChevronRight, Smartphone,
 } from 'lucide-react'
 import { SettingsPanels } from './settings-panels'
+import { Avatar } from '@/components/profile/Avatar'
 import { SignOutEverywhere } from './sign-out-everywhere'
 import type { Profile } from '@/types/database'
 
@@ -36,9 +37,7 @@ export default async function SettingsPage() {
 
       {/* Profil ringkas */}
       <div className="card-premium p-5 flex items-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] flex items-center justify-center text-white font-bold text-xl shrink-0">
-          {profile.full_name?.charAt(0) ?? 'U'}
-        </div>
+        <Avatar src={profile.avatar_url} name={profile.full_name} size="lg" />
         <div className="min-w-0 flex-1">
           <p className="font-bold text-[var(--brown-dark)] truncate">{profile.full_name}</p>
           <p className="text-xs text-[var(--text-muted)] truncate">{user.email}</p>

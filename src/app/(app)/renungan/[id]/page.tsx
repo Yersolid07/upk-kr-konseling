@@ -2,6 +2,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { Avatar } from '@/components/profile/Avatar'
 import { 
   ArrowLeft, 
   Clock, 
@@ -71,9 +72,11 @@ export default async function ArticleDetailPage({ params }: { params: { id: stri
 
             <div className="flex items-center gap-6 pt-4">
                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[var(--cream-dark)] flex items-center justify-center text-[var(--brown)] font-bold text-sm">
-                     {(articleData.author as any)?.full_name?.charAt(0)}
-                  </div>
+                  <Avatar
+                    src={(articleData.author as any)?.avatar_url}
+                    name={(articleData.author as any)?.full_name}
+                    size="md"
+                  />
                   <div>
                      <div className="text-sm font-bold text-[var(--brown-dark)]">{(articleData.author as any)?.full_name}</div>
                      <div className="text-[10px] text-[var(--text-muted)] font-medium">Penulis / Kontributor</div>

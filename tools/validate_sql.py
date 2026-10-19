@@ -18,6 +18,8 @@ FILES = [
     "supabase/patch-null-guards.sql",
     "supabase/public-settings-read.sql",
     "supabase/chat-fix-sessions.sql",
+    "supabase/avatar-storage.sql",
+    "supabase/profile-trigger-fix.sql",
 ]
 
 root = Path(__file__).resolve().parent.parent

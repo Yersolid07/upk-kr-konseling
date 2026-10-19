@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Send, ArrowLeft, ShieldCheck, Loader2, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { Avatar } from '@/components/profile/Avatar'
 
 interface Message {
   id: string
@@ -21,8 +22,8 @@ interface ChatInterfaceProps {
     member_id: string
     konselor_id: string | null
     status: string
-    member?: { full_name: string | null; is_online: boolean | null } | null
-    konselor?: { full_name: string | null; is_online: boolean | null } | null
+    member?: { full_name: string | null; is_online: boolean | null; avatar_url: string | null } | null
+    konselor?: { full_name: string | null; is_online: boolean | null; avatar_url: string | null } | null
   }
   initialMessages: Message[]
   currentUserId: string
@@ -122,9 +123,7 @@ export function ChatInterface({ session, initialMessages, currentUserId }: ChatI
             <ArrowLeft size={20} className="text-[var(--brown-dark)]" />
           </Link>
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--terra)] to-[var(--brown)] flex items-center justify-center text-white font-bold shadow-md shrink-0">
-              {otherUser?.full_name?.charAt(0) ?? 'K'}
-            </div>
+            <Avatar src={otherUser?.avatar_url} name={otherUser?.full_name} size="md" className="shadow-md" />
             <div className="min-w-0">
               <h3 className="text-sm font-bold text-[var(--brown-dark)] leading-tight truncate">
                 {otherUser?.full_name ?? 'Menunggu konselor'}

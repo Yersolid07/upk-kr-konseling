@@ -20,6 +20,7 @@ FILES = [
     "supabase/chat-fix-sessions.sql",
     "supabase/avatar-storage.sql",
     "supabase/profile-trigger-fix.sql",
+    "supabase/chat-queue-messages.sql",
 ]
 
 root = Path(__file__).resolve().parent.parent

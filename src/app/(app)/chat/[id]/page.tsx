@@ -23,12 +23,52 @@ export default async function ChatDetailPage({ params }: { params: { id: string 
     .eq('id', params.id)
     .single()
 
-  const session = sessionData as any
+  // Sesi antrean (pending, belum punya konselor) terlihat oleh konselor lewat
+  // policy `sessions_select_queue`, tetapi BUKAN miliknya — konselor_id masih
+  // NULL. Tanpa pengecualian di bawah, guard akses menolaknya dan halaman
+  // memantul ke /chat, sehingga antrean tidak pernah bisa dibuka.
+  let resolved = sessionData as any
+  let isQueuePreview =
+    !!resolved && resolved.status === 'pending' && resolved.konselor_id === null
 
-  if (!session) notFound()
+  if (!resolved) {
+    const { data: queueData } = await supabase
+      .from('chat_sessions')
+      .select(`
+        *,
+        konselor:profiles!chat_sessions_konselor_id_fkey(*),
+        member:profiles!chat_sessions_member_id_fkey(*)
+      `)
+      .eq('id', params.id)
+      .eq('status', 'pending')
+      .is('konselor_id', null)
+      .maybeSingle()
 
-  // Verify access (must be the member or the assigned konselor)
-  if (session.member_id !== user.id && session.konselor_id !== user.id) {
+    if (queueData) {
+      resolved = queueData
+      isQueuePreview = true
+    }
+  }
+
+  if (!resolved) notFound()
+
+  // Preview antrean hanya untuk konselor aktif. Anggota biasa yang menebak ID
+  // sesi orang lain tetap ditolak.
+  if (isQueuePreview) {
+    const { data: me } = await supabase
+      .from('profiles')
+      .select('role, is_active')
+      .eq('id', user.id)
+      .single()
+    const viewer = me as { role?: string; is_active?: boolean } | null
+    if (viewer?.role !== 'konselor' || viewer.is_active !== true) {
+      isQueuePreview = false
+    }
+  }
+
+  // Verify access (must be the member, the assigned konselor, or a konselor
+  // previewing the queue)
+  if (!isQueuePreview && resolved.member_id !== user.id && resolved.konselor_id !== user.id) {
     redirect('/chat')
   }
 
@@ -42,7 +82,7 @@ export default async function ChatDetailPage({ params }: { params: { id: string 
   // Catatan sesi hanya untuk konselor pemegang sesi. Kueri memakai klien
   // pengguna, jadi RLS `session_notes_select` yang memutuskan — bukan
   // pemeriksaan di sini. Bila bukan pemiliknya, hasilnya kosong.
-  const isKonselor = session.konselor_id === user.id
+  const isKonselor = resolved.konselor_id === user.id
   let noteBody: string | null = null
   if (isKonselor) {
     const { data: note } = await supabase
@@ -57,7 +97,7 @@ export default async function ChatDetailPage({ params }: { params: { id: string 
   return (
     <div className="chat-shell animate-fade-in">
       <ChatInterface 
-        session={session} 
+        session={resolved} 
         initialMessages={messages ?? []} 
         currentUserId={user.id} 
       />

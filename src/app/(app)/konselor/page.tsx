@@ -18,6 +18,7 @@ import { hasMinRole } from '@/lib/rbac'
 
 import { CounselorOnboarding } from '@/components/konselor/counselor-onboarding'
 import { BookingActions } from '@/components/konselor/booking-actions'
+import { ClaimButton } from '@/app/(app)/chat/claim-button'
 
 export const dynamic = 'force-dynamic'
 
@@ -109,12 +110,7 @@ export default async function KonselorDashboardPage() {
                                  <p className="text-xs text-red-700 font-medium">{getRelativeTime(session.created_at)} · Dari: {(session.member as any)?.full_name || 'Anggota'}</p>
                               </div>
                            </div>
-                           <Link 
-                             href={`/chat/${session.id}`}
-                             className="px-6 py-3 bg-red-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
-                           >
-                              Respon Sekarang
-                           </Link>
+                           <ClaimButton sessionId={session.id} />
                         </div>
                      ))}
                   </div>

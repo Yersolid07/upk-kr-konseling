@@ -108,7 +108,7 @@ export default async function ArticleDetailPage({ params }: { params: { id: stri
 
          {/* Footer / Call to Action */}
          <div className="pt-12 border-t border-[var(--cream-dark)]">
-            <div className="card-premium p-10 bg-[var(--brown-dark)] text-white flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+            <div className="card-premium p-10 text-white flex [--card-bg:var(--brown-dark)] flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
                <div className="space-y-2">
                   <h3 className="font-[var(--font-playfair)] text-2xl font-bold">Terberkati dengan artikel ini?</h3>
                   <p className="text-white/60 text-sm">Bagikan ke teman-teman alumni lainnya agar mereka juga dikuatkan.</p>

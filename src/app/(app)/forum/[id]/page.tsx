@@ -194,7 +194,7 @@ export default async function ThreadDetailPage({ params }: { params: { id: strin
 
         {/* Sidebar */}
         <aside className="lg:col-span-4 space-y-8">
-           <section className="card-premium p-6 bg-[var(--brown-dark)] text-white">
+           <section className="card-premium p-6 text-white [--card-bg:var(--brown-dark)]">
               <h3 className="font-[var(--font-playfair)] text-xl font-bold mb-4">Butuh Konseling Pribadi?</h3>
               <p className="text-white/70 text-sm leading-relaxed mb-6">
                  Jika topik ini berat bagi Anda, konselor kami siap membantu secara privat dan rahasia.

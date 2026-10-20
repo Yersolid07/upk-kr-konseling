@@ -495,7 +495,11 @@ select.form-input { cursor: pointer; }
   box-shadow: var(--shadow-lg);
 }
 .card-premium {
-  background: var(--surface);
+  /* `background` di sini mengalahkan utility Tailwind `bg-[...]` karena berkas
+     ini ditulis setelah @tailwind utilities. Akibatnya kartu gelap seperti
+     SOS berubah putih dan teks putihnya hilang sama sekali. Variabel ini
+     memberi jalan keluar: pemakai tinggal set --card-bg. */
+  background: var(--card-bg, var(--surface));
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   border: 1px solid var(--line);

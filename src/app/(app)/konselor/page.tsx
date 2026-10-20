@@ -196,7 +196,7 @@ export default async function KonselorDashboardPage() {
             </section>
 
             {/* Counselor Note */}
-            <section className="card-premium p-6 bg-[var(--cream)] border-none">
+            <section className="card-premium p-6 border-none [--card-bg:var(--cream)]">
                <div className="flex items-center gap-3 mb-4">
                   <CheckCircle2 size={20} className="text-[var(--sage)]" />
                   <h3 className="font-bold text-[var(--brown-dark)] text-sm uppercase tracking-widest">Etika Konselor</h3>

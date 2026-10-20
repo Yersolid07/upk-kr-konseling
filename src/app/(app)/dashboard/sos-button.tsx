@@ -36,7 +36,7 @@ export function SOSButton() {
   }
 
   return (
-    <section className="card-premium p-8 bg-[var(--brown-dark)] text-white relative overflow-hidden group">
+    <section className="card-premium p-8 text-white relative [--card-bg:var(--brown-dark)] overflow-hidden group">
       <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--terra)]/20 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2 group-hover:scale-150 transition-transform duration-700" />
       <div className="relative z-10 space-y-6">
         <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-[var(--gold)] shadow-inner">

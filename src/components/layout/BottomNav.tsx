@@ -3,17 +3,18 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, MessageCircle, Calendar, BookOpen, Heart, Settings } from 'lucide-react'
+import { Home, MessageCircle, BookOpen, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Profile } from '@/types/database'
 
+// Empat tujuan utama saja. Yang paling kanan selalu Profil.
+// Konseling, Jadwal, Prayer Wall, Pengaturan lanjutan dapat dari
+// sidebar/hamburger atau dari menu di dalam halaman Profil.
 const ITEMS = [
   { href: '/dashboard', label: 'Beranda', icon: Home },
   { href: '/forum', label: 'Forum', icon: MessageCircle },
-  { href: '/chat', label: 'Konseling', icon: Heart },
-  { href: '/booking', label: 'Jadwal', icon: Calendar },
   { href: '/renungan', label: 'Renungan', icon: BookOpen },
-  { href: '/pengaturan', label: 'Akun', icon: Settings },
+  { href: '/pengaturan', label: 'Profil', icon: User },
 ]
 
 export function BottomNav({ profile }: { profile: Profile }) {
@@ -25,7 +26,7 @@ export function BottomNav({ profile }: { profile: Profile }) {
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       aria-label="Navigasi utama"
     >
-      <div className="grid grid-cols-6">
+      <div className="grid grid-cols-4">
         {ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (

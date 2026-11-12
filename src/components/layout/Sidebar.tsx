@@ -7,11 +7,11 @@ import { useAppStore } from '@/store/useAppStore'
 import { logout } from '@/app/auth/actions'
 import type { Profile } from '@/types/database'
 import { cn } from '@/lib/utils'
-import { 
-  Home, 
-  MessageCircle, 
-  Heart, 
-  Calendar, 
+import {
+  Home,
+  MessageCircle,
+  Heart,
+  Calendar,
   BookOpen,
   PlusCircle,
   Users as UsersIcon,
@@ -22,7 +22,6 @@ import {
   ChevronRight,
   Phone,
   ShieldCheck,
-  KeyRound,
   X
 } from 'lucide-react'
 import { HandsPraying } from '@/components/icons/HandsPraying'
@@ -52,10 +51,8 @@ const SPIRITUAL_ITEMS: NavItem[] = [
 ]
 
 const GROUP_ITEMS: NavItem[] = [
-  { href: '/cellgroup', icon: <UsersIcon size={18} />, label: 'KK & KTB',     labelEn: 'Small Groups' },
-  { href: '/privasi-saya', icon: <ShieldCheck size={18} />, label: 'Privasi Saya', labelEn: 'My Privacy' },
-  { href: '/pengaturan', icon: <Settings size={18} />, label: 'Pengaturan', labelEn: 'Settings' },
-  { href: '/keamanan', icon: <KeyRound size={18} />, label: 'Keamanan Akun', labelEn: 'Account Security' },
+  { href: '/cellgroup', icon: <UsersIcon size={18} />, label: 'KK & KTB', labelEn: 'Small Groups' },
+  { href: '/pengaturan', icon: <Settings size={18} />, label: 'Akun Saya', labelEn: 'My Account' },
 ]
 
 const STAFF_ITEMS: NavItem[] = [

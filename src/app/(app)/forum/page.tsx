@@ -15,6 +15,7 @@ import {
   Lock
 } from 'lucide-react'
 import { cn, getRelativeTime } from '@/lib/utils'
+import { CategoryIcon } from '@/components/ui/icons'
 import { listThreads } from '@/lib/public-content'
 
 export const dynamic = 'force-dynamic'
@@ -92,7 +93,7 @@ export default async function ForumPage({
                     category === cat.slug ? "bg-[var(--terra)]/10 text-[var(--terra)] font-bold shadow-sm" : "text-[var(--text-muted)]"
                   )}
                 >
-                  <span>{cat.icon}</span> {cat.name}
+                  <CategoryIcon slug={cat.slug} /> {cat.name}
                 </Link>
               ))}
             </div>

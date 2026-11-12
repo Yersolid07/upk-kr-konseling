@@ -15,6 +15,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getRelativeTime } from '@/lib/utils'
 import { fetchCommentPublic } from '@/app/(app)/forum/actions'
 import { ReportButton } from '@/components/reports/report-button'
+import { Avatar } from '@/components/profile/Avatar'
 import type { PublicComment } from '@/lib/public-content'
 
 interface RealtimeCommentsProps {
@@ -76,9 +77,12 @@ export function RealtimeComments({ initialComments, threadId }: RealtimeComments
 
         return (
           <div key={comment.id} className="card-premium p-6 flex items-start gap-4 hover-lift animate-in fade-in slide-in-from-bottom-2">
-             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--cream-dark)] to-[var(--cream)] flex items-center justify-center text-[var(--brown-dark)] font-bold shrink-0 shadow-sm border border-white">
-                {commenterName?.charAt(0) || '?'}
-             </div>
+             <Avatar
+               src={comment.author.avatarUrl}
+               name={comment.author.label}
+               size="sm"
+               isAnonymous={comment.author.isAnonymous}
+             />
              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                    <span className="font-bold text-sm text-[var(--brown-dark)]">{commenterName}</span>

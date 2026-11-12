@@ -1,9 +1,13 @@
 -- =====================================================
--- REFRESH prayers_public VIEW — ADD comment_count
+-- REFRESH prayers_public VIEW — tambah comment_count
 -- Jalankan di Supabase SQL Editor (sekali saja)
 -- =====================================================
 
-CREATE OR REPLACE VIEW public.prayers_public
+-- Hapus view lama (kalau ada)
+DROP VIEW IF EXISTS public.prayers_public CASCADE;
+
+-- Buat ulang view dengan logika yang sama + kolom comment_count
+CREATE VIEW public.prayers_public
 WITH (security_invoker = true) AS
 SELECT
   r.id,
@@ -21,3 +25,8 @@ SELECT
   CASE WHEN r.is_anonymous THEN NULL ELSE p.avatar_url END AS author_avatar
 FROM public.prayer_requests r
 LEFT JOIN public.profiles p ON p.id = r.author_id;
+
+-- Catatan migrasi
+INSERT INTO public.schema_migrations (version, description)
+VALUES ('2026-11-12-refresh-prayers-view', 'prayers_public: tambah comment_count kolom')
+ON CONFLICT (version) DO NOTHING;

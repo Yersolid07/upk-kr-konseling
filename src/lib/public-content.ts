@@ -342,7 +342,7 @@ export async function listPrayers(supabase: Db, limit = 30): Promise<PublicPraye
     .from('prayer_requests')
     .select(
       `id, content, is_anonymous, is_answered, pray_count, comment_count, created_at, author_id,
-       author:profiles(full_name, avatar_url)`
+       author:profiles!prayer_requests_author_id_fkey(full_name, avatar_url)`
     )
     .order('created_at', { ascending: false })
     .limit(limit)

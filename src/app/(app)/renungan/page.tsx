@@ -12,6 +12,7 @@ import {
   Plus
 } from 'lucide-react'
 import { cn, getRelativeTime } from '@/lib/utils'
+import { appUrl } from '@/lib/app-url'
 
 interface DevotionalItem {
   title: string
@@ -22,7 +23,8 @@ interface DevotionalItem {
 }
 
 async function fetchDevotionals(): Promise<DevotionalItem[]> {
-  const res = await fetch('/api/external-content', { next: { revalidate: 21600 } })
+  const base = await appUrl()
+  const res = await fetch(`${base}/api/external-content`, { next: { revalidate: 21600 } })
   if (!res.ok) return []
   const data = await res.json()
   return (data.items ?? []) as DevotionalItem[]

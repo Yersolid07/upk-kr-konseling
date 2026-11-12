@@ -694,5 +694,83 @@ ON CONFLICT (version) DO NOTHING;
 
 
 -- =====================================================
+-- BAGIAN 6/7: prayer-comments.sql
+-- Table komentar di Prayer Wall + trigger denormalisasi comment_count.
+-- SUDAH DILAKSANAKAN secara manual — section ini ada untuk traceability.
+-- Jika tabel sudah ada, bagian ini aman di-skip.
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS public.prayer_comments (
+  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  request_id    UUID NOT NULL REFERENCES public.prayer_requests(id) ON DELETE CASCADE,
+  author_id     UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  content       TEXT NOT NULL CHECK (char_length(content) BETWEEN 1 AND 1000),
+  is_anonymous  BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS public.idx_prayer_comments_request
+  ON public.prayer_comments(request_id, created_at);
+
+CREATE POLICY IF NOT EXISTS prayer_comments_select ON public.prayer_comments
+  FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY IF NOT EXISTS prayer_comments_insert ON public.prayer_comments
+  FOR INSERT TO authenticated WITH CHECK (author_id = auth.uid());
+
+CREATE OR REPLACE FUNCTION public.update_prayer_comment_count()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE public.prayer_requests
+       SET comment_count = comment_count + 1
+     WHERE id = NEW.request_id;
+  ELSIF TG_OP = 'DELETE' THEN
+    UPDATE public.prayer_requests
+       SET comment_count = GREATEST(comment_count - 1, 0)
+     WHERE id = OLD.request_id;
+  END IF;
+  RETURN NULL;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS public.on_prayer_comment_change ON public.prayer_comments;
+CREATE TRIGGER public.on_prayer_comment_change
+  AFTER INSERT OR DELETE ON public.prayer_comments
+  FOR EACH ROW EXECUTE FUNCTION public.update_prayer_comment_count();
+
+INSERT INTO public.schema_migrations (version, description)
+VALUES ('2026-11-12-prayer-comments', 'prayer_comments table + trigger comment_count')
+ON CONFLICT (version) DO NOTHING;
+
+-- =====================================================
+-- BAGIAN 7/7: refresh-prayers-view.sql
+-- prayers_public: tambah kolom comment_count (kolom baru di prayer_requests)
+-- =====================================================
+
+CREATE OR REPLACE VIEW public.prayers_public
+WITH (security_invoker = true) AS
+SELECT
+  r.id,
+  r.content,
+  r.category_id,
+  r.is_anonymous,
+  r.is_answered,
+  r.pray_count,
+  r.comment_count,
+  r.created_at,
+  r.updated_at,
+  CASE WHEN r.is_anonymous THEN NULL ELSE r.author_id END AS author_id,
+  CASE WHEN r.is_anonymous THEN public.public_anon_label('prayer', r.id) END AS anon_label,
+  CASE WHEN r.is_anonymous THEN NULL ELSE p.full_name END AS author_name,
+  CASE WHEN r.is_anonymous THEN NULL ELSE p.avatar_url END AS author_avatar
+FROM public.prayer_requests r
+LEFT JOIN public.profiles p ON p.id = r.author_id;
+
+INSERT INTO public.schema_migrations (version, description)
+VALUES ('2026-11-12-refresh-prayers-view', 'prayers_public: tambah comment_count')
+ON CONFLICT (version) DO NOTHING;
+
+-- =====================================================
 -- SELESAI. Semua bagian di atas harus lolos tanpa error.
 -- =====================================================

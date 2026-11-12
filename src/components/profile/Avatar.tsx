@@ -26,17 +26,20 @@ export function Avatar({
   size = 'md',
   className,
   ring = false,
+  isAnonymous = false,
 }: {
   src?: string | null
   name?: string | null
   size?: keyof typeof SIZES
   className?: string
   ring?: boolean
+  /** Jika true, tampilkan inisial meskipun avatar_url tersedia (mode anonim). */
+  isAnonymous?: boolean
 }) {
   const s = SIZES[size]
   const initial = name?.trim().charAt(0)?.toUpperCase() ?? 'U'
 
-  if (src) {
+  if (src && !isAnonymous) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
@@ -58,7 +61,7 @@ export function Avatar({
 
   return (
     <div
-      aria-label={name ? `Inisial ${name}` : 'Belum ada foto'}
+      aria-label={name ? `Inisial ${name}` : 'Anonim'}
       className={cn(
         s.box,
         s.text,
@@ -67,7 +70,7 @@ export function Avatar({
         className
       )}
     >
-      {initial}
+      {isAnonymous ? '?' : initial}
     </div>
   )
 }

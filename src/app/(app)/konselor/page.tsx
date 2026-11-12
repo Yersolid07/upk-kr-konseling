@@ -107,7 +107,9 @@ export default async function KonselorDashboardPage() {
                               </div>
                               <div>
                                  <h3 className="font-bold text-red-900">{session.topic || 'Butuh Bantuan Segera'}</h3>
-                                 <p className="text-xs text-red-700 font-medium">{getRelativeTime(session.created_at)} · Dari: {(session.member as any)?.full_name || 'Anggota'}</p>
+                                 <p className="text-xs text-red-700 font-medium">
+                                   {getRelativeTime(session.created_at)} · Dari: {session.is_anonymous ? 'Anggota Anonim' : ((session.member as any)?.full_name || 'Anggota')}
+                                 </p>
                               </div>
                            </div>
                            <ClaimButton sessionId={session.id} />
@@ -136,7 +138,7 @@ export default async function KonselorDashboardPage() {
                               <span className="text-xl font-black leading-none">{new Date(booking.scheduled_at).getDate()}</span>
                            </div>
                            <div className="space-y-1">
-                              <h3 className="font-bold text-[var(--brown-dark)]">{(booking.member as any)?.full_name}</h3>
+                              <h3 className="font-bold text-[var(--brown-dark)]">{booking.is_anonymous ? 'Anggota Anonim' : ((booking.member as any)?.full_name || 'Anggota')}</h3>
                               <p className="text-xs text-[var(--text-muted)] flex items-center gap-3">
                                  <span className="flex items-center gap-1"><Clock size={12} /> {new Date(booking.scheduled_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB</span>
                                  <span>•</span>
@@ -177,17 +179,17 @@ export default async function KonselorDashboardPage() {
                   {(!activeChats || activeChats.length === 0) ? (
                      <p className="text-xs text-[var(--text-muted)] italic px-2">Tidak ada chat aktif saat ini.</p>
                   ) : (activeChats as any[]).map(chat => (
-                     <Link key={chat.id} href={`/chat/${chat.id}`} className="card-premium p-4 flex items-center gap-4 hover-lift group">
-                        <div className="w-10 h-10 rounded-full bg-[var(--cream)] flex items-center justify-center text-[var(--brown)] font-bold text-sm">
-                           {(chat.member as any)?.full_name?.charAt(0)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                           <h4 className="text-sm font-bold text-[var(--brown-dark)] truncate">{(chat.member as any)?.full_name}</h4>
-                           <p className="text-[10px] text-[var(--text-muted)] truncate">{chat.last_message || 'Siap melayani...'}</p>
-                        </div>
-                        <ChevronRight size={14} className="text-[var(--text-muted)] group-hover:text-[var(--terra)] transition-colors" />
-                     </Link>
-                  ))}
+                                       <Link key={chat.id} href={`/chat/${chat.id}`} className="card-premium p-4 flex items-center gap-4 hover-lift group">
+                                          <div className="w-10 h-10 rounded-full bg-[var(--cream)] flex items-center justify-center text-[var(--brown)] font-bold text-sm">
+                                             {chat.is_anonymous ? '?' : (chat.member as any)?.full_name?.charAt(0)}
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                             <h4 className="text-sm font-bold text-[var(--brown-dark)] truncate">{chat.is_anonymous ? 'Anggota Anonim' : (chat.member as any)?.full_name}</h4>
+                                             <p className="text-[10px] text-[var(--text-muted)] truncate">{chat.last_message || 'Siap melayani...'}</p>
+                                          </div>
+                                          <ChevronRight size={14} className="text-[var(--text-muted)] group-hover:text-[var(--terra)] transition-colors" />
+                                       </Link>
+                                    ))}
                </div>
             </section>
 

@@ -33,6 +33,7 @@ interface ChatInterfaceProps {
     member_id: string
     konselor_id: string | null
     status: string
+    is_anonymous?: boolean
     member?: { full_name: string | null; is_online: boolean | null; avatar_url: string | null } | null
     konselor?: { full_name: string | null; is_online: boolean | null; avatar_url: string | null } | null
   }
@@ -54,6 +55,9 @@ export function ChatInterface({ session, initialMessages, currentUserId }: ChatI
 
   const isMember = session.member_id === currentUserId
   const otherUser = isMember ? session.konselor : session.member
+  // Sesi anonim (SOS): konselor melihat avatar + nama member sebagai anonim.
+  // Member sendiri melihat konselor normal, konselor melihat member normal.
+  const isOtherAnon = !isMember && Boolean(session.is_anonymous)
   const canSend = session.status === 'pending' || session.status === 'active'
   const hasKonselor = Boolean(session.konselor_id)
 
@@ -134,19 +138,19 @@ export function ChatInterface({ session, initialMessages, currentUserId }: ChatI
             <ArrowLeft size={20} className="text-[var(--brown-dark)]" />
           </Link>
           <div className="flex items-center gap-3 min-w-0">
-            <Avatar src={otherUser?.avatar_url} name={otherUser?.full_name} size="md" className="shadow-md" />
+            <Avatar src={otherUser?.avatar_url} name={otherUser?.full_name} size="md" className="shadow-md" isAnonymous={isOtherAnon} />
             <div className="min-w-0">
               <h3 className="text-sm font-bold text-[var(--brown-dark)] leading-tight truncate">
-                {otherUser?.full_name ?? 'Menunggu konselor'}
+                {isOtherAnon ? 'Anggota Anonim' : (otherUser?.full_name ?? 'Menunggu konselor')}
               </h3>
               {/* Status diambil dari data, bukan ditulis mati "Online". */}
               <span
                 className={cn(
                   'text-[10px] font-bold uppercase tracking-widest mt-0.5 block',
-                  otherUser?.is_online ? 'text-[var(--sage)]' : 'text-[var(--text-muted)]'
+                  isOtherAnon ? 'text-[var(--text-muted)]' : otherUser?.is_online ? 'text-[var(--sage)]' : 'text-[var(--text-muted)]'
                 )}
               >
-                {otherUser?.is_online ? 'Online' : hasKonselor ? 'Offline' : 'Belum ada konselor'}
+                {isOtherAnon ? 'Anonim' : otherUser?.is_online ? 'Online' : hasKonselor ? 'Offline' : 'Belum ada konselor'}
               </span>
             </div>
           </div>

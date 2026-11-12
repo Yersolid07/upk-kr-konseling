@@ -24,6 +24,7 @@ interface SessionRow {
   last_message: string | null
   member_id: string
   konselor_id: string | null
+  is_anonymous: boolean
   konselor: { id: string; full_name: string; avatar_url: string | null } | null
   member: { id: string; full_name: string; avatar_url: string | null } | null
 }
@@ -47,7 +48,7 @@ export default async function ChatListPage() {
   const { data: sessions } = await supabase
     .from('chat_sessions')
     .select(
-      `id, status, created_at, updated_at, last_message, member_id, konselor_id,
+      `id, status, created_at, updated_at, last_message, member_id, konselor_id, is_anonymous,
        konselor:profiles!chat_sessions_konselor_id_fkey(id, full_name, avatar_url),
        member:profiles!chat_sessions_member_id_fkey(id, full_name, avatar_url)`
     )
@@ -64,24 +65,27 @@ export default async function ChatListPage() {
   const mine = rows.filter((s) => s.konselor_id === user.id || s.member_id === user.id)
 
   const renderCard = (session: SessionRow, showClaim: boolean) => {
-    const isMember = session.member_id === user.id
-    const otherUser = isMember ? session.konselor : session.member
+      const isMember = session.member_id === user.id
+      const otherUser = isMember ? session.konselor : session.member
+      // Sesi anonim (mis. SOS): konselor tidak boleh melihat foto atau nama
+      // member. Konselor sendiri tetap tampil normal bagi member.
+      const isOtherAnon = !isMember && Boolean(session.is_anonymous)
 
-    return (
-      <div key={session.id} className="card-premium p-4 sm:p-5 flex items-center gap-3 sm:gap-5 hover-lift">
-        <Link href={`/chat/${session.id}`} className="flex items-center gap-3 sm:gap-5 flex-1 min-w-0 group">
-          <div className="relative shrink-0">
-            <Avatar src={otherUser?.avatar_url} name={otherUser?.full_name} size="lg" className="shadow-md" />
-            {session.status === 'active' && (
-              <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[var(--sage)] border-2 sm:border-4 border-white rounded-full" />
-            )}
-          </div>
+      return (
+        <div key={session.id} className="card-premium p-4 sm:p-5 flex items-center gap-3 sm:gap-5 hover-lift">
+          <Link href={`/chat/${session.id}`} className="flex items-center gap-3 sm:gap-5 flex-1 min-w-0 group">
+            <div className="relative shrink-0">
+              <Avatar src={otherUser?.avatar_url} name={otherUser?.full_name} size="lg" className="shadow-md" isAnonymous={isOtherAnon} />
+              {session.status === 'active' && (
+                <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[var(--sage)] border-2 sm:border-4 border-white rounded-full" />
+              )}
+            </div>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2 mb-1">
-              <h3 className="font-bold text-[var(--brown-dark)] group-hover:text-[var(--terra)] transition-colors truncate text-sm sm:text-base">
-                {otherUser?.full_name ?? 'Menunggu konselor'}
-              </h3>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <h3 className="font-bold text-[var(--brown-dark)] group-hover:text-[var(--terra)] transition-colors truncate text-sm sm:text-base">
+                  {isOtherAnon ? 'Anggota Anonim' : (otherUser?.full_name ?? 'Menunggu konselor')}
+                </h3>
               <span className="text-[10px] text-[var(--text-muted)] font-medium shrink-0">
                 {getRelativeTime(session.updated_at)}
               </span>

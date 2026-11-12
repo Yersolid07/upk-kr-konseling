@@ -440,6 +440,7 @@ export interface Database {
           is_anonymous: boolean
           is_answered: boolean
           pray_count: number
+          comment_count: number
           created_at: string
           updated_at: string
           author_id: string | null
@@ -448,6 +449,33 @@ export interface Database {
           author_avatar: string | null
         }
         Relationships: []
+      }
+      prayer_comments: {
+        Row: {
+          id: string
+          request_id: string
+          author_id: string
+          content: string
+          is_anonymous: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          request_id: string
+          author_id: string
+          content: string
+          is_anonymous?: boolean
+          created_at?: string
+        }
+        Update: Partial<{
+          content: string
+          is_anonymous: boolean
+          created_at: string
+        }>
+        Relationships: [
+          Rel & { foreignKeyName: 'prayer_comments_request_id_fkey'; columns: ['request_id']; referencedRelation: 'prayer_requests' },
+          Rel & { foreignKeyName: 'prayer_comments_author_id_fkey'; columns: ['author_id']; referencedRelation: 'profiles' },
+        ]
       }
       profiles_public: {
         Row: {

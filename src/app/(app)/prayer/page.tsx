@@ -78,7 +78,7 @@ export default async function PrayerWallPage() {
       {/* Masonry-like Grid */}
       <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 px-4">
         {(prayers as any[])?.map((p: any) => (
-          <PrayerCard key={p.id} prayer={p} />
+          <PrayerCard key={p.id} prayer={p} commentCount={p.comment_count} />
         ))}
       </div>
 

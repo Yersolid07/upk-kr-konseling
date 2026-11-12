@@ -317,6 +317,7 @@ export interface PublicPrayer {
   is_anonymous: boolean
   is_answered: boolean
   pray_count: number
+  comment_count: number
   created_at: string
   author: PublicAuthor
 }
@@ -325,7 +326,7 @@ export async function listPrayers(supabase: Db, limit = 30): Promise<PublicPraye
   const { data, error } = await supabase
     .from('prayers_public')
     .select(
-      `id, content, is_anonymous, is_answered, pray_count, created_at,
+      `id, content, is_anonymous, is_answered, pray_count, comment_count, created_at,
        author_id, anon_label, author_name, author_avatar`
     )
     .order('created_at', { ascending: false })
@@ -340,7 +341,7 @@ export async function listPrayers(supabase: Db, limit = 30): Promise<PublicPraye
   const legacy = await supabase
     .from('prayer_requests')
     .select(
-      `id, content, is_anonymous, is_answered, pray_count, created_at, author_id,
+      `id, content, is_anonymous, is_answered, pray_count, comment_count, created_at, author_id,
        author:profiles(full_name, avatar_url)`
     )
     .order('created_at', { ascending: false })
@@ -371,6 +372,7 @@ function normalizePrayer(r: Record<string, unknown>, fromView: boolean): PublicP
     is_anonymous: isAnon,
     is_answered: Boolean(r.is_answered),
     pray_count: Number(r.pray_count ?? 0),
+    comment_count: Number(r.comment_count ?? 0),
     created_at: String(r.created_at),
     author,
   }

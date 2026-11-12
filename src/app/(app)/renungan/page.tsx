@@ -13,6 +13,62 @@ import {
 } from 'lucide-react'
 import { cn, getRelativeTime } from '@/lib/utils'
 
+interface DevotionalItem {
+  title: string
+  text: string
+  reference: string
+  source: string
+  url: string | null
+}
+
+async function fetchDevotionals(): Promise<DevotionalItem[]> {
+  const res = await fetch('/api/external-content', { next: { revalidate: 21600 } })
+  if (!res.ok) return []
+  const data = await res.json()
+  return (data.items ?? []) as DevotionalItem[]
+}
+
+function DevotionalCard({ item }: { item: DevotionalItem }) {
+  return (
+    <div className="flex gap-4 items-start">
+      <div className="w-9 h-9 rounded-xl bg-[var(--gold)]/10 flex items-center justify-center shrink-0">
+        <BookOpen size={18} className="text-[var(--gold)]" />
+      </div>
+      <div className="min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-black text-[var(--brown-dark)] uppercase tracking-wider">{item.title}</span>
+          <span className="text-[10px] font-medium text-[var(--gold)] bg-[var(--gold)]/10 px-2 py-0.5 rounded-full">{item.source}</span>
+        </div>
+        <p className="text-sm text-[var(--text)] mt-1 leading-relaxed">{item.text}</p>
+        <p className="text-[10px] text-[var(--text-muted)] mt-1 font-medium">{item.reference}</p>
+      </div>
+    </div>
+  )
+}
+
+async function ThirdPartyDevotionals() {
+  const items = await fetchDevotionals()
+
+  return (
+    <section className="mb-8">
+      <div className="flex items-center gap-2 mb-4">
+        <Book className="text-[var(--gold)]" size={18} />
+        <h3 className="font-[var(--font-playfair)] text-xl font-bold text-[var(--brown-dark)]">
+          Renungan dari Pihak Ketiga
+        </h3>
+        <span className="text-[10px] font-medium text-[var(--text-muted)] bg-[var(--cream)] px-2 py-0.5 rounded-full">Web</span>
+      </div>
+      <div className="space-y-3">
+        {items.length > 0 ? (
+          items.map((item) => <DevotionalCard key={item.reference} item={item} />)
+        ) : (
+          <p className="text-sm text-[var(--text-muted)] italic">Tidak ada renungan dari pihak ketiga saat ini.</p>
+        )}
+      </div>
+    </section>
+  )
+}
+
 export const dynamic = 'force-dynamic'
 
 export default async function RenunganPage() {
@@ -82,6 +138,9 @@ export default async function RenunganPage() {
               <Plus size={16} /> Tulis Artikel
             </Link>
           </div>
+
+          {/* Renungan dari pihak ketiga (web) — dipisah dari artikel anggota */}
+          <ThirdPartyDevotionals />
 
           {!articles || articles.length === 0 ? (
             <div className="card-premium p-12 text-center text-[var(--text-muted)]">

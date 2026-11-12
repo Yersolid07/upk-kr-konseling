@@ -315,6 +315,7 @@ export type PrayerRequest = ModerationFields & {
   is_anonymous: boolean
   is_answered: boolean
   pray_count: number
+  comment_count: number
   created_at: string
   updated_at: string
   // Joins
@@ -322,6 +323,17 @@ export type PrayerRequest = ModerationFields & {
   category?: ThreadCategory
   has_supported?: boolean   // current user has prayed
   attachments?: Attachment[]
+}
+
+export type PrayerComment = {
+  id: string
+  request_id: string
+  author_id: string
+  content: string
+  is_anonymous: boolean
+  created_at: string
+  // Joins
+  profiles?: Profile
 }
 
 export type Article = ModerationFields & {

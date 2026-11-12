@@ -302,6 +302,7 @@ SELECT
   r.is_anonymous,
   r.is_answered,
   r.pray_count,
+  r.comment_count,
   r.created_at,
   r.updated_at,
   CASE WHEN r.is_anonymous THEN NULL ELSE r.author_id END AS author_id,

@@ -19,6 +19,7 @@ import { getRelativeTime } from '@/lib/utils'
 
 import { getDailyVerse } from '@/lib/bible'
 import { listThreads } from '@/lib/public-content'
+import { Avatar } from '@/components/profile/Avatar'
 import { SOSButton } from './sos-button'
 
 export const dynamic = 'force-dynamic'
@@ -40,7 +41,7 @@ export default async function DashboardPage() {
     : getDailyVerse()
 
   // Data paralel
-  const [threadsRes, prayersRes, konselorRes, membersRes, prayerList, articlesRes] =
+  const [threadsRes, prayersRes, konselorRes, konselorList, membersRes, prayerList, articlesRes] =
     await Promise.all([
       supabase.from('threads').select('id', { count: 'exact', head: true }),
       supabase.from('prayer_requests').select('id', { count: 'exact', head: true }),
@@ -49,6 +50,14 @@ export default async function DashboardPage() {
         .select('id', { count: 'exact', head: true })
         .eq('role', 'konselor')
         .eq('is_online', true),
+      // List konselor online untuk sidebar
+      supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url, is_online, role')
+        .eq('role', 'konselor')
+        .eq('is_online', true)
+        .order('last_seen', { ascending: false })
+        .limit(5),
       supabase
         .from('profiles')
         .select('id', { count: 'exact', head: true })
@@ -86,6 +95,7 @@ export default async function DashboardPage() {
   const isAdmin = profileData?.role === 'admin' || profileData?.role === 'super_admin'
 
   const prayers = prayerList.data ?? []
+  const konselorOnline = konselorRes.count ?? 0
   const articles = articlesRes.data ?? []
 
   return (
@@ -241,6 +251,61 @@ export default async function DashboardPage() {
         {/* ── Sidebar ────────────────────────────────────── */}
         <aside className="lg:col-span-4 space-y-8">
           <SOSButton />
+
+          {/* Konselor yang tersedia hari ini */}
+          <div className="space-y-3">
+            <div className="flex items-baseline justify-between mb-4">
+              <h3 className="font-semibold text-[var(--brown-dark)] text-sm inline-flex items-center gap-2">
+                <UserCheck size={15} className="text-[var(--sage)]" />
+                Konselor Tersedia
+              </h3>
+              <Link
+                href="/konselor"
+                className="text-xs font-medium text-[var(--text-muted)] hover:text-[var(--terra)]"
+              >
+                Semua
+              </Link>
+            </div>
+            {konselorOnline > 0 ? (
+              <div className="space-y-3">
+                {(konselorList.data ?? []).map((k: any) => (
+                  <div
+                    key={k.id}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--line)] hover:border-[var(--sage)]/30 transition-colors"
+                  >
+                    <div className="relative">
+                      <Avatar
+                        src={k.avatar_url}
+                        name={k.full_name}
+                        size="sm"
+                        ring={k.is_online}
+                      />
+                      {k.is_online && (
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[var(--sage)] border-2 border-[var(--surface-2)]" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold text-[var(--brown-dark)] truncate">{k.full_name}</div>
+                      <div className="text-[10px] text-[var(--text-muted)]">
+                        Konselor · <span className="text-[var(--sage)]">Online</span>
+                      </div>
+                    </div>
+                    <Link
+                      href="/chat"
+                      className="shrink-0 w-7 h-7 rounded-full bg-[var(--sage)]/10 flex items-center justify-center text-[var(--sage)] hover:bg-[var(--sage)] hover:text-white transition-colors"
+                      title="Mulai chat konseling"
+                    >
+                      <MessageSquare size={13} />
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[10px] text-[var(--text-muted)] leading-relaxed">
+                Belum ada konselor yang tersedia hari ini. Coba lagi nanti, atau kirim pesan melalui Prayer Wall.
+              </p>
+            )}
+          </div>
 
           {/* Prayer Wall */}
           <section>

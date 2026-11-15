@@ -201,7 +201,7 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
   WHERE l.content_type = p_content_type AND l.content_id = p_content_id;
 $$;
 REVOKE ALL ON FUNCTION public.public_anon_label(public.content_type, UUID) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.public_anon_label(public.content_type, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.public_anon_label(public.content_type, UUID) TO anon, authenticated;
 
 -- Isi label untuk konten lama. Nilai acak tidak bisa dipetakan ke akun.
 INSERT INTO public.content_anon_labels (content_type, content_id)

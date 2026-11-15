@@ -12,7 +12,7 @@ import {
   Plus
 } from 'lucide-react'
 import { cn, getRelativeTime } from '@/lib/utils'
-import { appUrl } from '@/lib/app-url'
+import { getExternalItems, type ExternalItem } from '@/lib/external-content'
 
 interface DevotionalItem {
   title: string
@@ -23,11 +23,14 @@ interface DevotionalItem {
 }
 
 async function fetchDevotionals(): Promise<DevotionalItem[]> {
-  const base = await appUrl()
-  const res = await fetch(`${base}/api/external-content`, { next: { revalidate: 21600 } })
-  if (!res.ok) return []
-  const data = await res.json()
-  return (data.items ?? []) as DevotionalItem[]
+  try {
+    // Panggil langsung di server — tanpa self-HTTP ke /api/external-content,
+    // agar tidak bergantung pada URL absolut dan tidak bisa merobohkan halaman.
+    return (await getExternalItems()) as DevotionalItem[]
+  } catch {
+    // Sumber eksternal gagal tidak boleh merobohkan halaman.
+    return []
+  }
 }
 
 function DevotionalCard({ item }: { item: DevotionalItem }) {
